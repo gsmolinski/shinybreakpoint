@@ -4,7 +4,7 @@
 #'
 #' @param id arg from shinybrowserServer. Can be chosen by user.
 #'
-#' @return JavaScript code which adds event listener
+#' @return HTML script tag with JavaScript code,
 #' @import shiny
 shinybrowserUI <- function(id) {
   ns <- NS(id)
@@ -19,10 +19,9 @@ shinybrowserUI <- function(id) {
 
 shinybrowserServer <- function(enabled = TRUE,
                                id = "shinybrowser",
-                               keyEvent = "F1",
-                               session = getDefaultReactiveDomain()) {
+                               keyEvent = "F1") {
 
-  check_requirements_shinybrowserServer(enabled, id, keyEvent, session)
+  check_requirements_shinybrowserServer(enabled, id, keyEvent)
 
   if (enabled) {
     insertUI("head", "beforeEnd", shinybrowserUI(id), immediate = TRUE)

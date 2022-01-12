@@ -17,12 +17,13 @@ shinybrowserUI <- function(id) {
   tags$script(js)
 }
 
-shinybrowserServer <- function(id = "shinybrowser",
-                               keyEvent = "F1") {
+shinybrowserServer <- function(keyEvent = "F1",
+                               id = "shinybrowser") {
 
-  check_requirements_shinybrowserServer(id, keyEvent)
+  check_requirements_shinybrowserServer(keyEvent, id)
 
   insertUI("head", "beforeEnd", shinybrowserUI(id), immediate = TRUE)
+
   moduleServer(
     id,
     function(input, output, session) {

@@ -10,6 +10,7 @@ License: MIT + file LICENSE
 URL: https://github.com/gsmolinski/shinybrowser
 BugReports: https://github.com/gsmolinski/shinybrowser/issues
 Imports: 
+    glue,
     shiny (>= 1.5.0)
 Suggests: 
     testthat (>= 3.0.0)

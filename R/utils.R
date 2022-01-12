@@ -1,13 +1,24 @@
-check_requirements_shinybrowserServer <- function(id, keyEvent) {
-
-  if (length(id) > 1 || !is.character(id) || is.na(id) || id == "") {
-    stop("'id' must be of type character of length 1 and can't be NA or empty string.",
-         call. = FALSE)
-  }
+#' Check requirements to run shinybrowserServer
+#'
+#' @param keyEvent passed from shinybrowserServer
+#' @param id passed from shinybrowserServer
+#'
+#' @import shiny
+#' @noRd
+check_requirements_shinybrowserServer <- function(keyEvent, id) {
 
   if (length(keyEvent) > 1 || !is.character(keyEvent) || is.na(keyEvent) || keyEvent == "") {
     stop("'keyEvent' must be of type character of length 1 and can't be NA or empty string.",
          call. = FALSE)
   }
 
+  if (length(id) > 1 || !is.character(id) || is.na(id) || id == "") {
+    stop("'id' must be of type character of length 1 and can't be NA or empty string.",
+         call. = FALSE)
+  }
+
+  if (is.null(getDefaultReactiveDomain())) {
+    stop("No session object was found.",
+         call. = FALSE)
+  }
 }

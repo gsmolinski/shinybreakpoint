@@ -4,7 +4,7 @@
 #'
 #' @param id arg from shinybrowserServer. Can be chosen by user.
 #'
-#' @return HTML script tag with JavaScript code,
+#' @return HTML script tag with JavaScript code.
 #' @import shiny
 shinybrowserUI <- function(id) {
   ns <- NS(id)
@@ -17,19 +17,16 @@ shinybrowserUI <- function(id) {
   tags$script(js)
 }
 
-shinybrowserServer <- function(enabled = TRUE,
-                               id = "shinybrowser",
+shinybrowserServer <- function(id = "shinybrowser",
                                keyEvent = "F1") {
 
-  check_requirements_shinybrowserServer(enabled, id, keyEvent)
+  check_requirements_shinybrowserServer(id, keyEvent)
 
-  if (enabled) {
-    insertUI("head", "beforeEnd", shinybrowserUI(id), immediate = TRUE)
-    moduleServer(
-      id,
-      function(input, output, session) {
+  insertUI("head", "beforeEnd", shinybrowserUI(id), immediate = TRUE)
+  moduleServer(
+    id,
+    function(input, output, session) {
 
-      }
-    )
-  }
+    }
+  )
 }

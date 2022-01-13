@@ -18,7 +18,8 @@ check_requirements_shinybrowserServer <- function(keyEvent, id) {
   }
 
   if (is.null(getDefaultReactiveDomain())) {
-    stop("No session object was found.",
+    stop("No session object was found. This could mean that 'shinybrowserServer()' was
+         not used in the 'server' function in Shiny app as it should.",
          call. = FALSE)
   }
 }

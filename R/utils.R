@@ -7,13 +7,13 @@
 #' @noRd
 check_requirements_shinybrowserServer <- function(keyEvent, id) {
 
-  if (length(keyEvent) > 1 || !is.character(keyEvent) || is.na(keyEvent) || keyEvent == "") {
-    stop("'keyEvent' must be of type character of length 1 and can't be NA or empty string.",
+  if (!length(keyEvent) == 1 || !is.character(keyEvent) || is.na(keyEvent) || keyEvent == "") {
+    stop("'keyEvent' must be of type character of length 1 and can't be NA or empty character.",
          call. = FALSE)
   }
 
-  if (length(id) > 1 || !is.character(id) || is.na(id) || id == "") {
-    stop("'id' must be of type character of length 1 and can't be NA or empty string.",
+  if (!length(id) == 1 || !is.character(id) || is.na(id) || id == "") {
+    stop("'id' must be of type character of length 1 and can't be NA or empty character.",
          call. = FALSE)
   }
 

@@ -9,7 +9,7 @@
 shinybrowserUI <- function(id) {
   ns <- NS(id)
   inputId <- ns("key_pressed")
-  js <- glue::glue(
+  js <- glue::glue_safe(
     'document.addEventListener("keydown", function(e) {{
      Shiny.onInputChange({inputId}, e.key);
     }})'

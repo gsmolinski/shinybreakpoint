@@ -1,7 +1,7 @@
-test_that("js code is correct", {
-  text <- shinybrowserUI("test")
+test_that("js code in shinybrowserUI is correct", {
+  val <- shinybrowserUI("test")
   expect_equal(
-  text$children[[1]],
+  val$children[[1]],
   'document.addEventListener("keydown", function(e) {
  Shiny.onInputChange(test-key_pressed, e.key);
 })'

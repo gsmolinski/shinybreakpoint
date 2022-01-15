@@ -1,8 +1,8 @@
-#' UI module
+#' UI Module
 #'
-#' Adds keydown listener.
+#' Add keydown listener.
 #'
-#' @param id arg from shinybrowserServer. Can be chosen by user.
+#' @param id from 'shinybrowserServer'. Can be chosen by user.
 #'
 #' @return HTML script tag with JavaScript code.
 #' @import shiny

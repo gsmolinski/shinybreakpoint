@@ -1,4 +1,4 @@
-#' Check requirements to run shinybrowserServer
+#' Check Requirements to Run 'shinybrowserServer'
 #'
 #' @param keyEvent passed from shinybrowserServer
 #' @param id passed from shinybrowserServer

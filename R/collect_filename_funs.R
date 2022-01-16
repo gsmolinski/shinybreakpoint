@@ -18,10 +18,12 @@ collect_filename_funs <- function(caller_env) {
   envs_funs <- unlist(envs_funs, use.names = TRUE)
   names(envs_funs) <- gsub("_\\d*", replacement = "", x = names(envs_funs)) # env depth level
 
-  filenames_funs <- data.frame()
+  filenames_funs <- data.frame(
+    filename_full_path = vapply(envs_funs, get_filename, FUN.VALUE = character(1),
+                                caller_env = caller_env)
+  )
   filenames_funs <- filenames_funs %>%
-    dplyr::mutate(filename_full_path = vapply(envs_funs, get_filename, FUN.VALUE = character(1)),
-                  filename = basename(filename_full_path),
+    dplyr::mutate(filename = basename(filename_full_path),
                   fun_name = envs_funs,
                   env_depth = as.integer(names(envs_funs))) %>%
     dplyr::filter(!is.na(filename_full_path)) %>%
@@ -66,8 +68,8 @@ drop_envs_too_far <- function(envs_funs) {
 #' @return full path for function if functon was sourced from file,
 #' otherwise NA_character_.
 #' @noRd
-get_filename <- function(one_envs_funs) {
-  filename <- attr(attr(get(one_envs_funs),"srcref"),"srcfile")$filename
+get_filename <- function(one_envs_funs, caller_env) {
+  filename <- attr(attr(get(one_envs_funs, envir = caller_env),"srcref"),"srcfile")$filename
   if (is.null(filename)) {
     filename <- NA_character_
   }

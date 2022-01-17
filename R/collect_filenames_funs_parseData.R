@@ -5,7 +5,7 @@
 #'
 #' @return data.frame with cols: filename_full_path, filename, fun_name, parse_data.
 #' @details
-#' It keps only these functions from each source file, which are top functions, i.e. it omits
+#' It keeps only these functions from each source file, which are top functions, i.e. it omits
 #' nested functions. It is because we want to use 'body()' later, so we will have access
 #' to these nested functions.
 #' @importFrom magrittr %>%
@@ -17,11 +17,11 @@ collect_filenames_funs_parseData <- function(caller_env) {
   envs_funs <- unlist(envs_funs, use.names = TRUE)
   names(envs_funs) <- gsub("_\\d*", replacement = "", x = names(envs_funs)) # env depth level
 
-  filenames_funs <- data.frame(
+  filenames_funs_parseData <- data.frame(
     filename_full_path = vapply(envs_funs, get_filename, FUN.VALUE = character(1),
                                 caller_env = caller_env)
   )
-  filenames_funs <- filenames_funs %>%
+  filenames_funs_parseData <- filenames_funs_parseData %>%
     dplyr::mutate(filename = basename(filename_full_path),
                   fun_name = envs_funs,
                   env_depth = as.integer(names(envs_funs))) %>%
@@ -30,9 +30,9 @@ collect_filenames_funs_parseData <- function(caller_env) {
     dplyr::slice_max(env_depth) %>% # keep only unnested functions
     dplyr::ungroup() %>%
     dplyr::select(-env_depth) %>%
-    dplyr::mutate(parse_data = lapply(envs_funs, get_parse_data, caller_env = caller_env))
+    dplyr::mutate(parse_data = lapply(fun_name, get_parse_data, caller_env = caller_env))
 
-  filenames_funs
+  filenames_funs_parseData
 }
 
 #' Remove Not Needed Environments
@@ -80,13 +80,13 @@ get_filename <- function(one_envs_funs, caller_env) {
 
 #' Use 'getParseData' on Object
 #'
-#' @param one_envs_funs one element of envs_funs.
+#' @param one_fun_name one element of fun_name column.
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
 #' @return data.frame returned by 'getParseData()'.
 #' @noRd
-get_parse_data <- function(one_envs_funs, caller_env) {
-  parse_data <- getParseData(get(one_envs_funs, envir = caller_env), includeText = NA)
+get_parse_data <- function(one_fun_name, caller_env) {
+  parse_data <- getParseData(get(one_fun_name, envir = caller_env), includeText = NA)
   parse_data
 }

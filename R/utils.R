@@ -1,7 +1,7 @@
 #' Check Requirements to Run 'shinybrowserServer'
 #'
-#' @param keyEvent passed from shinybrowserServer.
-#' @param id passed from shinybrowserServer.
+#' @param keyEvent passed from 'shinybrowserServer'.
+#' @param id passed from 'shinybrowserServer'.
 #'
 #' @import shiny
 #' @noRd

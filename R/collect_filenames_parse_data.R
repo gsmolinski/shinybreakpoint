@@ -1,38 +1,28 @@
-#' Get Filenames, Functions Names and Parse Data
+#' Get Filenames and Parse Data
 #'
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return data.frame with cols: filename_full_path, filename, fun_name, parse_data.
-#' @details
-#' It keeps only these functions from each source file, which are top functions, i.e. it omits
-#' nested functions. It is because we want to use 'body()' later, so we will have access
-#' to these nested functions.
+#' @return data.frame with cols: filename_full_path, filename, parse_data.
 #' @importFrom magrittr %>%
 #' @noRd
-collect_filenames_funs_parseData <- function(caller_env) {
+collect_filenames_parse_data <- function(caller_env) {
   envs_funs <- lapply(rlang::env_parents(caller_env), names)
   envs_funs <- drop_envs_too_far(envs_funs)
-  names(envs_funs) <- paste0(1:length(envs_funs), "_")
-  envs_funs <- unlist(envs_funs, use.names = TRUE)
-  names(envs_funs) <- gsub("_\\d*", replacement = "", x = names(envs_funs)) # env depth level
+  envs_funs <- unlist(envs_funs, use.names = FALSE)
 
-  filenames_funs_parseData <- data.frame(
+  filenames_parse_data <- data.frame(
     filename_full_path = vapply(envs_funs, get_filename, FUN.VALUE = character(1),
-                                caller_env = caller_env)
+                                caller_env = caller_env),
+    fun_name = envs_funs
   )
-  filenames_funs_parseData <- filenames_funs_parseData %>%
+  filenames_parse_data <- filenames_parse_data %>%
+    dplyr::filter(!is.na(filename_full_path) & !duplicated(filename_full_path)) %>%
     dplyr::mutate(filename = basename(filename_full_path),
-                  fun_name = envs_funs,
-                  env_depth = as.integer(names(envs_funs))) %>%
-    dplyr::filter(!is.na(filename_full_path)) %>%
-    dplyr::group_by(filename_full_path) %>%
-    dplyr::slice_max(env_depth) %>% # keep only unnested functions
-    dplyr::ungroup() %>%
-    dplyr::select(-env_depth) %>%
-    dplyr::mutate(parse_data = lapply(fun_name, get_parse_data, caller_env = caller_env))
+                  parse_data = lapply(fun_name, get_parse_data, caller_env = caller_env)) %>%
+    dplyr::select(-fun_name)
 
-  filenames_funs_parseData
+  filenames_parse_data
 }
 
 #' Remove Not Needed Environments
@@ -41,7 +31,7 @@ collect_filenames_funs_parseData <- function(caller_env) {
 #'
 #' @details
 #' If list has at least one name 'namespace:' it means app is developed as package.
-#' Then 'env_parents()' from 'collect_filenames_funs_parseData' function will return other
+#' Then 'env_parents()' from 'collect_filenames_parse_data' function will return other
 #' packages as well and after them global environment. We don't need them, because
 #' there won't be, developed by user, reactive functions.
 #'

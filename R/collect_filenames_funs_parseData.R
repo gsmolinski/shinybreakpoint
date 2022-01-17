@@ -30,7 +30,7 @@ collect_filenames_funs_parseData <- function(caller_env) {
     dplyr::slice_max(env_depth) %>% # keep only unnested functions
     dplyr::ungroup() %>%
     dplyr::select(-env_depth) %>%
-    dplyr::mutate(parse_data = lapply(envs_funs, get_parse_data, env_caller = env_caller))
+    dplyr::mutate(parse_data = lapply(envs_funs, get_parse_data, caller_env = caller_env))
 
   filenames_funs
 }

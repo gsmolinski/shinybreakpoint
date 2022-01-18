@@ -7,27 +7,43 @@
 #' @importFrom magrittr %>%
 #' @noRd
 collect_filenames_parse_data <- function(caller_env) {
-  envs_funs <- lapply(rlang::env_parents(caller_env), names)
-  envs_funs <- drop_envs_too_far(envs_funs)
-  envs_funs <- unlist(envs_funs, use.names = FALSE)
+  envs_objs <- find_objects_in_envirs(caller_env)
+  envs_objs <- drop_envs_too_far(envs_objs)
+  envs_objs <- unlist(envs_objs, use.names = FALSE)
 
   filenames_parse_data <- data.frame(
-    filename_full_path = vapply(envs_funs, get_filename, FUN.VALUE = character(1),
+    filename_full_path = vapply(envs_objs, get_filename, FUN.VALUE = character(1),
                                 caller_env = caller_env),
-    fun_name = envs_funs
+    obj_name = envs_objs
   )
   filenames_parse_data <- filenames_parse_data %>%
     dplyr::filter(!is.na(filename_full_path) & !duplicated(filename_full_path)) %>%
     dplyr::mutate(filename = basename(filename_full_path),
-                  parse_data = lapply(fun_name, get_parse_data, caller_env = caller_env)) %>%
-    dplyr::select(-fun_name)
+                  parse_data = lapply(obj_name, get_parse_data, caller_env = caller_env)) %>%
+    dplyr::select(-obj_name)
 
   filenames_parse_data
 }
 
+#' Get Names of Objects from Current and Parent Environments
+#'
+#' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
+#' function used directly by user.
+#'
+#' @return named list if environment has name with names (character type) of objects belong
+#' to each environment.
+#' @details
+#' Function starts from current environment, which is a caller environment of exported function,
+#' i.e. 'shinybrowserServer' and go through the parent environments, i.e. environments returned
+#' by 'rlang::env_parents()' function.
+#' @noRd
+find_objects_in_envirs <- function(caller_env) {
+  lapply(rlang::env_parents(caller_env), names)
+}
+
 #' Remove Not Needed Environments
 #'
-#' @param envs_funs named list with functions from found environments.
+#' @param envs_objs named list with objects from found environments.
 #'
 #' @details
 #' If list has at least one name 'namespace:' it means app is developed as package.
@@ -41,27 +57,27 @@ collect_filenames_parse_data <- function(caller_env) {
 #'
 #' @return list without global environment and without environments from other packages.
 #' @noRd
-drop_envs_too_far <- function(envs_funs) {
-  if (any(grepl("namespace:", names(envs_funs)))) {
-    first_namespace <- grep("namespace:", names(envs_funs))[[1]]
-    envs_funs <- envs_funs[1:first_namespace]
+drop_envs_too_far <- function(envs_objs) {
+  if (any(grepl("namespace:", names(envs_objs)))) {
+    first_namespace <- grep("namespace:", names(envs_objs))[[1]]
+    envs_objs <- envs_objs[1:first_namespace]
   } else {
-    envs_funs[["global"]] <- NULL
+    envs_objs[["global"]] <- NULL
   }
-  envs_funs
+  envs_objs
 }
 
-#' Get Filename with Full Path for Function
+#' Get Filename with Full Path for Object
 #'
-#' @param one_envs_funs one element of envs_funs.
+#' @param one_envs_objs one element of envs_objs
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return full path for function if functon was sourced from file,
+#' @return full path for object if object was sourced from file,
 #' otherwise NA_character_.
 #' @noRd
-get_filename <- function(one_envs_funs, caller_env) {
-  filename <- attr(attr(get(one_envs_funs, envir = caller_env),"srcref"),"srcfile")$filename
+get_filename <- function(one_envs_objs, caller_env) {
+  filename <- attr(attr(get(one_envs_objs, envir = caller_env),"srcref"),"srcfile")$filename
   if (is.null(filename)) {
     filename <- NA_character_
   }
@@ -70,13 +86,13 @@ get_filename <- function(one_envs_funs, caller_env) {
 
 #' Use 'getParseData' on Object
 #'
-#' @param one_fun_name one element of fun_name column.
+#' @param one_obj_name one element of obj_name column.
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
 #' @return data.frame returned by 'getParseData()'.
 #' @noRd
-get_parse_data <- function(one_fun_name, caller_env) {
-  parse_data <- getParseData(get(one_fun_name, envir = caller_env), includeText = NA)
+get_parse_data <- function(one_obj_name, caller_env) {
+  parse_data <- getParseData(get(one_obj_name, envir = caller_env), includeText = NA)
   parse_data
 }

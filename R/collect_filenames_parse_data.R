@@ -47,7 +47,7 @@ find_objects_in_envirs <- function(caller_env) {
 #'
 #' @details
 #' If list has at least one name 'namespace:' it means app is developed as package.
-#' Then 'env_parents()' from 'collect_filenames_parse_data' function will return other
+#' Then 'env_parents()' from 'find_objects_in_envirs' function will return other
 #' packages as well and after them global environment. We don't need them, because
 #' there won't be, developed by user, reactive functions.
 #'

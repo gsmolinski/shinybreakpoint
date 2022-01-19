@@ -3,7 +3,7 @@ Title: Set Breakpoints in 'Shiny'
 Version: 0.0.0.9000
 Authors@R: 
     person("Grzegorz", "Smoliński", , "g.smolinski1@gmail.com", role = c("aut", "cre"))
-Description: Insert 'browser()' to chosen location in reactive context
+Description: Insert 'browser()' into chosen location in reactive context
     without stopping the app, what opens the interactive debugger and
     allows to inspect objects and run arbitrary code.
 License: MIT + file LICENSE

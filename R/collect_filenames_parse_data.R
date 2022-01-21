@@ -68,10 +68,10 @@ get_filenames_parse_data <- function(envir) {
 
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!is.na(filename_full_path) & !duplicated(filename_full_path)) %>%
-      dplyr::mutate(parse_data = lapply(obj_name, get_parse_data, envir = envir))
+      dplyr::mutate(parse_data = lapply(obj_name, get_parse_data, envir = envir)) %>%
       dplyr::select(-obj_name)
 
-      filenames_parse_data
+    filenames_parse_data
   } else {
     NULL
   }

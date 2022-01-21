@@ -1,6 +1,6 @@
 #' Colect Filenames and Parse Data
 #'
-#' It collects results from 'get_filenames_parse_data_env' function.
+#' It collects results from 'get_filenames_parse_data' function.
 #'
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.

@@ -1,34 +1,25 @@
-#' Colect Filenames, Parse Data and Environments
+#' Colect Filenames and Parse Data
 #'
-#' It collects results from 'get_filenames_parse_data_env' function and environments.
+#' It collects results from 'get_filenames_parse_data_env' function.
 #'
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return list with:
-#' (1) data.frame with cols: filename_full_path, filename, parse_data, envir_label;
-#' (2) named list of environments according to 'rlang::env_label()'.
-#' @details
-#' Data.frame will be used to set breaktpoints, but we need environments
-#' to know from which environment is a function found later by 'findLineNum()'.
+#' @return data.frame with cols: filename_full_path, filename, parse_data.
 #' @importFrom magrittr %>%
 #' @noRd
-collect_filenames_parse_data_envs <- function(caller_env) {
+collect_filenames_parse_data <- function(caller_env) {
   envirs <- rlang::env_parents(caller_env)
   envirs <- drop_envs_too_far(envirs)
-  filenames_parse_data_envs <- lapply(envirs, get_filenames_parse_data_env)
-  filenames_parse_data_envs <- dplyr::bind_rows(filenames_parse_data_envs)
+  filenames_parse_data <- lapply(envirs, get_filenames_parse_data)
+  filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
-  filenames_parse_data_envs <- filenames_parse_data_envs %>%
+  filenames_parse_data <- filenames_parse_data %>%
     dplyr::filter(!duplicated(filename_full_path)) %>%
     dplyr::mutate(filename = basename(filename_full_path)) %>%
     dplyr::relocate(filename, .before = parse_data)
 
-  names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
-  envirs <- envirs[unique(filenames_parse_data_envs$envir_label)]
-
-  list(filenames_parse_data_envs = filenames_parse_data_envs,
-       envirs = envirs)
+ filenames_parse_data
 }
 
 #' Remove Not Needed Environments
@@ -57,31 +48,30 @@ drop_envs_too_far <- function(envirs) {
   envirs
 }
 
-#' Get Full Path to File, Parse Data for Object and Environment Label
+#' Get Full Path to File and Parse Data for Object
 #'
 #' @param envir each environment returned by 'rlang::env_parents()',
 #' passed by 'collect_filenames_parse_data' function.
 #'
-#' @return data.frame with cols: filename_full_path, parse_data, envir_label.
+#' @return data.frame with cols: filename_full_path, parse_data.
 #' @importFrom magrittr %>%
 #' @noRd
-get_filenames_parse_data_env <- function(envir) {
+get_filenames_parse_data <- function(envir) {
   env_objs <- names(envir)
 
   if (length(env_objs) > 0) {
-    filenames_parse_data_env <- data.frame(
+    filenames_parse_data <- data.frame(
       filename_full_path = vapply(env_objs, get_filename, FUN.VALUE = character(1),
                                   envir = envir),
       obj_name = env_objs
     )
 
-    filenames_parse_data_env <- filenames_parse_data_env %>%
+    filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!is.na(filename_full_path) & !duplicated(filename_full_path)) %>%
-      dplyr::mutate(parse_data = lapply(obj_name, get_parse_data, envir = envir),
-                    envir_label = rlang::env_label(envir)) %>%
+      dplyr::mutate(parse_data = lapply(obj_name, get_parse_data, envir = envir))
       dplyr::select(-obj_name)
 
-    filenames_parse_data_env
+      filenames_parse_data
   } else {
     NULL
   }

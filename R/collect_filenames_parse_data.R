@@ -5,21 +5,26 @@
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return data.frame with cols: filename_full_path, filename, parse_data.
+#' @return data.frame with cols: filename_full_path, filename, parse_data or NULL
+#' if no objects with srcfile found.
 #' @importFrom magrittr %>%
 #' @noRd
 collect_filenames_parse_data <- function(caller_env) {
   envirs <- rlang::env_parents(caller_env)
   envirs <- drop_envs_too_far(envirs)
   filenames_parse_data <- lapply(envirs, get_filenames_parse_data)
-  filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
+  if (length(filenames_parse_data) > 0) {
+    filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
-  filenames_parse_data <- filenames_parse_data %>%
-    dplyr::filter(!duplicated(filename_full_path)) %>%
-    dplyr::mutate(filename = basename(filename_full_path)) %>%
-    dplyr::relocate(filename, .before = parse_data)
+    filenames_parse_data <- filenames_parse_data %>%
+      dplyr::filter(!duplicated(filename_full_path)) %>%
+      dplyr::mutate(filename = basename(filename_full_path)) %>%
+      dplyr::relocate(filename, .before = parse_data)
 
- filenames_parse_data
+    filenames_parse_data
+  } else {
+    NULL
+  }
 }
 
 #' Remove Not Needed Environments
@@ -39,8 +44,8 @@ collect_filenames_parse_data <- function(caller_env) {
 #' @return list without global environment and without environments from other packages.
 #' @noRd
 drop_envs_too_far <- function(envirs) {
-  if (any(grepl("namespace:", names(envirs)))) {
-    first_namespace <- grep("namespace:", names(envirs))[[1]]
+  if (any(grepl("^namespace:|^package:", names(envirs)))) {
+    first_namespace <- grep("^namespace:|^package:", names(envirs))[[1]]
     envirs <- envirs[1:first_namespace]
   } else {
     envirs[["global"]] <- NULL
@@ -53,7 +58,8 @@ drop_envs_too_far <- function(envirs) {
 #' @param envir each environment returned by 'rlang::env_parents()',
 #' passed by 'collect_filenames_parse_data' function.
 #'
-#' @return data.frame with cols: filename_full_path, parse_data.
+#' @return data.frame with cols: filename_full_path, parse_data or NULL
+#' if no objects with srcfile found.
 #' @importFrom magrittr %>%
 #' @noRd
 get_filenames_parse_data <- function(envir) {

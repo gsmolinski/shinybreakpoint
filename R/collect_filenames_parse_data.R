@@ -8,6 +8,7 @@
 #' @return data.frame with cols: filename_full_path, filename, parse_data or NULL
 #' if no objects with srcfile found.
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @noRd
 collect_filenames_parse_data <- function(caller_env) {
   envirs <- rlang::env_parents(caller_env)
@@ -17,9 +18,9 @@ collect_filenames_parse_data <- function(caller_env) {
     filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
     filenames_parse_data <- filenames_parse_data %>%
-      dplyr::filter(!duplicated(filename_full_path)) %>%
-      dplyr::mutate(filename = basename(filename_full_path)) %>%
-      dplyr::relocate(filename, .before = parse_data)
+      dplyr::filter(!duplicated(.data$filename_full_path)) %>%
+      dplyr::mutate(filename = basename(.data$filename_full_path)) %>%
+      dplyr::relocate(.data$filename, .before = .data$parse_data)
 
     filenames_parse_data
   } else {
@@ -61,6 +62,7 @@ drop_envs_too_far <- function(envirs) {
 #' @return data.frame with cols: filename_full_path, parse_data or NULL
 #' if no objects with srcfile found.
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @noRd
 get_filenames_parse_data <- function(envir) {
   env_objs <- names(envir)
@@ -73,9 +75,9 @@ get_filenames_parse_data <- function(envir) {
     )
 
     filenames_parse_data <- filenames_parse_data %>%
-      dplyr::filter(!is.na(filename_full_path) & !duplicated(filename_full_path)) %>%
-      dplyr::mutate(parse_data = lapply(obj_name, get_parse_data, envir = envir)) %>%
-      dplyr::select(-obj_name)
+      dplyr::filter(!is.na(.data$filename_full_path) & !duplicated(.data$filename_full_path)) %>%
+      dplyr::mutate(parse_data = lapply(.data$obj_name, get_parse_data, envir = envir)) %>%
+      dplyr::select(-.data$obj_name)
 
     filenames_parse_data
   } else {
@@ -105,6 +107,7 @@ get_filename <- function(one_envs_objs, envir) {
 #' @param envir environment where object lives, passed to 'get'.
 #'
 #' @return data.frame returned by 'getParseData()'.
+#' @importFrom utils getParseData
 #' @noRd
 get_parse_data <- function(one_obj_name, envir) {
   parse_data <- getParseData(get(one_obj_name, envir = envir), includeText = NA)

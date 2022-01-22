@@ -36,17 +36,19 @@ test_that("get_filenames_parse_data returns no rows if no srcfile", {
 })
 
 test_that("get_filenames_parse_data returns data if at least one srcfile", {
+  skip_if_not(interactive()) # no srcref if not interactively
   # assumes this package has keep.source = TRUE
   result <- get_filenames_parse_data(rlang::pkg_env("shinybrowser"))
   expect_true(!is.null(result) && nrow(result) > 0)
 })
 
 test_that("get_filenames_parse_data returns parse data for each path", {
+  skip_if_not(interactive()) # no srcref if not interactively
   # assumes this package has keep.source = TRUE
   filenames_parse_data <- get_filenames_parse_data(rlang::pkg_env("shinybrowser"))
-  all_has_parse_data <- all(unlist(lapply(filenames_parse_data$parse_data,
-                                          function(x) !is.null(x) && nrow(x) > 0)))
-  expect_true(all_has_parse_data)
+  has_parse_data <- unlist(lapply(filenames_parse_data$parse_data,
+                                  function(x) !is.null(x) && nrow(x) > 0))
+  expect_true(!is.null(has_parse_data) && all(has_parse_data))
 })
 
 test_that("get_filename returns NA_character_ if no srcfile", {

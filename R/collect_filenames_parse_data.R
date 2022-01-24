@@ -21,7 +21,7 @@ collect_filenames_parse_data <- function(caller_env) {
     filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
     names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
-    envirs <- envirs[unique(filenames_parse_data$env_label)]
+    envirs <- envirs[filenames_parse_data$env_label]
 
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!duplicated(.data$filename_full_path)) %>%

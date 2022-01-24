@@ -3,4 +3,3 @@
 import(shiny)
 importFrom(magrittr,"%>%")
 importFrom(rlang,.data)
-importFrom(utils,getParseData)

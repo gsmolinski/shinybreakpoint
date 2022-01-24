@@ -4,6 +4,12 @@ test_that("collect_filenames_parse_data returns NULL if no srcfile", {
   expect_equal(collect_filenames_parse_data(env_global_as_parent), NULL)
 })
 
+test_that("collect_filenames_parse_data returns list if srcfile", {
+  skip_if_not(interactive())
+  e <- new.env(parent = rlang::pkg_env("shinybrowser"))
+  expect_type(collect_filenames_parse_data(e), "list")
+})
+
 test_that("drop_envs_too_far returns list", {
   expect_type(drop_envs_too_far(rlang::env_parents()), "list")
 })
@@ -30,6 +36,7 @@ test_that("get_filenames_parse_data returns no rows if no srcfile", {
   e$a <- 2
   df <- data.frame(filename_full_path = character())
   df$parse_data = list()
+  df$env_label = character()
   df <- df[FALSE, ]
   rownames(df) <- character()
   expect_equal(get_filenames_parse_data(e), df)

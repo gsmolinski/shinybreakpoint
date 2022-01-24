@@ -1,12 +1,14 @@
-#' Colect Filenames and Parse Data
+#' Colect Filenames, Parse Data and Environments Labels
 #'
 #' It collects results from 'get_filenames_parse_data' function.
 #'
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return data.frame with cols: filename_full_path, filename, parse_data or NULL
-#' if no objects with srcfile found.
+#' @return list with:
+#' (1) data.frame with cols: filename_full_path, filename, parse_data, env_label
+#' (2) environments
+#' or NULL if no objects with srcfile found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
@@ -17,14 +19,16 @@ collect_filenames_parse_data <- function(caller_env) {
   if (length(filenames_parse_data) > 0) {
     filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
+    names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
+    envirs <- envirs[unique(filenames_parse_data$env_label)]
+
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!duplicated(.data$filename_full_path)) %>%
       dplyr::mutate(filename = basename(.data$filename_full_path)) %>%
       dplyr::relocate(.data$filename, .before = .data$parse_data)
 
-    filenames_parse_data
-  } else {
-    NULL
+    list(filenames_parse_data = filenames_parse_data,
+         envirs = envirs)
   }
 }
 
@@ -54,12 +58,12 @@ drop_envs_too_far <- function(envirs) {
   envirs
 }
 
-#' Get Full Path to File and Parse Data for Object
+#' Get Full Path to File, Parse Data for Object and Environment Label
 #'
 #' @param envir each environment returned by 'rlang::env_parents()',
 #' passed by 'collect_filenames_parse_data' function.
 #'
-#' @return data.frame with cols: filename_full_path, parse_data or NULL
+#' @return data.frame with cols: filename_full_path, parse_data, env_label or NULL
 #' if no objects with srcfile found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -76,12 +80,11 @@ get_filenames_parse_data <- function(envir) {
 
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!is.na(.data$filename_full_path) & !duplicated(.data$filename_full_path)) %>%
-      dplyr::mutate(parse_data = lapply(.data$obj_name, get_parse_data, envir = envir)) %>%
+      dplyr::mutate(parse_data = lapply(.data$obj_name, get_parse_data, envir = envir),
+                    env_label = rlang::env_label(envir)) %>%
       dplyr::select(-.data$obj_name)
 
     filenames_parse_data
-  } else {
-    NULL
   }
 }
 
@@ -101,15 +104,14 @@ get_filename <- function(one_envs_objs, envir) {
   filename
 }
 
-#' Use 'getParseData' on Object
+#' Use 'utils::getParseData' on Object
 #'
 #' @param one_obj_name one element of obj_name column.
 #' @param envir environment where object lives, passed to 'get'.
 #'
 #' @return data.frame returned by 'getParseData()'.
-#' @importFrom utils getParseData
 #' @noRd
 get_parse_data <- function(one_obj_name, envir) {
-  parse_data <- getParseData(get(one_obj_name, envir = envir), includeText = NA)
+  parse_data <- utils::getParseData(get(one_obj_name, envir = envir), includeText = NA)
   parse_data
 }

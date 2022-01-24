@@ -5,9 +5,10 @@
 #' @param caller_env object returned by 'rlang::caller_env()', passed by exported function, i.e.
 #' function used directly by user.
 #'
-#' @return list with:
-#' (1) data.frame with cols: filename_full_path, filename, parse_data, env_label
-#' (2) environments
+#' @return named list with:
+#' (1) 'filenames_parse_data': data.frame with cols:
+#' filename_full_path, filename, parse_data, env_label
+#' (2) 'envirs': named list (using rlang::env_label()) with environments
 #' or NULL if no objects with srcfile found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data

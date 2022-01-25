@@ -17,7 +17,7 @@ collect_filenames_parse_data <- function(caller_env) {
   envirs <- rlang::env_parents(caller_env)
   envirs <- drop_envs_too_far(envirs)
   filenames_parse_data <- lapply(envirs, get_filenames_parse_data)
-  if (length(filenames_parse_data) > 0) {
+  if (any(lengths(filenames_parse_data) > 0)) {
     filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
     names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)

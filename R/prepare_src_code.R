@@ -41,8 +41,10 @@ remove_nested_reactives <- function(one_parse_data) {
     shifted_line1 <- dplyr::lead(one_parse_data$line1, n = 1)
     one_parse_data <- one_parse_data %>%
       # if NA than it's last started line, so won't be nested
-      mutate(nested = ifelse(line2 < shifted_line1 | is.na(shifted_line1), FALSE, TRUE)) %>%
-      filter(!nested)
+      dplyr::mutate(nested = ifelse(.data$line2 < shifted_line1 | is.na(shifted_line1),
+                                    FALSE, TRUE)) %>%
+      dplyr::filter(!.data$nested)
+
     one_parse_data
   }
 }
@@ -51,7 +53,7 @@ retrieve_src_code <- function(one_parse_data) {
   lines <- seq_vec(one_parse_data$line1, one_parse_data$line2)
   lines[-length(lines)] <- lapply(lines[-length(lines)], append, values = NA_integer_)
   lines <- unlist(lines, use.names = FALSE)
-  parse_data <- getParseText(one_parse_data, one_parse_data$id)
+  parse_data <- utils::getParseText(one_parse_data, one_parse_data$id)
   parse_data <- stringi::stri_split_fixed(parse_data, pattern = "\n")
   parse_data[-length(parse_data)] <- lapply(parse_data[-length(parse_data)], append,
                                             values = NA_character_)
@@ -61,4 +63,5 @@ retrieve_src_code <- function(one_parse_data) {
              src_code = parse_data)
 }
 
+# vectorized version of seq, returns list
 seq_vec <- Vectorize(seq.default, vectorize.args = c("from", "to"), SIMPLIFY = FALSE)

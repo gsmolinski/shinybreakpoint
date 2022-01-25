@@ -48,5 +48,17 @@ remove_nested_reactives <- function(one_parse_data) {
 }
 
 retrieve_src_code <- function(one_parse_data) {
+  lines <- seq_vec(one_parse_data$line1, one_parse_data$line2)
+  lines[-length(lines)] <- lapply(lines[-length(lines)], append, values = NA_integer_)
+  lines <- unlist(lines, use.names = FALSE)
+  parse_data <- getParseText(one_parse_data, one_parse_data$id)
+  parse_data <- stringi::stri_split_fixed(parse_data, pattern = "\n")
+  parse_data[-length(parse_data)] <- lapply(parse_data[-length(parse_data)], append,
+                                            values = NA_character_)
+  parse_data <- unlist(parse_data, use.names = FALSE)
 
+  data.frame(line = lines,
+             src_code = parse_data)
 }
+
+seq_vec <- Vectorize(seq.default, vectorize.args = c("from", "to"), SIMPLIFY = FALSE)

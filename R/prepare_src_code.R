@@ -54,7 +54,7 @@ retrieve_src_code <- function(one_parse_data) {
   lines[-length(lines)] <- lapply(lines[-length(lines)], append, values = NA_integer_)
   lines <- unlist(lines, use.names = FALSE)
   parse_data <- utils::getParseText(one_parse_data, one_parse_data$id)
-  parse_data <- stringi::stri_split_fixed(parse_data, pattern = "\n")
+  parse_data <- strsplit(parse_data, split = "\n", fixed = TRUE)
   parse_data[-length(parse_data)] <- lapply(parse_data[-length(parse_data)], append,
                                             values = NA_character_)
   parse_data <- unlist(parse_data, use.names = FALSE)

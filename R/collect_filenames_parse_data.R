@@ -30,6 +30,8 @@ collect_filenames_parse_data <- function(caller_env) {
 
     list(filenames_parse_data = filenames_parse_data,
          envirs = envirs)
+  } else {
+    NULL
   }
 }
 
@@ -86,6 +88,8 @@ get_filenames_parse_data <- function(envir) {
       dplyr::select(-.data$obj_name)
 
     filenames_parse_data
+  } else{
+    NULL
   }
 }
 

@@ -9,7 +9,8 @@ Description: Insert 'browser()' into chosen location in reactive context
 License: MIT + file LICENSE
 URL: https://github.com/gsmolinski/shinybrowser
 BugReports: https://github.com/gsmolinski/shinybrowser/issues
-Depends: R (>= 3.3.0)
+Depends: 
+    R (>= 3.3.0)
 Imports: 
     dplyr,
     glue,

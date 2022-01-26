@@ -87,11 +87,11 @@ remove_nested_reactives <- function(one_parse_data) {
   if (!is.null(one_parse_data)) {
     shifted_line2 <- dplyr::lag(one_parse_data$line2, n = 1)
     indices <- seq_along(one_parse_data$line2)
-    one_parse_data <- one_parse_data %>%
-      dplyr::mutate(nested = vapply(indices, is_nested_reactive, FUN.VALUE = logical(1),
-                                    line2 = .data$line2,
-                                    shifted_line2 = shifted_line2)) %>%
-      dplyr::filter(!.data$nested)
+    nested <- vapply(indices, is_nested_reactive, FUN.VALUE = logical(1),
+                     line2 = one_parse_data$line2,
+                     shifted_line2 = shifted_line2)
+    nested <- which(nested)
+    one_parse_data <- one_parse_data[-nested, ]
 
     one_parse_data
   }

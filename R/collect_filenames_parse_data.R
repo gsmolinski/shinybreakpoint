@@ -54,7 +54,7 @@ collect_filenames_parse_data <- function(caller_env) {
 drop_envs_too_far <- function(envirs) {
   if (any(grepl("^namespace:|^package:", names(envirs)))) {
     first_namespace <- grep("^namespace:|^package:", names(envirs))[[1]]
-    envirs <- envirs[1:first_namespace]
+    envirs <- envirs[seq_len(first_namespace)]
   } else {
     envirs[["global"]] <- NULL
   }

@@ -38,14 +38,31 @@ find_direct_parent_id <- function(one_parse_data) {
 
 remove_nested_reactives <- function(one_parse_data) {
   if (!is.null(one_parse_data)) {
-    shifted_line1 <- dplyr::lead(one_parse_data$line1, n = 1)
+    shifted_line2 <- dplyr::lag(one_parse_data$line2, n = 1)
+    indices <- seq_along(one_parse_data$line2)
     one_parse_data <- one_parse_data %>%
-      # if NA than it's last started line, so won't be nested
-      dplyr::mutate(nested = ifelse(.data$line2 < shifted_line1 | is.na(shifted_line1),
-                                    FALSE, TRUE)) %>%
+      dplyr::mutate(nested = vapply(indices, is_nested_reactive, FUN.VALUE = logical(1),
+                                    line2 = .data$line2,
+                                    shifted_line2 = shifted_line2)) %>%
       dplyr::filter(!.data$nested)
 
     one_parse_data
+  }
+}
+
+is_nested_reactive <- function(indice, line2, shifted_line2) {
+  line2 <- line2[[indice]]
+  shifted_line2 <- shifted_line2[seq_len(indice)]
+  if (length(shifted_line2) == 1) { # first reactive, so won't be nested
+    FALSE
+  } else {
+    shifted_line2 <- shifted_line2[-1] # remove NA
+    nested <- ifelse(line2 < shifted_line2, TRUE, FALSE)
+    if (any(nested)) {
+      TRUE
+    } else {
+      FALSE
+    }
   }
 }
 

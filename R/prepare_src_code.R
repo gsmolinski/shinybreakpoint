@@ -12,7 +12,7 @@
 #' @noRd
 prepare_src_code <- function(caller_env) {
   filenames_parse_data_env <- collect_filenames_parse_data(caller_env)
-  if (!is.null(filenames_parse_data)) {
+  if (!is.null(filenames_parse_data_env)) {
     envirs <- filenames_parse_data_env$envirs
     filenames_parse_data <- filenames_parse_data_env$filenames_parse_data
 

@@ -1,4 +1,4 @@
 library(testthat)
-library(shinybrowser)
+library(shinybreakpoints)
 
-test_check("shinybrowser")
+test_check("shinybreakpoints")

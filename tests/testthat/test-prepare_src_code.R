@@ -237,14 +237,14 @@ parse_data_str <- data.frame(
                        "shinyApp",NA,"(","ui",NA,",","server",NA,")")
 )
 
-path <- system.file("tests_helpers", "server_fun_with_srcref.R", package = "shinybreakpoints")
+path <- system.file("tests_helpers", "server_fun_with_srcref.R", package = "shinybreakpoint")
 # add 'server' function with srcref to environment
 source(path, local = TRUE, keep.source = TRUE)
 parse_data_srcref <- utils::getParseData(server, includeText = NA)
 
 test_that("'prepare_src_code' returns list if srcref", {
   skip_if_not(interactive())
-  e <- new.env(parent = rlang::pkg_env("shinybreakpoints"))
+  e <- new.env(parent = rlang::pkg_env("shinybreakpoint"))
   expect_type(prepare_src_code(e), "list")
 })
 

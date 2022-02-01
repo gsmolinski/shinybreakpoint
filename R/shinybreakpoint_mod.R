@@ -2,11 +2,11 @@
 #'
 #' Add keydown listener.
 #'
-#' @param id from 'shinybreakpointsServer'. Can be chosen by user.
+#' @param id from 'shinybreakpointServer'. Can be chosen by user.
 #'
 #' @return HTML script tag with JavaScript code.
 #' @import shiny
-shinybreakpointsUI <- function(id) {
+shinybreakpointUI <- function(id) {
   ns <- NS(id)
   inputId <- ns("key_pressed")
   js <- glue::glue_safe(
@@ -17,12 +17,12 @@ shinybreakpointsUI <- function(id) {
   tags$script(js)
 }
 
-shinybreakpointsServer <- function(keyEvent = "F1",
-                               id = "shinybrowser") {
+shinybreakpointServer <- function(keyEvent = "F1",
+                               id = "shinybreakpoint") {
 
-  check_requirements_shinybreakpointsServer(keyEvent, id)
+  check_requirements_shinybreakpointServer(keyEvent, id)
 
-  insertUI("head", "beforeEnd", shinybreakpointsUI(id), immediate = TRUE)
+  insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
 
   moduleServer(
     id,

@@ -6,7 +6,7 @@ test_that("collect_filenames_parse_data returns NULL if no srcfile", {
 
 test_that("collect_filenames_parse_data returns list if srcfile", {
   skip_if_not(interactive())
-  e <- new.env(parent = rlang::pkg_env("shinybreakpoints"))
+  e <- new.env(parent = rlang::pkg_env("shinybreakpoint"))
   expect_type(collect_filenames_parse_data(e), "list")
 })
 
@@ -44,13 +44,13 @@ test_that("get_filenames_parse_data returns no rows if no srcfile", {
 
 test_that("get_filenames_parse_data returns data if at least one srcfile", {
   skip_if_not(interactive())
-  result <- get_filenames_parse_data(rlang::pkg_env("shinybreakpoints"))
+  result <- get_filenames_parse_data(rlang::pkg_env("shinybreakpoint"))
   expect_true(!is.null(result) && nrow(result) > 0)
 })
 
 test_that("get_filenames_parse_data returns parse data for each path", {
   skip_if_not(interactive())
-  filenames_parse_data <- get_filenames_parse_data(rlang::pkg_env("shinybreakpoints"))
+  filenames_parse_data <- get_filenames_parse_data(rlang::pkg_env("shinybreakpoint"))
   has_parse_data <- unlist(lapply(filenames_parse_data$parse_data,
                                   function(x) !is.null(x) && nrow(x) > 0))
   expect_true(!is.null(has_parse_data) && all(has_parse_data))

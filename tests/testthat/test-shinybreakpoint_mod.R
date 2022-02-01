@@ -1,5 +1,5 @@
-test_that("js code in shinybreakpointsUI is correct", {
-  val <- shinybreakpointsUI("test")
+test_that("js code in shinybreakpointUI is correct", {
+  val <- shinybreakpointUI("test")
   expect_equal(
   val$children[[1]],
   'document.addEventListener("keydown", function(e) {

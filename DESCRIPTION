@@ -1,5 +1,5 @@
-Package: shinybreakpoints
-Title: Set Breakpoints in 'Shiny'
+Package: shinybreakpoint
+Title: Set Breakpoint in 'Shiny'
 Version: 0.0.0.9000
 Authors@R: 
     person("Grzegorz", "Smoliński", , "g.smolinski1@gmail.com", role = c("aut", "cre"))

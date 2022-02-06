@@ -13,8 +13,8 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' @param is_top_line does user choose line inside reactive or reactive itself?
 #'
 #' @return
-#' NULL if no objects found (it can happen if object do not lives in the default environment) or
-#' names list with name of object, indices (for body()) where to put browser() and environment
+#' NULL if no objects found (it can happen if object does not live in the default environment) or
+#' named list with name of object, indices (for body()) where to put browser() and environment
 #' in which object was found.
 #' @details
 #' If object lives in default environment, then everything will be fine, however if it does not live
@@ -22,7 +22,7 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' if user explicitly assigned it to the global environment).
 #'
 #' If top line was chosen, i.e. line from which reactive context starts, then
-#' we would add 1 to line to ensure 'browser()' will be put inside reactive context.
+#' we would add 1 to the line to ensure 'browser()' will be put inside reactive context.
 #' @noRd
 find_object <- function(file, line, envir, is_top_line) {
   if (is_top_line) {

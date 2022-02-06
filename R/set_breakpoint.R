@@ -1,5 +1,5 @@
 set_breakpoint <- function(file, line, envir, is_top_line) {
-  object <- find_object(file, line, envir)
+  object <- find_object(file, line, envir, is_top_line)
   if (!is.null(object)) {
 
   }
@@ -21,18 +21,16 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' in default environment, breakpoint would not be set (e.g. it can live in global environment
 #' if user explicitly assigned it to the global environment).
 #'
-#' If top line was chosen, i.e. line from which reactive context starts, then we would put
-#' 'observer(browser())' outside the reactive function (but hopefully inside 'server') instead
-#' of 'browser()' inside reactive function. Thanks for that it would be possible to browsing
-#' 'server' itself, not only specific reactive context inside 'server'.
+#' If top line was chosen, i.e. line from which reactive context starts, then
+#' we would add 1 to line to ensure 'browser()' will be put inside reactive context.
 #' @noRd
 find_object <- function(file, line, envir, is_top_line) {
+  if (is_top_line) {
+    line <- line + 1
+  }
   object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
   if (length(object) > 0) {
     object <- object[[length(object)]]
-    if (is_top_line) {
-      object$at <- 0
-    }
     list(name = object$name,
          at = object$at,
          envir = object$env)

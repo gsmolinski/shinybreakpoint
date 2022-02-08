@@ -57,11 +57,7 @@ put_browser <- function(object, line) {
                                                      substitute(browser()),
                                                      line))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     str2lang(paste0("....infor <- list(full_path = ", "'", object$full_path, "'",
-                                                                     ", name = ", "'", object$name, "'",
-                                                                     ", line = ", line,
-                                                                     ", envir_label = ", "'", rlang::env_label(object$envir), "'",
-                                                                     ")")),
+                                                     str2lang(construct_obj_with_info(object$full_path, object$name, line, object$envir)),
                                                      line + 1))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(....envirr <- shinybreakpoint:::get_envir(....infor$full_path, ....infor$line, ....infor$envir_label)),
@@ -73,6 +69,15 @@ put_browser <- function(object, line) {
                                                      substitute(shiny::getDefaultReactiveDomain()$reload()),
                                                      line + 4))
   getDefaultReactiveDomain()$reload()
+}
+
+construct_obj_with_info <- function(full_path, name, line, envir) {
+  expr <- paste0("....infor <- list(full_path = ", "'", full_path, "'",
+         ", name = ", "'", name, "'",
+         ", line = ", line,
+         ", envir_label = ", "'", rlang::env_label(envir), "'",
+         ")")
+  expr
 }
 
 get_envir <- function(full_path, line, envir_label) {

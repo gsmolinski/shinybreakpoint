@@ -52,7 +52,6 @@ find_object <- function(file, line, envir) {
 #' @param object list with object's name in which 'browser()' will be inserted, indices to know
 #' in which location of 'body()' code should be inserted, environment in which object lives and
 #' full path to file in which object is defined.
-#' @param line where to insert 'browser()'?
 #'
 #' @details
 #' The point is not to just insert 'browser()', but also to remove 'browser()' immediately after
@@ -68,24 +67,25 @@ find_object <- function(file, line, envir) {
 #' reloaded - it is like that, because only the code inside this object is rerun, not the object itself.
 #' @import shiny
 #' @noRd
-put_browser <- function(object, line) {
+put_browser <- function(object) {
   envir <- object$envir
+  location_in_fun <- object$at[[length(object$at)]] - 1
   at <- object$at[-length(object$at)]
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(browser()),
-                                                     line))
+                                                     location_in_fun))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      str2lang(construct_obj_with_envir_label(object$envir)),
-                                                     line + 1))
+                                                     location_in_fun + 1))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(....envirr <- shinybreakpoint:::get_envir(....envirr_label, rlang::current_env())),
-                                                     line + 2))
+                                                     location_in_fun + 2))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                    str2lang(remove_body_expr(object$name, at, line)),
-                                                    line + 3))
+                                                    str2lang(remove_body_expr(object$name, at, location_in_fun)),
+                                                    location_in_fun + 3))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(shiny::getDefaultReactiveDomain()$reload()),
-                                                     line + 4))
+                                                     location_in_fun + 4))
   getDefaultReactiveDomain()$reload()
 }
 
@@ -137,7 +137,7 @@ get_envir <- function(envir_label, current_env) {
 #'
 #' @param name name of function to which 'browser()' was inserted.
 #' @param at where in body of function 'browser()' was inserted?
-#' @param line where in file 'brpwser()' was inserted?
+#' @param location_in_fun where in object (function) 'browser()' was inserted?
 #'
 #' @return
 #' Character length 1 with correct R syntax which removes all inserted code.
@@ -145,10 +145,10 @@ get_envir <- function(envir_label, current_env) {
 #' Returned value will be added to the body of functio, but all variables will be
 #' evaluate in 'shinybreakpoint' environment.
 #' @noRd
-remove_body_expr <- function(name, at, line) {
+remove_body_expr <- function(name, at, location_in_fun) {
   body_fun <- paste0("body(....envirr[[", "'", name, "'","]])[[c(", paste0(at, collapse = ", "), ")]]")
   added_lines <- c(1, 2, 3, 4, 5)
-  what_remove <- paste0("[-c(", paste0(c(line + added_lines), collapse = ", "), ")]")
+  what_remove <- paste0("[-c(", paste0(c(location_in_fun + added_lines), collapse = ", "), ")]")
   expr <- paste0(body_fun, " <- ", body_fun, what_remove)
   expr
 }

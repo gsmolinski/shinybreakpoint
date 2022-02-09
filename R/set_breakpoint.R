@@ -15,7 +15,7 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
   }
   object <- find_object(file, line, envir)
   if (!is.null(object)) {
-    put_browser(object, line)
+    put_browser(object)
   }
 }
 
@@ -70,7 +70,10 @@ find_object <- function(file, line, envir) {
 put_browser <- function(object) {
   envir <- object$envir
   location_in_fun <- object$at[[length(object$at)]] - 1
-  at <- object$at[-length(object$at)]
+  at <- object$at
+  if (length(at) > 1) {
+    at <- at[-length(at)]
+  }
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(browser()),
                                                      location_in_fun))

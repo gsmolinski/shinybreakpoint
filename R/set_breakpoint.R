@@ -48,7 +48,7 @@ find_object <- function(file, line, envir) {
   for (i in seq_along(original_file)) {
     try(eval(original_file[[i]], envir = e), silent = TRUE)
   }
-  obj_changed <- sort(names(envir))
+  obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
   obj_original <- sort(names(e)[names(e) %in% names(envir)])
   mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
 

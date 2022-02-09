@@ -27,24 +27,50 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #'
 #' @return
 #' NULL if no objects found (it can happen if object does not live in the default environment) or
-#' named list with name of object, indices (for body()) where to put browser() and environment
-#' in which object was found. It is possible that 'findLineNum'
+#' named list with name of object, indices (for body()) where to put browser(), environment
+#' in which object was found and full path to file. It is possible that 'findLineNum'
 #' will return more than one object, so this function leaves only last object, i.e. parent object.
 #' @details
 #' If object lives in default environment, then everything will be fine, however if it does not live
 #' in default environment, breakpoint would not be set (e.g. it can live in global environment
 #' if user explicitly assigned it to the global environment).
+#'
+#' It is also necessary to retrieve original body of fun even if we have deleted added code (see
+#' 'put_browser()' function). This is needed to get adequate 'at' from 'findLineNum()' when putting
+#' again 'browser()' to the same location. Because we don't know yet which function we are looking for,
+#' we need to retrieve body of all objects.
 #' @noRd
 find_object <- function(file, line, envir) {
+
+  # retrieve original body
+  original_file <- parse(file)
+  e <- new.env()
+  eval(original_file, envir = e)
+  mapply(retrieve_body, sort(names(envir)), sort(names(e)), MoreArgs = list(e = e, envir = envir))
+
   object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
   if (length(object) > 0) {
     object <- object[[length(object)]]
     list(name = object$name,
          at = object$at,
-         envir = object$env)
+         envir = object$env,
+         filename = object$filename)
   } else {
     NULL
   }
+}
+
+#' Set Original Body of Object
+#'
+#' @param obj_changed all objects from chosen app environment
+#' @param obj_original all objects from environment in which parsed file was evaluated
+#' @param e environment in which objects from file was evaluated
+#' @param envir environment in which exists objects in app
+#'
+#' @return
+#' Using for side effect - change body of object
+retrieve_body <- function(obj_changed, obj_original, e, envir) {
+  body(envir[[obj_changed]]) <- body(e[[obj_original]])
 }
 
 #' Insert 'browser()' and Code to Remove 'browser()'
@@ -71,9 +97,10 @@ put_browser <- function(object) {
   envir <- object$envir
   location_in_fun <- object$at[[length(object$at)]] - 1
   at <- object$at
-  if (length(at) > 1) {
+  if (length(at) > 1) { # TODO still needs attention and tests!
     at <- at[-length(at)]
   }
+
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(browser()),
                                                      location_in_fun))

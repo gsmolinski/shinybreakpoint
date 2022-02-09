@@ -62,13 +62,14 @@ find_object <- function(file, line, envir) {
 
 #' Set Original Body of Object
 #'
-#' @param obj_changed all objects from chosen app environment
-#' @param obj_original all objects from environment in which parsed file was evaluated
-#' @param e environment in which objects from file was evaluated
-#' @param envir environment in which exists objects in app
+#' @param obj_changed all objects from chosen app environment.
+#' @param obj_original all objects from environment in which parsed file was evaluated.
+#' @param e environment in which objects from file was evaluated.
+#' @param envir environment in which exists objects in app.
 #'
 #' @return
-#' Using for side effect - change body of object
+#' Used for side effect - change body of object.
+#' @noRd
 retrieve_body <- function(obj_changed, obj_original, e, envir) {
   body(envir[[obj_changed]]) <- body(e[[obj_original]])
 }

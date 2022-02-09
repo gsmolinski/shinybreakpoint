@@ -45,8 +45,12 @@ find_object <- function(file, line, envir) {
   # retrieve original body
   original_file <- parse(file)
   e <- new.env()
-  eval(original_file, envir = e)
-  mapply(retrieve_body, sort(names(envir)), sort(names(e)), MoreArgs = list(e = e, envir = envir))
+  for (i in seq_along(original_file)) {
+    try(eval(original_file[[i]], envir = e), silent = TRUE)
+  }
+  obj_changed <- sort(names(envir))
+  obj_original <- sort(names(e)[names(e) %in% names(envir)])
+  mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
 
   object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
   if (length(object) > 0) {

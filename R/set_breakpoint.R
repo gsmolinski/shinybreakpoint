@@ -27,8 +27,8 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #'
 #' @return
 #' NULL if no objects found (it can happen if object does not live in the default environment) or
-#' named list with name of object, indices (for body()) where to put browser(), environment
-#' in which object was found and full path to file. It is possible that 'findLineNum'
+#' named list with name of object, indices (for body()) where to put browser() and environment
+#' in which object was found. It is possible that 'findLineNum'
 #' will return more than one object, so this function leaves only last object, i.e. parent object.
 #' @details
 #' If object lives in default environment, then everything will be fine, however if it does not live
@@ -53,8 +53,7 @@ find_object <- function(file, line, envir) {
     object <- object[[length(object)]]
     list(name = object$name,
          at = object$at,
-         envir = object$env,
-         filename = object$filename)
+         envir = object$env)
   } else {
     NULL
   }

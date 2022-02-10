@@ -112,27 +112,43 @@ retrieve_body <- function(obj_changed, obj_original, envir, e) {
 #' @import shiny
 #' @noRd
 put_browser <- function(object) {
-  envir <- object$envir
   location_in_fun <- object$at[[length(object$at)]] - 1
-  at <- object$at
-  at <- at[-length(at)] # safe, because we are working only on reactives nested in functions
+  at <- object$at[-length(object$at)] # safe, because we are working only on reactives nested in functions
+  code <- list(
+    substitute(browser()),
+    str2lang(construct_obj_with_envir_label(object$envir)),
+    substitute(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
+    str2lang(remove_body_expr(object$name, at, location_in_fun)),
+    substitute(shiny::getDefaultReactiveDomain()$reload())
+  )
+  next_line <- seq_along(code) - 1
 
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     substitute(browser()),
-                                                     location_in_fun))
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     str2lang(construct_obj_with_envir_label(object$envir)),
-                                                     location_in_fun + 1))
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     substitute(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
-                                                     location_in_fun + 2))
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                    str2lang(remove_body_expr(object$name, at, location_in_fun)),
-                                                    location_in_fun + 3))
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     substitute(shiny::getDefaultReactiveDomain()$reload()),
-                                                     location_in_fun + 4))
+  mapply(insert_code, code, next_line, MoreArgs = list(envir = object$envir,
+                                                       name = object$name,
+                                                       at = at,
+                                                       location_in_fun = location_in_fun))
+
   getDefaultReactiveDomain()$reload()
+}
+
+#' Insert Code to the Body of Function
+#'
+#' Helper function used for 'mapply'.
+#'
+#' @param code code to insert.
+#' @param next_line what to add to the location_in_fun to move to the next line?
+#' @param envir environment in which should be searching object - object where code will be insert.
+#' @param name name of searching object.
+#' @param at indices for 'body()' indicating where is searching location.
+#' @param location_in_fun starting line in where to put code.
+#'
+#' @return
+#' Used for side effect - insert code to the body of chosen function.
+#' @noRd
+insert_code <- function(code, next_line, envir, name, at, location_in_fun) {
+  body(envir[[name]])[[at]] <- as.call(append(as.list(body(envir[[name]])[[at]]),
+                                              code,
+                                              location_in_fun + next_line))
 }
 
 #' Construct Expression to Define Object with Environment Label of Chosen Environment

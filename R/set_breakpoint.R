@@ -37,7 +37,7 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' @noRd
 find_object <- function(file, line, envir) {
     restore_body_funs(file, envir)
-    object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
+    object <- utils::findLineNum(file, line, envir = envir, lastenv = envir, nameonly = FALSE)
     if (length(object) > 0) {
       object <- object[[length(object)]]
       list(name = object$name,
@@ -71,7 +71,7 @@ restore_body_funs <- function(file, envir) {
     }
     obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
     obj_original <- sort(names(e)[names(e) %in% names(envir)])
-    mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
+    mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(envir = envir, e = e))
   }
 }
 
@@ -87,7 +87,7 @@ restore_body_funs <- function(file, envir) {
 #' @return
 #' Used for side effect - change body of object.
 #' @noRd
-retrieve_body <- function(obj_changed, obj_original, e, envir) {
+retrieve_body <- function(obj_changed, obj_original, envir, e) {
   body(envir[[obj_changed]]) <- body(e[[obj_original]])
 }
 

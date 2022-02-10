@@ -19,7 +19,7 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
 
   if (is.null(getDefaultReactiveDomain())) {
     stop("No session object was found. This could mean that 'shinybreakpointServer()' was
-         not used in the 'server' function in Shiny app as it should.",
+         not used in the function which is then used in the 'server' function in Shiny app as it should.",
          call. = FALSE)
   }
 }

@@ -45,20 +45,24 @@ find_object <- function(file, line, envir) {
   # retrieve original body
   original_file <- parse(file)
   original_file_only_fun <- Filter(is_fun, original_file)
-  e <- new.env()
-  for (i in seq_along(original_file_only_fun)) {
-    try(eval(original_file_only_fun[[i]], envir = e), silent = TRUE)
-  }
-  obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
-  obj_original <- sort(names(e)[names(e) %in% names(envir)])
-  mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
+  if (length(original_file_only_fun) > 0) {
+    e <- new.env()
+    for (i in seq_along(original_file_only_fun)) {
+      try(eval(original_file_only_fun[[i]], envir = e), silent = TRUE)
+    }
+    obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
+    obj_original <- sort(names(e)[names(e) %in% names(envir)])
+    mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
 
-  object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
-  if (length(object) > 0) {
-    object <- object[[length(object)]]
-    list(name = object$name,
-         at = object$at,
-         envir = object$env)
+    object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
+    if (length(object) > 0) {
+      object <- object[[length(object)]]
+      list(name = object$name,
+           at = object$at,
+           envir = object$env)
+    } else {
+      NULL
+    }
   } else {
     NULL
   }

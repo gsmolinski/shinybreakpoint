@@ -38,15 +38,16 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' It is also necessary to retrieve original body of fun even if we have deleted added code (see
 #' 'put_browser()' function). This is needed to get adequate 'at' from 'findLineNum()' when putting
 #' again 'browser()' to the same location. Because we don't know yet which function we are looking for,
-#' we need to retrieve body of all objects.
+#' we need to retrieve body of all functions, but only functions to do not introduce any side effects.
 #' @noRd
 find_object <- function(file, line, envir) {
 
   # retrieve original body
   original_file <- parse(file)
+  original_file_only_fun <- Filter(is_fun, original_file)
   e <- new.env()
-  for (i in seq_along(original_file)) {
-    try(eval(original_file[[i]], envir = e), silent = TRUE)
+  for (i in seq_along(original_file_only_fun)) {
+    try(eval(original_file_only_fun[[i]], envir = e), silent = TRUE)
   }
   obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
   obj_original <- sort(names(e)[names(e) %in% names(envir)])
@@ -101,9 +102,7 @@ put_browser <- function(object) {
   envir <- object$envir
   location_in_fun <- object$at[[length(object$at)]] - 1
   at <- object$at
-  if (length(at) > 1) { # TODO still needs attention and tests!
-    at <- at[-length(at)]
-  }
+  at <- at[-length(at)] # safe, because we are working only on reactives nested in functions
 
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                      substitute(browser()),

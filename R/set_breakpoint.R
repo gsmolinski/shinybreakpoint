@@ -34,15 +34,34 @@ set_breakpoint <- function(file, line, envir, is_top_line) {
 #' If object lives in default environment, then everything will be fine, however if it does not live
 #' in default environment, breakpoint would not be set (e.g. it can live in global environment
 #' if user explicitly assigned it to the global environment).
+#' @noRd
+find_object <- function(file, line, envir) {
+    restore_body_funs(file, envir)
+    object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
+    if (length(object) > 0) {
+      object <- object[[length(object)]]
+      list(name = object$name,
+           at = object$at,
+           envir = object$env)
+    } else {
+      NULL
+    }
+}
+
+#' Restore Body of Functions from Chosen File.
 #'
-#' It is also necessary to retrieve original body of fun even if we have deleted added code (see
+#' @param file full path to file where is defined obj to put 'browser()'.
+#' @param envir environment where should be object to which user wants to put browser().
+#'
+#' @return
+#' Used for side effect - set 'body()' for funs.
+#' @details
+#' It is necessary to retrieve original body of fun even if we have deleted added code (see
 #' 'put_browser()' function). This is needed to get adequate 'at' from 'findLineNum()' when putting
 #' again 'browser()' to the same location. Because we don't know yet which function we are looking for,
 #' we need to retrieve body of all functions, but only functions to do not introduce any side effects.
 #' @noRd
-find_object <- function(file, line, envir) {
-
-  # retrieve original body
+restore_body_funs <- function(file, envir) {
   original_file <- parse(file)
   original_file_only_fun <- Filter(is_fun, original_file)
   if (length(original_file_only_fun) > 0) {
@@ -53,22 +72,12 @@ find_object <- function(file, line, envir) {
     obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
     obj_original <- sort(names(e)[names(e) %in% names(envir)])
     mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(e = e, envir = envir))
-
-    object <- utils::findLineNum(file, line, envir = envir, lastenv = envir)
-    if (length(object) > 0) {
-      object <- object[[length(object)]]
-      list(name = object$name,
-           at = object$at,
-           envir = object$env)
-    } else {
-      NULL
-    }
-  } else {
-    NULL
   }
 }
 
 #' Set Original Body of Object
+#'
+#' Helper function for 'restore_body_funs'.
 #'
 #' @param obj_changed all objects from chosen app environment.
 #' @param obj_original all objects from environment in which parsed file was evaluated.
@@ -115,7 +124,7 @@ put_browser <- function(object) {
                                                      str2lang(construct_obj_with_envir_label(object$envir)),
                                                      location_in_fun + 1))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                                     substitute(....envirr <- shinybreakpoint:::get_envir(....envirr_label, rlang::current_env())),
+                                                     substitute(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
                                                      location_in_fun + 2))
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                                     str2lang(remove_body_expr(object$name, at, location_in_fun)),
@@ -143,7 +152,7 @@ put_browser <- function(object) {
 #' so label environment can be used in user's function environment.
 #' @noRd
 construct_obj_with_envir_label <- function(envir) {
-  expr <- paste0("....envirr_label <- ", "'", rlang::env_label(envir), "'")
+  expr <- paste0("....envirr <- ", "'", rlang::env_label(envir), "'")
   expr
 }
 

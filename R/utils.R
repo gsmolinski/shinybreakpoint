@@ -29,6 +29,7 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
 #' @param expr expression returned by 'parse()'.
 #'
 #' @return logical length 1.
+#' @noRd
 is_fun <- function(expr) {
   obj <- expr[[3]]
   has_assignment(expr) && is.call(obj) && as.character(obj[[1]]) == "function"
@@ -39,6 +40,7 @@ is_fun <- function(expr) {
 #' @param expr expression returned by 'parse()'.
 #'
 #' @return logical length 1.
+#' @noRd
 has_assignment <- function(expr) {
   is.call(expr) && as.character(expr[[1]]) %in% c("<-", "=", "assign")
 }

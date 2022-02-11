@@ -3,17 +3,11 @@
 #' @param file full path to file in which breakpoint will be set.
 #' @param line where to set breakpoint?
 #' @param envir environment where lives object in which breakpoint will be set.
-#'
-#' @details
-#' If top line was chosen, i.e. line from which reactive context starts, then
-#' we would add 1 to the line to ensure 'browser()' will be put inside reactive context.
 #' @noRd
 set_breakpoint <- function(file, line, envir) {
-  if (!is.na(line)) {
-    object <- find_object(file, line, envir)
-    if (!is.null(object)) {
-      put_browser(object)
-    }
+  object <- find_object(file, line, envir)
+  if (!is.null(object)) {
+    put_browser(object)
   }
 }
 
@@ -110,22 +104,27 @@ retrieve_body <- function(obj_changed, obj_original, envir, e) {
 #' @import shiny
 #' @noRd
 put_browser <- function(object) {
-  location_in_fun <- object$at[[length(object$at)]] - 1 # means: put before chosen line
+  location_in_fun <- object$at[[length(object$at)]] - 1 # append code before chosen line
+  # encuse code won't be put before curly braces
+  if (location_in_fun < 1) {
+    location_in_fun <- 1
+  }
+
   at <- object$at[-length(object$at)] # safe, because we are working only on reactives nested in functions
+  envir <- object$envir
   code <- list(
     substitute(browser()),
-    str2lang(construct_obj_with_envir_label(object$envir)),
+    str2lang(construct_obj_with_envir_label(envir)),
     substitute(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
     str2lang(remove_body_expr(object$name, at, location_in_fun)),
     substitute(shiny::getDefaultReactiveDomain()$reload())
   )
   next_line <- seq_along(code) - 1
 
-  mapply(insert_code, code, next_line, MoreArgs = list(envir = object$envir,
+  mapply(insert_code, code, next_line, MoreArgs = list(envir = envir,
                                                        name = object$name,
                                                        at = at,
                                                        location_in_fun = location_in_fun))
-
   getDefaultReactiveDomain()$reload()
 }
 

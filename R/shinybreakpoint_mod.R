@@ -18,7 +18,7 @@ shinybreakpointUI <- function(id) {
 }
 
 shinybreakpointServer <- function(keyEvent = "F1",
-                               id = "shinybreakpoint") {
+                                  id = "shinybreakpoint") {
 
   check_requirements_shinybreakpointServer(keyEvent, id)
 

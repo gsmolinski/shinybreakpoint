@@ -3,19 +3,17 @@
 #' @param file full path to file in which breakpoint will be set.
 #' @param line where to set breakpoint?
 #' @param envir environment where lives object in which breakpoint will be set.
-#' @param is_top_line does user choose line inside reactive or reactive itself?
 #'
 #' @details
 #' If top line was chosen, i.e. line from which reactive context starts, then
 #' we would add 1 to the line to ensure 'browser()' will be put inside reactive context.
 #' @noRd
-set_breakpoint <- function(file, line, envir, is_top_line) {
-  if (is_top_line) { # TODO what if next line is bracket? should we check it?
-    line <- line + 1
-  }
-  object <- find_object(file, line, envir)
-  if (!is.null(object)) {
-    put_browser(object)
+set_breakpoint <- function(file, line, envir) {
+  if (!is.na(line)) {
+    object <- find_object(file, line, envir)
+    if (!is.null(object)) {
+      put_browser(object)
+    }
   }
 }
 
@@ -112,7 +110,7 @@ retrieve_body <- function(obj_changed, obj_original, envir, e) {
 #' @import shiny
 #' @noRd
 put_browser <- function(object) {
-  location_in_fun <- object$at[[length(object$at)]] - 1
+  location_in_fun <- object$at[[length(object$at)]] - 1 # means: put before chosen line
   at <- object$at[-length(object$at)] # safe, because we are working only on reactives nested in functions
   code <- list(
     substitute(browser()),

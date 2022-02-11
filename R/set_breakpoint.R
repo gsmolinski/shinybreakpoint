@@ -105,7 +105,6 @@ retrieve_body <- function(obj_changed, obj_original, envir, e) {
 #' @noRd
 put_browser <- function(object) {
   location_in_fun <- object$at[[length(object$at)]] - 1 # append code before chosen line
-  # encuse code won't be put before curly braces
   if (location_in_fun < 1) {
     location_in_fun <- 1
   }

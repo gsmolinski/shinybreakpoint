@@ -24,15 +24,19 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
   }
 }
 
-#' Check if Expression is an Function
+#' Check if Expression is an Named Function
 #'
 #' @param expr expression returned by 'parse()'.
 #'
 #' @return logical length 1.
 #' @noRd
-is_fun <- function(expr) {
-  obj <- expr[[3]]
-  has_assignment(expr) && is.call(obj) && as.character(obj[[1]]) == "function"
+is_named_fun <- function(expr) {
+  expr_3 <- try(expr[[3]], silent = TRUE)
+  if (class(expr_3) != "try-error") {
+    has_assignment(expr) && is.call(expr_3) && as.character(expr_3[[1]]) == "function"
+  } else {
+    FALSE
+  }
 }
 
 #' Check if Expression Has Assignment
@@ -42,5 +46,17 @@ is_fun <- function(expr) {
 #' @return logical length 1.
 #' @noRd
 has_assignment <- function(expr) {
-  is.call(expr) && as.character(expr[[1]]) %in% c("<-", "=", "assign")
+  is.call(expr) && as.character(expr[[1]]) %in% c("<-", "<<-", "=", "assign")
+}
+
+#' Check if Expression is Reactive Context
+#'
+#' @param expr expression returned by 'body()'.
+#'
+#' @return logical length 1.
+#' @noRd
+is_reactive_context <- function(expr) {
+  expr_1 <- expr[[1]]
+  is.call(expr_1) && grepl("^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+",
+                         as.character(expr_1), perl = TRUE)
 }

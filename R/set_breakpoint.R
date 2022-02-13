@@ -1,16 +1,3 @@
-#' Set Breakpoint in Chosen Location
-#'
-#' @param file full path to file in which breakpoint will be set.
-#' @param line where to set breakpoint?
-#' @param envir environment where lives object in which breakpoint will be set.
-#' @noRd
-set_breakpoint <- function(file, line, envir) {
-  object <- find_object(file, line, envir)
-  if (!is.null(object)) {
-    put_browser(object)
-  }
-}
-
 #' Find Object in which to Put 'browser()'
 #'
 #' @param file full path to file.
@@ -55,7 +42,7 @@ find_object <- function(file, line, envir) {
 #' @noRd
 restore_body_funs <- function(file, envir) {
   original_file <- parse(file)
-  original_file_only_fun <- Filter(is_fun, original_file)
+  original_file_only_fun <- Filter(is_named_fun, original_file)
   if (length(original_file_only_fun) > 0) {
     e <- new.env()
     for (i in seq_along(original_file_only_fun)) {
@@ -81,6 +68,35 @@ restore_body_funs <- function(file, envir) {
 #' @noRd
 retrieve_body <- function(obj_changed, obj_original, envir, e) {
   body(envir[[obj_changed]]) <- body(e[[obj_original]])
+}
+
+#' Check if Possible to Set Breakpoint
+#'
+#' @param object list with object's name in which 'browser()' will be inserted, indices to know
+#' in which location of 'body()' code should be inserted, environment in which object lives and
+#' full path to file in which object is defined.
+#'
+#' @return logical length 1.
+#' @details
+#' Check if breakpoint can be set before inserting 'browser()' to let user know if this is possible.
+#' Breakpoint can be set if:
+#' (1) location is inside braces - needs to remove last 'at' to check this
+#' (2) location is inside reactive context - needs to remove two lasts 'at' to check this
+#' @noRd
+does_breakpoint_can_be_set <- function(object) {
+  is_possible <- FALSE
+  if (!is.null(object)) {
+    envir <- object$envir
+    if (length(object$at) > 2) {
+      at_this_whole <- object$at[-length(object$at)]
+      at_previous_whole <- object$at[-c(length(object$at) - 1, length(object$at))]
+      expr <- body(envir[[object$name]])
+      if (rlang::is_call(expr, "{")[[at_this_whole]] || is_reactive_context(expr)[[at_previous_whole]]) {
+        is_possible <- TRUE
+      }
+    }
+  }
+  is_possible
 }
 
 #' Insert 'browser()' and Code to Remove 'browser()'
@@ -118,33 +134,10 @@ put_browser <- function(object) {
     str2lang(remove_body_expr(object$name, at, location_in_fun)),
     substitute(shiny::getDefaultReactiveDomain()$reload())
   )
-  next_line <- seq_along(code) - 1
-
-  mapply(insert_code, code, next_line, MoreArgs = list(envir = envir,
-                                                       name = object$name,
-                                                       at = at,
-                                                       location_in_fun = location_in_fun))
-  getDefaultReactiveDomain()$reload()
-}
-
-#' Insert Code to the Body of Function
-#'
-#' Helper function used for 'mapply'.
-#'
-#' @param code code to insert.
-#' @param next_line what to add to the location_in_fun to move to the next line?
-#' @param envir environment in which should be searching object - object where code will be insert.
-#' @param name name of searching object.
-#' @param at indices for 'body()' indicating where is searching location.
-#' @param location_in_fun starting line in where to put code.
-#'
-#' @return
-#' Used for side effect - insert code to the body of chosen function.
-#' @noRd
-insert_code <- function(code, next_line, envir, name, at, location_in_fun) {
-  body(envir[[name]])[[at]] <- as.call(append(as.list(body(envir[[name]])[[at]]),
+  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                               code,
-                                              location_in_fun + next_line))
+                                              location_in_fun))
+  getDefaultReactiveDomain()$reload()
 }
 
 #' Construct Expression to Define Object with Environment Label of Chosen Environment

@@ -60,6 +60,14 @@ has_assignment <- function(expr) {
 #' if used for character length 1.
 #' @noRd
 is_reactive_context <- function(expr) {
-  is.call(expr) && grepl("^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+",
+  is.call(expr) && grepl(reactive_context_regex(),
                          rev(as.character(expr[[1]]))[[1]], perl = TRUE)
+}
+
+#' Get Regular Expression to Indicate Reactive Context
+#'
+#' @return character length 1.
+#' @noRd
+reactive_context_regex <- function() {
+  "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+"
 }

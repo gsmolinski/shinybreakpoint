@@ -60,7 +60,11 @@ has_assignment <- function(expr) {
 #' if used for character length 1.
 #' @noRd
 is_reactive_context <- function(expr) {
+<<<<<<< HEAD
   is.call(expr) && grepl(get_reactive_context_regex(),
+=======
+  is.call(expr) && grepl(reactive_context_regex(),
+>>>>>>> 940dc111c441dcd5ec18bcd0fe92e2afe380d36b
                          rev(as.character(expr[[1]]))[[1]], perl = TRUE)
 }
 
@@ -68,6 +72,10 @@ is_reactive_context <- function(expr) {
 #'
 #' @return character length 1.
 #' @noRd
+<<<<<<< HEAD
 get_reactive_context_regex <- function() {
+=======
+reactive_context_regex <- function() {
+>>>>>>> 940dc111c441dcd5ec18bcd0fe92e2afe380d36b
   "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+"
 }

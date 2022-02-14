@@ -66,11 +66,7 @@ find_left_reactives <- function(parse_data) {
 #' can export their reactives and should be find by this function as well.
 #' @noRd
 find_direct_parent_id_with_reactive <- function(one_parse_data) {
-<<<<<<< HEAD
   extracted_lines <- one_parse_data$line1[grep(get_reactive_context_regex(),
-=======
-  extracted_lines <- one_parse_data$line1[grep(reactive_context_regex(),
->>>>>>> 940dc111c441dcd5ec18bcd0fe92e2afe380d36b
                                              one_parse_data$text, perl = TRUE)]
   if (length(extracted_lines) > 0) {
     first_occurence_of_line <- match(extracted_lines, one_parse_data$line1)

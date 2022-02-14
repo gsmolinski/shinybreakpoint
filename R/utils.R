@@ -19,7 +19,7 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
 
   if (is.null(getDefaultReactiveDomain())) {
     stop("No session object was found. This could mean that 'shinybreakpointServer()' was
-         not used in the function which is then used in the 'server' function in Shiny app as it should.",
+         not used in the 'server' part of Shiny app.",
          call. = FALSE)
   }
 }
@@ -54,9 +54,12 @@ has_assignment <- function(expr) {
 #' @param expr expression returned by 'body()'.
 #'
 #' @return logical length 1.
+#' @details
+#' 'shiny::*' expr after coercing to character returns character length 3: double colon, package name
+#' and function name. Because we need only function name, it is neccesary to use 'rev' - it is safe
+#' if used for character length 1.
 #' @noRd
 is_reactive_context <- function(expr) {
-  expr_1 <- expr[[1]]
-  is.call(expr_1) && grepl("^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+",
-                         as.character(expr_1), perl = TRUE)
+  is.call(expr) && grepl("^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+",
+                         rev(as.character(expr[[1]]))[[1]], perl = TRUE)
 }

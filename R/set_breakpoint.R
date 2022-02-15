@@ -91,7 +91,7 @@ does_breakpoint_can_be_set <- function(object) {
       at_this_whole <- object$at[-length(object$at)]
       at_previous_whole <- object$at[-c(length(object$at) - 1, length(object$at))]
       expr <- body(envir[[object$name]])
-      if (rlang::is_call(expr, "{")[[at_this_whole]] || is_reactive_context(expr)[[at_previous_whole]]) {
+      if (rlang::is_call(expr[[at_this_whole]], "{") || is_reactive_context(expr[[at_previous_whole]])) {
         is_possible <- TRUE
       }
     }
@@ -124,16 +124,16 @@ put_browser <- function(object) {
   if (location_in_fun < 1) {
     location_in_fun <- 1
   }
-
   at <- object$at[-length(object$at)] # safe, because we are working only on reactives nested in functions
   envir <- object$envir
   code <- list(
-    substitute(browser()),
+    quote(browser()),
     str2lang(construct_obj_with_envir_label(envir)),
-    substitute(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
+    quote(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
     str2lang(remove_body_expr(object$name, at, location_in_fun)),
-    substitute(shiny::getDefaultReactiveDomain()$reload())
+    quote(shiny::getDefaultReactiveDomain()$reload())
   )
+
   body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
                                               code,
                                               location_in_fun))

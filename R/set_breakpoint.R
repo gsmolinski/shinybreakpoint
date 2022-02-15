@@ -179,6 +179,7 @@ construct_obj_with_envir_label <- function(envir) {
 #' Environment is necessary to be sure that proper object will be found.
 get_envir <- function(envir_label, current_env) {
   envirs <- rlang::env_parents(current_env)
+  envirs <- append(current_env, envirs)
   envirs_labels <- vapply(envirs, rlang::env_label, FUN.VALUE = character(1))
   searched_envir <- envirs[[which(envirs_labels == envir_label)]]
   searched_envir

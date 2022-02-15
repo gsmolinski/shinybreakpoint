@@ -59,7 +59,8 @@ test_that("put_browser adds code which will remove added code", {
   expect_identical(body(server), orig_body)
 })
 
-test_that("get_envir returns environment which has the same label
-          as searched label", {
-
+test_that("get_envir returns environment which has the same label as searched label", {
+  e <- rlang::current_env()
+  expect_identical(get_envir(rlang::env_label(e), rlang::current_env()), e)
 })
+

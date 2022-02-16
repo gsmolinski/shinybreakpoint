@@ -34,7 +34,7 @@ test_that("does_brakpoint_can_be_set returns TRUE if breakpoint would be set
   expect_true(does_breakpoint_can_be_set(find_object(path, 12, envir)))
 })
 
-test_that("put_browser adds 5 exprs to the body of fun before chosen line", {
+test_that("put_browser adds correct number of exprs to the body of fun before chosen line", {
   skip_if_not(interactive())
   obj <- find_object(path, 3, envir)
   location <- determine_location(obj$at)

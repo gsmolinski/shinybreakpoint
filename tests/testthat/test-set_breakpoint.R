@@ -37,12 +37,13 @@ test_that("does_brakpoint_can_be_set returns TRUE if breakpoint would be set
 test_that("put_browser adds 5 exprs to the body of fun before chosen line", {
   skip_if_not(interactive())
   obj <- find_object(path, 3, envir)
+  location <- determine_location(obj$at)
   server_orig_body_len <- length(body(server)[[obj$at[-length(obj$at)]]])
   # because of error from shiny::getDefaultReactiveDomain$reload() if not inside server, use 'try'
   try(put_browser(obj), silent = TRUE)
   server_body_len <- length(body(server)[[obj$at[-length(obj$at)]]])
 
-  expect_equal(server_body_len, server_orig_body_len + 5)
+  expect_equal(server_body_len, server_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun)))
   expect_true(body(server)[[obj$at]] == quote(browser()))
 })
 
@@ -64,3 +65,16 @@ test_that("get_envir returns environment which has the same label as searched la
   expect_identical(get_envir(rlang::env_label(e), rlang::current_env()), e)
 })
 
+test_that("remove_body_expr constructs correct indices to remove", {
+  skip_if_not(interactive())
+  obj <- find_object(path, 3, envir)
+  location <- determine_location(obj$at)
+  expr <- remove_body_expr(obj$name, location$at, location$location_in_fun)
+  expr <- regmatches(expr, regexpr("-c.+)", expr))
+  expr <- gsub("-", "", expr)
+  to_test <- eval(str2lang(expr))
+  expect_equal(to_test, location$location_in_fun + seq_len(length(get_code_to_put(envir,
+                                                                                  obj$name,
+                                                                                  location$at,
+                                                                                  location$location_in_fun))))
+})

@@ -120,24 +120,44 @@ does_breakpoint_can_be_set <- function(object) {
 #' @import shiny
 #' @noRd
 put_browser <- function(object) {
-  location_in_fun <- object$at[[length(object$at)]] - 1 # append code before chosen line
+  location <- determine_location(object$at)
+  envir <- object$envir
+  body(envir[[object$name]])[[location$at]] <- as.call(append(as.list(body(envir[[object$name]])[[location$at]]),
+                                              get_code_to_put(envir, object$name, location$at, location$location_in_fun),
+                                              location$location_in_fun))
+  getDefaultReactiveDomain()$reload()
+}
+
+#' Determine Location in Fun and 'at' Step in Body
+#'
+#' @param at returned by utils::findLineNum, element 'at'.
+#'
+#' @return list with (1) location where in body put 'browser' - it is
+#' the same as line. (2) at - meaning: step in body, but previous step (i.e.
+#' object with curly braces).
+#' @noRd
+determine_location <- function(at) {
+  location_in_fun <- at[[length(at)]] - 1 # append code before chosen line
   if (location_in_fun < 1) {
     location_in_fun <- 1
   }
-  at <- object$at[-length(object$at)] # safe, because we are working only on reactives nested in functions
-  envir <- object$envir
-  code <- list(
+  at <- at[-length(at)] # safe, because we are working only on reactives nested in functions
+  list(location_in_fun = location_in_fun,
+       at = at)
+}
+
+#' Return Code to Put
+#'
+#' @return list - each element is an line of code to insert.
+#' @noRd
+get_code_to_put <- function(envir, name, at, location_in_fun) {
+  list(
     quote(browser()),
     str2lang(construct_obj_with_envir_label(envir)),
     quote(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
-    str2lang(remove_body_expr(object$name, at, location_in_fun)),
-    quote(shiny::getDefaultReactiveDomain()$reload())
+    str2lang(remove_body_expr(name, at, location_in_fun)),
+    quote(try(shiny::getDefaultReactiveDomain()$reload(), TRUE))
   )
-
-  body(envir[[object$name]])[[at]] <- as.call(append(as.list(body(envir[[object$name]])[[at]]),
-                                              code,
-                                              location_in_fun))
-  getDefaultReactiveDomain()$reload()
 }
 
 #' Construct Expression to Define Object with Environment Label of Chosen Environment

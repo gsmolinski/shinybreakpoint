@@ -1,3 +1,35 @@
+fun1 <- function() {
+  shiny::observe({
+    "x"
+  })
+}
+
+fun2 <- function() {
+  fun3 <- function() {
+    observe({
+      "o"
+    })
+  }
+}
+
+fun4 <- function() {
+  function() {
+    observe({
+      "!"
+    })
+  }
+}
+
+observe({
+  "y"
+})
+
+z <- shiny::reactive({
+  "z"
+})
+
+function() {observe("e")}
+
 server <- function(input, output, session) {
   test3 <- reactive({
     "a"

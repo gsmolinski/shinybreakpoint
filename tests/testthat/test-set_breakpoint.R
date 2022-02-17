@@ -31,12 +31,12 @@ test_that("does_brakpoint_can_be_set returns TRUE if breakpoint would be set
   skip_if_not(interactive())
   expect_false(does_breakpoint_can_be_set(find_object(path, 10, envir)))
   expect_true(does_breakpoint_can_be_set(find_object(path, 3, envir)))
-  expect_true(does_breakpoint_can_be_set(find_object(path, 12, envir)))
+  expect_true(does_breakpoint_can_be_set(find_object(path, 29, envir)))
 })
 
 test_that("put_browser adds correct number of exprs to the body of fun before chosen line", {
   skip_if_not(interactive())
-  obj <- find_object(path, 3, envir)
+  obj <- find_object(path, 19, envir)
   location <- determine_location(obj$at)
   server_orig_body_len <- length(body(server)[[obj$at[-length(obj$at)]]])
   # because of error from shiny::getDefaultReactiveDomain$reload() if not inside server, use 'try'

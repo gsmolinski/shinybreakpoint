@@ -55,25 +55,95 @@ find_left_reactives <- function(parse_data) {
 #'
 #' @return
 #' data.frame with parse data, but only with exprs contain reactives
-#' if at least one reactive was found, otherwise NULL.
+#' nested in named functions. NULL if nothing found.
 #' @details
 #' utils::getParseData with argument 'NA' passed to parameter 'includeText'
 #' does not return text for 'expr' token, but we will use later function utils::getParseText
 #' to retrieve these texts. However, it is needed to find top id (for expr), so we are sure
 #' we have whole reactive function. Also, 'find_direct_parent_id_with_reactive' returns
-#' only exprs which are reactives. To find reactives, regex is used - this regex may need to be
-#' updated in next 'Shiny' versions and should be taken into account that other packages
-#' can export their reactives and should be find by this function as well.
+#' only exprs which are reactives nested in named functions. To find reactives, regex is used -
+#' this regex may need to be updated in next 'Shiny' versions and should be taken into account
+#' that other packages can export their reactives and should be find by this function as well.
 #' @noRd
 find_direct_parent_id_with_reactive <- function(one_parse_data) {
   extracted_lines <- one_parse_data$line1[grep(get_reactive_context_regex(),
                                              one_parse_data$text, perl = TRUE)]
   if (length(extracted_lines) > 0) {
+    named_funs_lines <- find_lines_with_named_funs(one_parse_data)
     first_occurence_of_line <- match(extracted_lines, one_parse_data$line1)
-    one_parse_data[first_occurence_of_line, ]
+    one_parse_data <- one_parse_data[first_occurence_of_line, ]
+    reactives_in_named_funs <- vapply(one_parse_data$line1, function(e) any(mapply(dplyr::between,
+                                                                               left = named_funs_lines$line1,
+                                                                               right = named_funs_lines$line2,
+                                                                               MoreArgs = list(x = e))),
+                                      FUN.VALUE = logical(1))
+    one_parse_data[reactives_in_named_funs, ]
   } else {
     NULL
   }
+}
+
+#' Find Starting and Ending Line with Named Function Definition
+#'
+#' @param one_parse_data one data.frame with parse data.
+#'
+#' @return data.frame with columns: line1, line2.
+#' Line1 is starting line, line2 is ending line.
+#' @details
+#' The idea is that later we would restore fun body, but only for named
+#' functions (after using 'parse()' on specific file), so we need to have
+#' only reactives nested in functions - and this function finds named functions.
+#' We will use lines returned by this function to check later if reactive is between
+#' those lines - if yes, it means that reactive lives inside named function and thus
+#' can be shown to the user as possible place to put 'browser()', i.e. we want to
+#' avoid situation where user would like to try to put 'browser()' where it is
+#' impossible, because 'does_breakpoint_can_be_set()' will be FALSE.
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
+#' @noRd
+find_lines_with_named_funs <- function(one_parse_data) {
+  id_parent_token <- one_parse_data %>%
+    dplyr::filter(.data$token %in% c("FUNCTION", "expr")) %>%
+    dplyr::select(.data$id, .data$parent, .data$token)
+
+  top_ids <- vapply(id_parent_token$parent[id_parent_token$token == "FUNCTION"],
+                    find_top_expr,
+                    FUN.VALUE = integer(1),
+                    id_parent_token = id_parent_token)
+
+  # needed in case there were functions nested in functions
+  top_ids <- unique(top_ids)
+
+  exprs <- lapply(top_ids, function(x) str2lang(utils::getParseText(one_parse_data, x)))
+  names(exprs) <- top_ids
+  named_funs_ids <- Filter(is_named_fun, exprs)
+
+  named_funs_lines <- one_parse_data %>%
+    dplyr::filter(.data$id %in% as.integer(names(named_funs_ids))) %>%
+    dplyr::select(.data$line1, .data$line2)
+
+  named_funs_lines
+}
+
+#' Find Top ID of Expr Which Is Basically a Function
+#'
+#' Find and get id of expression which should be whole function definition.
+#'
+#' @param parent parent column in data.frame returned by utils::getParseData.
+#' @param id_parent_token parse_data with columns: id, parent, token.
+#'
+#' @return top id.
+#' @details
+#' It is necessary to get whole definition of each function (i.e. 'FUNCTION' token)
+#' to check later if this is named function or not.
+#' @noRd
+find_top_expr <- function(parent, id_parent_token) {
+  id <- vector("integer", 1L)
+  while (parent != 0) {
+    id <- parent
+    parent <- id_parent_token$parent[id_parent_token$id == id]
+  }
+  id
 }
 
 #' Remove Nested Reactives

@@ -29,11 +29,15 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
 #' @param expr expression returned by 'parse()'.
 #'
 #' @return logical length 1.
+#' @details
+#' 'shiny::*' expr after coercing to character returns character length 3: double colon, package name
+#' and function name. Because we need only function name, it is neccesary to use 'rev' - it is safe
+#' if used for character length 1.
 #' @noRd
 is_named_fun <- function(expr) {
   expr_3 <- try(expr[[3]], silent = TRUE)
   if (class(expr_3) != "try-error") {
-    has_assignment(expr) && is.call(expr_3) && as.character(expr_3[[1]]) == "function"
+    has_assignment(expr) && is.call(expr_3) && rev(as.character(expr_3[[1]]))[[1]] == "function"
   } else {
     FALSE
   }

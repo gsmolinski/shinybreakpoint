@@ -41,7 +41,8 @@ test_that("put_browser adds correct number of exprs to the body of fun before ch
   try(put_browser(obj), silent = TRUE)
   obj_body_len <- length(body(obj$name)[[obj$at[-length(obj$at)]]])
 
-  expect_equal(obj_body_len, obj_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun)))
+  expect_equal(obj_body_len, obj_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun,
+                                                                        "....envirr")))
   expect_true(body(obj$name)[[obj$at]] == quote(browser()))
 })
 
@@ -67,12 +68,14 @@ test_that("remove_body_expr constructs correct indices to remove", {
   skip_if_not(interactive())
   obj <- find_object(path, 35, envir)
   location <- determine_location(obj$at)
-  expr <- remove_body_expr(obj$name, location$at, location$location_in_fun)
+  var_sym <- rlang::sym("....envirr")
+  expr <- remove_body_expr(obj$name, location$at, location$location_in_fun, var_sym)
   expr <- regmatches(expr, regexpr("-c.+)", expr))
   expr <- gsub("-", "", expr)
   to_test <- eval(str2lang(expr))
   expect_equal(to_test, location$location_in_fun + seq_len(length(get_code_to_put(envir,
                                                                                   obj$name,
                                                                                   location$at,
-                                                                                  location$location_in_fun))))
+                                                                                  location$location_in_fun,
+                                                                                  var_sym))))
 })

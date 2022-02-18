@@ -64,10 +64,14 @@ find_left_reactives <- function(parse_data) {
 #' only exprs which are reactives nested in named functions. To find reactives, regex is used -
 #' this regex may need to be updated in next 'Shiny' versions and should be taken into account
 #' that other packages can export their reactives and should be find by this function as well.
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @noRd
 find_direct_parent_id_with_reactive <- function(one_parse_data) {
-  extracted_lines <- one_parse_data$line1[grep(get_reactive_context_regex(),
-                                             one_parse_data$text, perl = TRUE)]
+  funs_one_parse_data <- one_parse_data %>%
+    dplyr::filter(.data$token == "SYMBOL_FUNCTION_CALL")
+  extracted_lines <- funs_one_parse_data$line1[grep(get_reactive_context_regex(),
+                                                    funs_one_parse_data$text, perl = TRUE)]
   if (length(extracted_lines) > 0) {
     named_funs_lines <- find_lines_with_named_funs(one_parse_data)
     first_occurence_of_line <- match(extracted_lines, one_parse_data$line1)

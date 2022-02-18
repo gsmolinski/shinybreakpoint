@@ -153,32 +153,11 @@ determine_location <- function(at) {
 get_code_to_put <- function(envir, name, at, location_in_fun) {
   list(
     quote(browser()),
-    str2lang(construct_obj_with_envir_label(envir)),
-    quote(....envirr <- shinybreakpoint:::get_envir(....envirr, rlang::current_env())),
+    call("assign", "....envirr", rlang::env_label(envir)),
+    quote(assign("....envirr", shinybreakpoint:::get_envir(....envirr, rlang::current_env()))),
     str2lang(remove_body_expr(name, at, location_in_fun)),
     quote(try(shiny::getDefaultReactiveDomain()$reload(), TRUE))
   )
-}
-
-#' Construct Expression to Define Object with Environment Label of Chosen Environment
-#'
-#' It constructs expression using variable which is evaluate in 'shinybreakpoint' package,
-#' not in the body of user function.
-#'
-#' @param envir environment in which object to insert 'browser()' lives.
-#'
-#' @return
-#' Character length 1 with correct R syntax which creates object '....envirr_label' with
-#' environment label. It is not possible to coerce environment itself into character type,
-#' so label has to be use.
-#'
-#' @details
-#' Returned value will be added to body of function after inserted 'browser()',
-#' so label environment can be used in user's function environment.
-#' @noRd
-construct_obj_with_envir_label <- function(envir) {
-  expr <- paste0("....envirr <- ", "'", rlang::env_label(envir), "'")
-  expr
 }
 
 #' Find Environment Using Label and Get It

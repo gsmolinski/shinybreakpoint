@@ -68,7 +68,7 @@ test_that("remove_body_expr constructs correct indices to remove", {
   skip_if_not(interactive())
   obj <- find_object(path, 35, envir)
   location <- determine_location(obj$at)
-  var_sym <- rlang::sym("....envirr")
+  var_sym <- as.symbol("....envirr")
   expr <- remove_body_expr(obj$name, location$at, location$location_in_fun, var_sym)
   expr <- regmatches(expr, regexpr("-c.+)", expr))
   expr <- gsub("-", "", expr)

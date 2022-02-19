@@ -11,7 +11,7 @@
 #' will return more than one object, so this function leaves only last object, i.e. parent object.
 #' @details
 #' If object lives in default environment, then everything will be fine, however if it does not live
-#' in default environment, breakpoint would not be set (e.g. it can live in global environment
+#' in default environment, break point would not be set (e.g. it can live in global environment
 #' if user explicitly assigned it to the global environment).
 #' @noRd
 find_object <- function(file, line, envir) {

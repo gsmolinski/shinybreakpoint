@@ -73,5 +73,5 @@ is_reactive_context <- function(expr) {
 #' @return character length 1.
 #' @noRd
 get_reactive_context_regex <- function() {
-  "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]+"
+  "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render[A-Z]"
 }

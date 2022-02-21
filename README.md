@@ -9,13 +9,14 @@
 ### Overview
 
 Package allows to set breakpoint (by putting ‘browser()’) in the
-reactive context (reactives, observers, output rendering) if these
-objects live inside the functions. To make it work, these functions
-should be used inside ‘server’ part, i.e. inside the object passed to
-the **server** parameter in `shinyApp(ui, server)`. If breakpoint will
-be used directly in the function passed as a **server**, it won’t work,
-i.e. it is needed to set breakpoint in the reactive context which lives
-in function which then will be used in function passed as a **server**.
+reactive context (reactives, observers, output renders). However, some
+requirements must be met for these objects: - they need to live inside
+named function(s). - these named functions needs to be use inside object
+passed as an argument to the `server` parameter in `shinyApp()`
+function. - it is not possible to set breakpoint directly in the
+function passed to the `server` parameter. In other words, breakpoint
+can be set only in reactive context nested in named functions if these
+functions are then call in object passed to the `server` parameter.
 
 ### Installation
 

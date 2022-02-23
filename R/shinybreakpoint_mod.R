@@ -22,7 +22,7 @@ shinybreakpointUI <- function(id) {
      Shiny.onInputChange("{key_pressed}", e.key);
     }})
   ')
-  tags$script(js)
+  tags$script(htmltools::HTML(js))
 }
 
 shinybreakpointServer <- function(keyEvent = "F1",

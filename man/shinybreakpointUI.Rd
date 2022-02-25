@@ -10,7 +10,8 @@ shinybreakpointUI(id)
 \item{id}{from 'shinybreakpointServer'. Can be chosen by user.}
 }
 \value{
-HTML script tag with JavaScript code.
+HTML script tag with JavaScript code - returns
+key pressed.
 }
 \description{
 Add keydown listener.

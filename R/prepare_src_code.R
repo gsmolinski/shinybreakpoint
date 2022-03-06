@@ -165,7 +165,9 @@ remove_nested_reactives <- function(one_parse_data) {
                      line2 = one_parse_data$line2,
                      shifted_line2 = shifted_line2)
     nested <- which(nested)
-    one_parse_data <- one_parse_data[-nested, ]
+    if (length(nested) > 0) {
+      one_parse_data <- one_parse_data[-nested, ]
+    }
 
     one_parse_data
   }

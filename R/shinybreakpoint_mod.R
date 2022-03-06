@@ -36,28 +36,25 @@ shinybreakpointServer <- function(keyEvent = "F1",
         bindEvent(input$key_pressed)
 
       which_file <- reactive({
-        which(filenames_parse_data$filename_full_path == input$files)
+        which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == input$files)
       })
 
       output$src_code <- reactable::renderReactable({
-        filenames_parse_data <- filenames_src_code_envirs$filenames_parse_data
-        reactable::reactable(filenames_parse_data$parse_data[[which_file()]],
+        reactable::reactable(filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]],
                              selection = "single",
                              onClick = "select")
       })
 
       selected_line <- reactive({
-        src_code <- filenames_parse_data$parse_data[[which_file()]]
+        src_code <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
         row <- reactable::getReactableState("src_code", "selected")
-        if (!is.null(row)) {
-          src_code$line[[row]]
-        }
+        src_code$line[row]
       })
 
       object <- reactive({
         req(selected_line())
         file <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[which_file()]]
-        envir <- filenames_src_code_envirs$envirs[[names(filenames_src_code_envirs$envirs) == filenames_src_code_envirs$filenames_parse_data$env_label[[which_file()]]]]
+        envir <- filenames_src_code_envirs$envirs[[which_file()]]
         find_object(file, selected_line(), envir)
       })
 
@@ -89,7 +86,7 @@ modal_dialog <- function(session, filenames_src_code) {
     fluidRow(
       column(2,
              actionButton(session$ns("activate"), label = "Activate"),
-             htmltools::HTML(rep("<br/>"), 2),
+             htmltools::HTML(rep("<br/>", 2)),
              selectInput(session$ns("files"), label = "Files",
                          choices = stats::setNames(filenames_src_code$filename_full_path,
                                                    filenames_src_code$filename))

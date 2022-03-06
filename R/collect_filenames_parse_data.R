@@ -102,8 +102,8 @@ get_filenames_parse_data <- function(envir) {
 #' otherwise NA_character_.
 #' @noRd
 get_filename <- function(one_envs_objs, envir) {
-  filename <- attr(attr(get(one_envs_objs, envir = envir),"srcref"),"srcfile")$filename
-  if (is.null(filename)) {
+  filename <- utils::getSrcFilename(get(one_envs_objs, envir = envir), full.names = TRUE)
+  if (length(filename) == 0 || filename == "") {
     filename <- NA_character_
   }
   filename

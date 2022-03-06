@@ -17,7 +17,7 @@ prepare_src_code <- function(caller_env) {
     filenames_parse_data <- filenames_parse_data_env$filenames_parse_data
 
     find_left_reactives_result <- find_left_reactives(filenames_parse_data$parse_data)
-    filenames_parse_data_env$filenames_parse_data <- find_left_reactives_result$parse_data
+    filenames_parse_data$parse_data <- find_left_reactives_result$parse_data
     if (length(find_left_reactives_result$which_null) > 0) {
       filenames_parse_data <- filenames_parse_data[-find_left_reactives_result$which_null, ]
       envirs <- envirs[-find_left_reactives_result$which_null]

@@ -31,7 +31,7 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
       observe({
         req(input$key_pressed == keyEvent)
-        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
+        showModal(modal_dialog(id, session, filenames_src_code_envirs$filenames_parse_data))
       }) %>%
         bindEvent(input$key_pressed)
 
@@ -70,30 +70,48 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
 #' Create Modal Dialog
 #'
+#' @param id passed from 'shinybreakpointServer'. Can be chosen by user.
 #' @param session passed from 'moduleServer'.
 #' @param filenames_src_code data.frame with full paths to files and basenames
 #' as well as envir label and src code (but not used here).
 #'
 #' @return
 #' Modal dialog.
+#' @details
+#' In Bootstrap 3 class 'modal-xl' is not supported and the default
+#' ('medium') size of modal is displayed instead. The added script
+#' fixes this - size 'large' will be displayed in Bootstrap 3.
+#'
+#' This additional script should be removed when Shiny will get
+#' as a default Bootstrap 4 or higher version.
 #' @import shiny
 #' @noRd
-modal_dialog <- function(session, filenames_src_code) {
-  modalDialog(
-    footer = NULL,
-    size = "l",
-    easyClose = TRUE,
-    fluidRow(
-      column(2,
-             actionButton(session$ns("activate"), label = "Activate"),
-             htmltools::HTML(rep("<br/>", 2)),
-             selectInput(session$ns("files"), label = "Files",
-                         choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                   filenames_src_code$filename))
-             ),
-      column(10,
-             reactable::reactableOutput(session$ns("src_code"))
-             )
+modal_dialog <- function(id, session, filenames_src_code) {
+  tags$div(id = glue::glue_safe("{id}-modal"),
+    modalDialog(
+      footer = NULL,
+      size = "xl",
+      easyClose = TRUE,
+      fluidRow(
+        column(3,
+               actionButton(session$ns("activate"), label = "Activate"),
+               htmltools::HTML(rep("<br/>", 2)),
+               selectInput(session$ns("files"), label = "Files",
+                           choices = stats::setNames(filenames_src_code$filename_full_path,
+                                                     filenames_src_code$filename))
+        ),
+        column(9,
+               reactable::reactableOutput(session$ns("src_code"))
+        )
+      ),
+      tags$script(htmltools::HTML('
+      if (jQuery.fn.tooltip.Constructor.VERSION.startsWith("3.")) {{
+        if (document.getElementById("shiny-modal").children[0].classList.contains("modal-xl")) {{
+          document.getElementById("shiny-modal").children[0].classList.remove("modal-xl");
+          document.getElementById("shiny-modal").children[0].classList.add("modal-lg");
+        }};
+      }};
+     '))
     )
   )
 }

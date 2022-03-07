@@ -8,7 +8,7 @@
 #' 'filenames_parse_data': data.frame with full path to file, file name and parse data,
 #' but only if file contained at least one reactive funtion and this funtion wasn't live in
 #' Global Environment (because we have removed Global Environment previously from search path).
-#' 'envirs': named list of environments for each file.
+#' 'envirs': list of environments for each file.
 #' @noRd
 prepare_src_code <- function(caller_env) {
   filenames_parse_data_env <- collect_filenames_parse_data(caller_env)

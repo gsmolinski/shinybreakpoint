@@ -8,8 +8,7 @@
 #' @return named list with:
 #' (1) 'filenames_parse_data': data.frame with cols:
 #' filename_full_path, filename, parse_data, env_label
-#' (2) 'envirs': named list (using rlang::env_label()) with environments
-#' or NULL if no objects with srcfile found.
+#' (2) 'envirs': list with environments or NULL if no objects with filename found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
@@ -67,7 +66,7 @@ drop_envs_too_far <- function(envirs) {
 #' passed by 'collect_filenames_parse_data' function.
 #'
 #' @return data.frame with cols: filename_full_path, parse_data, env_label or NULL
-#' if no objects with srcfile found.
+#' if no objects with filename found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd

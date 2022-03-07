@@ -14,7 +14,6 @@ Depends:
 Imports: 
     dplyr,
     glue,
-    htmltools,
     magrittr,
     reactable,
     rlang,

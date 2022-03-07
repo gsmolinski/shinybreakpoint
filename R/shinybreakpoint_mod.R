@@ -15,7 +15,7 @@ shinybreakpointUI <- function(id) {
      Shiny.setInputValue("{key_pressed}", e.key, {{priority: "event"}});
     }});
   ')
-  singleton(tags$head(tags$script(htmltools::HTML(js))))
+  singleton(tags$head(tags$script(HTML(js))))
 }
 
 shinybreakpointServer <- function(keyEvent = "F1",
@@ -36,7 +36,7 @@ shinybreakpointServer <- function(keyEvent = "F1",
         bindEvent(input$key_pressed)
 
       which_file <- reactive({
-        which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == input$files)
+        which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == input$file)
       })
 
       output$src_code <- reactable::renderReactable({
@@ -95,8 +95,8 @@ modal_dialog <- function(id, session, filenames_src_code) {
       fluidRow(
         column(3,
                actionButton(session$ns("activate"), label = "Activate"),
-               htmltools::HTML(rep("<br/>", 2)),
-               selectInput(session$ns("files"), label = "Files",
+               HTML(rep("<br/>", 2)),
+               selectInput(session$ns("file"), label = "File",
                            choices = stats::setNames(filenames_src_code$filename_full_path,
                                                      filenames_src_code$filename))
         ),
@@ -104,7 +104,7 @@ modal_dialog <- function(id, session, filenames_src_code) {
                reactable::reactableOutput(session$ns("src_code"))
         )
       ),
-      tags$script(htmltools::HTML('
+      tags$script(HTML('
       if (jQuery.fn.tooltip.Constructor.VERSION.startsWith("3.")) {{
         if (document.getElementById("shiny-modal").children[0].classList.contains("modal-xl")) {{
           document.getElementById("shiny-modal").children[0].classList.remove("modal-xl");

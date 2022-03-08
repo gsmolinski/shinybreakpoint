@@ -24,7 +24,8 @@ collect_filenames_parse_data <- function(caller_env) {
 
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!duplicated(.data$filename_full_path)) %>%
-      dplyr::mutate(filename = basename(.data$filename_full_path)) %>%
+      dplyr::mutate(filename_full_path = normalizePath(.data$filename_full_path, "/"),
+                    filename = basename(.data$filename_full_path)) %>%
       dplyr::relocate(.data$filename, .before = .data$parse_data)
 
     list(filenames_parse_data = filenames_parse_data,

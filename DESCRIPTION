@@ -17,6 +17,7 @@ Imports:
     magrittr,
     reactable,
     rlang,
+    rstudioapi,
     shiny (>= 1.5.0),
     stats,
     utils

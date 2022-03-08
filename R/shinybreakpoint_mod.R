@@ -108,7 +108,9 @@ modal_dialog <- function(session, filenames_src_code) {
                HTML(rep("<br/>", 2)),
                selectInput(session$ns("file"), label = "File",
                            choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                     filenames_src_code$filename))
+                                                     filenames_src_code$filename),
+                           selected = tryCatch(rstudioapi::getSourceEditorContext()$path,
+                                               error = function(e) NULL))
         ),
         column(9,
                reactable::reactableOutput(session$ns("src_code"))

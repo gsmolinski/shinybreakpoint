@@ -31,11 +31,12 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
       observe({
         req(input$key_pressed == keyEvent)
-        showModal(modal_dialog(id, session, filenames_src_code_envirs$filenames_parse_data))
+        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
       }) %>%
         bindEvent(input$key_pressed)
 
       which_file <- reactive({
+        req(input$file)
         which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == input$file)
       })
 
@@ -58,8 +59,18 @@ shinybreakpointServer <- function(keyEvent = "F1",
         find_object(file, selected_line(), envir)
       })
 
+      breakpoint_can_be_set <- reactive({
+        req(object())
+        does_breakpoint_can_be_set(object())
+      })
+
       observe({
-        req(does_breakpoint_can_be_set(object()))
+        req(breakpoint_can_be_set())
+        reactable::updateReactable("src_code")
+      })
+
+      observe({
+        req(breakpoint_can_be_set())
         put_browser(object())
       }) %>%
         bindEvent(input$activate)
@@ -70,7 +81,6 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
 #' Create Modal Dialog
 #'
-#' @param id passed from 'shinybreakpointServer'. Can be chosen by user.
 #' @param session passed from 'moduleServer'.
 #' @param filenames_src_code data.frame with full paths to files and basenames
 #' as well as envir label and src code (but not used here).
@@ -86,8 +96,8 @@ shinybreakpointServer <- function(keyEvent = "F1",
 #' as a default Bootstrap 4 or higher version.
 #' @import shiny
 #' @noRd
-modal_dialog <- function(id, session, filenames_src_code) {
-  tags$div(id = glue::glue_safe("{id}-modal"),
+modal_dialog <- function(session, filenames_src_code) {
+  tags$div(class = "shinybreakpoint-modal",
     modalDialog(
       footer = NULL,
       size = "xl",

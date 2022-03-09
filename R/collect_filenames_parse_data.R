@@ -19,14 +19,14 @@ collect_filenames_parse_data <- function(caller_env) {
   if (any(lengths(filenames_parse_data) > 0)) {
     filenames_parse_data <- dplyr::bind_rows(filenames_parse_data)
 
-    names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
-    envirs <- envirs[filenames_parse_data$env_label]
-
     filenames_parse_data <- filenames_parse_data %>%
       dplyr::filter(!duplicated(.data$filename_full_path)) %>%
       dplyr::mutate(filename_full_path = normalizePath(.data$filename_full_path, "/"),
                     filename = basename(.data$filename_full_path)) %>%
       dplyr::relocate(.data$filename, .before = .data$parse_data)
+
+    names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
+    envirs <- envirs[filenames_parse_data$env_label]
 
     list(filenames_parse_data = filenames_parse_data,
          envirs = envirs)

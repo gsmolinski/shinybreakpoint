@@ -32,6 +32,14 @@ shinybreakpointServer <- function(keyEvent = "F1",
       observe({
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
+
+        selected <- tryCatch(rstudioapi::getSourceEditorContext()$path,
+                             error = function(e) filenames_src_code_envirs$filenames_parse_data$filename_full_path[[1]])
+        if (!any(selected == filenames_src_code_envirs$filenames_parse_data$filename_full_path)) {
+          selected <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[1]]
+        }
+
+        updateSelectInput(session, "file", selected = selected)
       }) %>%
         bindEvent(input$key_pressed)
 
@@ -108,9 +116,7 @@ modal_dialog <- function(session, filenames_src_code) {
                HTML(rep("<br/>", 2)),
                selectInput(session$ns("file"), label = "File",
                            choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                     filenames_src_code$filename),
-                           selected = tryCatch(rstudioapi::getSourceEditorContext()$path,
-                                               error = function(e) NULL))
+                                                     filenames_src_code$filename))
         ),
         column(9,
                reactable::reactableOutput(session$ns("src_code"))

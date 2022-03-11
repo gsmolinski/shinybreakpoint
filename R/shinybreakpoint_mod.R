@@ -32,14 +32,8 @@ shinybreakpointServer <- function(keyEvent = "F1",
       observe({
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
-
-        selected <- tryCatch(rstudioapi::getSourceEditorContext()$path,
-                             error = function(e) filenames_src_code_envirs$filenames_parse_data$filename_full_path[[1]])
-        if (!any(selected == filenames_src_code_envirs$filenames_parse_data$filename_full_path)) {
-          selected <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[1]]
-        }
-
-        updateSelectInput(session, "file", selected = selected)
+        updateSelectInput(session, "file",
+                          selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
       }) %>%
         bindEvent(input$key_pressed)
 
@@ -49,14 +43,17 @@ shinybreakpointServer <- function(keyEvent = "F1",
       })
 
       output$src_code <- reactable::renderReactable({
+        req(which_file())
         reactable::reactable(filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]],
                              selection = "single",
                              onClick = "select")
       })
 
       selected_line <- reactive({
+        req(which_file())
         src_code <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
         row <- reactable::getReactableState("src_code", "selected")
+        # if row is NULL, then returns numeric(0), which is not truthy
         src_code$line[row]
       })
 
@@ -89,9 +86,8 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
 #' Create Modal Dialog
 #'
-#' @param session passed from 'moduleServer'.
-#' @param filenames_src_code data.frame with full paths to files and basenames
-#' as well as envir label and src code (but not used here).
+#' @param session used in 'create_UI'.
+#' @param filenames_src_code used in 'create_UI'.
 #'
 #' @return
 #' Modal dialog.
@@ -110,18 +106,7 @@ modal_dialog <- function(session, filenames_src_code) {
       footer = NULL,
       size = "xl",
       easyClose = TRUE,
-      fluidRow(
-        column(3,
-               actionButton(session$ns("activate"), label = "Activate"),
-               HTML(rep("<br/>", 2)),
-               selectInput(session$ns("file"), label = "File",
-                           choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                     filenames_src_code$filename))
-        ),
-        column(9,
-               reactable::reactableOutput(session$ns("src_code"))
-        )
-      ),
+      create_UI(session, filenames_src_code),
       tags$script(HTML('
       if (jQuery.fn.tooltip.Constructor.VERSION.startsWith("3.")) {{
         if (document.getElementById("shiny-modal").children[0].classList.contains("modal-xl")) {{
@@ -132,4 +117,56 @@ modal_dialog <- function(session, filenames_src_code) {
      '))
     )
   )
+}
+
+#' Create UI for Modal Dialog.
+#'
+#' @param session passed from 'moduleServer'.
+#' @param filenames_src_code data.frame with full paths to files and basenames
+#' as well as envir label and src code (but not used here).
+#'
+#' @return
+#' UI in modal dialog - only a message if no apriopriate file found or
+#' button, list of files and table with source code.
+#' @noRd
+create_UI <- function(session, filenames_src_code) {
+  if (is.null(filenames_src_code)) {
+    UI <- tags$div(class = "no-file", tags$p(""))
+  } else {
+    UI <- tagList(
+      fluidRow(
+        column(3,
+             actionButton(session$ns("activate"), label = "Activate"),
+             HTML(rep("<br/>", 2)),
+             selectInput(session$ns("file"), label = "File",
+                         choices = stats::setNames(filenames_src_code$filename_full_path,
+                                                   filenames_src_code$filename))
+        ),
+        column(9,
+             reactable::reactableOutput(session$ns("src_code"))
+        )
+      )
+    )
+  }
+  UI
+}
+
+#' Get Full Path to File Opened in Source Editor in RStudio
+#'
+#' @param filename_full_path all filename (full paths)
+#' returned by 'prepare_src_code()'.
+#'
+#' @return
+#' Filename (full path) opened in RStudio (in Source Editor). If
+#' RStudio is not in use or if opened file is not in the column
+#' in object returned by 'prepare_src_code()', then returns the
+#' first element of the passed vector.
+#' @noRd
+get_src_editor_file <- function(filename_full_path) {
+  selected <- tryCatch(rstudioapi::getSourceEditorContext()$path,
+                       error = function(e) filename_full_path[[1]])
+  if (!any(selected == filename_full_path)) {
+    selected <- filename_full_path[[1]]
+  }
+  selected
 }

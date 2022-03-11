@@ -1,3 +1,7 @@
+test_that("error when 'shinybreakpointServer used outside 'server' part of app", {
+  expect_error(check_requirements_shinybreakpointServer("a", "a"))
+})
+
 test_that("has_assignment returns TRUE only if expr has assignment", {
   expect_true(has_assignment(parse(text = "x <- function() {}")[[1]]))
   expect_true(has_assignment(parse(text = "x <<- function() {}")[[1]]))

@@ -165,7 +165,7 @@ create_UI <- function(session, filenames_src_code) {
 get_src_editor_file <- function(filename_full_path) {
   selected <- tryCatch(rstudioapi::getSourceEditorContext()$path,
                        error = function(e) filename_full_path[[1]])
-  if (!any(selected == filename_full_path)) {
+  if (is.null(selected) || !selected %in% filename_full_path) {
     selected <- filename_full_path[[1]]
   }
   selected

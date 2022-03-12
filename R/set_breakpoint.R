@@ -124,7 +124,8 @@ put_browser <- function(object) {
   envir <- object$envir
   body(envir[[object$name]])[[location$at]] <- as.call(append(as.list(body(envir[[object$name]])[[location$at]]),
                                               get_code_to_put(envir, object$name, location$at, location$location_in_fun,
-                                                              var_name = "....envirr"),
+                                                              var_name = "....envirr",
+                                                              envir_label = rlang::env_label(envir)),
                                               location$location_in_fun))
   getDefaultReactiveDomain()$reload()
 }
@@ -159,11 +160,11 @@ determine_location <- function(at) {
 #' @return list - each element is an line of code to insert.
 #' @importFrom rlang !!
 #' @noRd
-get_code_to_put <- function(envir, name, at, location_in_fun, var_name, var_sym = as.symbol(var_name)) {
+get_code_to_put <- function(envir, name, at, location_in_fun, var_name,
+                            envir_label, var_sym = as.symbol(var_name)) {
   list(
     quote(browser()),
-    call("assign", var_name, rlang::env_label(envir)),
-    rlang::expr(assign(!!var_name, shinybreakpoint:::get_envir(!!var_sym, rlang::current_env()))),
+    rlang::expr(assign(!!var_name, shinybreakpoint:::get_envir(!!envir_label, rlang::current_env()))),
     remove_body_expr(name, at, location_in_fun, var_sym),
     quote(try(shiny::getDefaultReactiveDomain()$reload(), TRUE))
   )
@@ -208,7 +209,7 @@ get_envir <- function(envir_label, current_env) {
 #' evaluate in 'shinybreakpoint' environment.
 #' @noRd
 remove_body_expr <- function(name, at, location_in_fun, var_sym) {
-  lines_to_remove <- location_in_fun + c(1, 2, 3, 4, 5) # depends on number of added lines of code
+  lines_to_remove <- location_in_fun + c(1, 2, 3, 4) # depends on number of added lines of code
   body_fun <- call("[[", call("body", call("[[", var_sym, name)), at)
   expr <- call("<-", body_fun, call("[", body_fun, call("-", lines_to_remove)))
   expr

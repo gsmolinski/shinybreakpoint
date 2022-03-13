@@ -23,7 +23,7 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
   }
 }
 
-#' Check if Expression is an Named Function
+#' Check if Expression is a Named Function
 #'
 #' @param expr expression returned by 'parse()'.
 #'
@@ -73,4 +73,18 @@ is_reactive_context <- function(expr) {
 #' @noRd
 get_reactive_context_regex <- function() {
   "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render"
+}
+
+#' Get Path to css File and Insert It.
+#'
+#' @return
+#' HTML which inserts css file.
+#' @import shiny
+#' @noRd
+insert_css <- function() {
+  addResourcePath("shinybreakpoint-resources",
+                  system.file("www", package = "shinybreakpoint"))
+
+  singleton(tags$link(rel = "stylesheet", type = "text/css",
+                      href = file.path("shinybreakpoint-resources", "css", "shinybreakpoint.css")))
 }

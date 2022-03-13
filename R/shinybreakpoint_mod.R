@@ -23,6 +23,7 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
   check_requirements_shinybreakpointServer(keyEvent, id)
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
+  insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)
   filenames_src_code_envirs <- prepare_src_code(rlang::caller_env())
 
   moduleServer(
@@ -46,7 +47,13 @@ shinybreakpointServer <- function(keyEvent = "F1",
         req(which_file())
         reactable::reactable(filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]],
                              selection = "single",
-                             onClick = "select")
+                             onClick = "select",
+                             sortable = FALSE,
+                             pagination = FALSE,
+                             borderless = TRUE,
+                             compact = TRUE,
+                             highlight = TRUE,
+                             height = "84vh")
       })
 
       selected_line <- reactive({
@@ -158,7 +165,7 @@ create_UI <- function(session, filenames_src_code) {
 #'
 #' @return
 #' Filename (full path) opened in RStudio (in Source Editor). If
-#' RStudio is not in use or if opened file is not in the column
+#' RStudio is not in use (or no file opened) or if opened file is not in the column
 #' in object returned by 'prepare_src_code()', then returns the
 #' first element of the passed vector.
 #' @noRd

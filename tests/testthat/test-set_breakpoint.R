@@ -42,7 +42,7 @@ test_that("put_browser adds correct number of exprs to the body of fun before ch
   obj_body_len <- length(body(obj$name)[[obj$at[-length(obj$at)]]])
 
   expect_equal(obj_body_len, obj_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun,
-                                                                        "....envirr", envir_label = rlang::env_label(envir))))
+                                                                        "....envirr")))
   expect_true(body(obj$name)[[obj$at]] == quote(browser()))
 })
 
@@ -77,6 +77,5 @@ test_that("remove_body_expr constructs correct indices to remove", {
                                                                                   obj$name,
                                                                                   location$at,
                                                                                   location$location_in_fun,
-                                                                                  var_sym,
-                                                                                  envir_label = rlang::env_label(envir)))))
+                                                                                  var_sym))))
 })

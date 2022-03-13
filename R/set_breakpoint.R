@@ -124,8 +124,7 @@ put_browser <- function(object) {
   envir <- object$envir
   body(envir[[object$name]])[[location$at]] <- as.call(append(as.list(body(envir[[object$name]])[[location$at]]),
                                               get_code_to_put(envir, object$name, location$at, location$location_in_fun,
-                                                              var_name = "....envirr",
-                                                              envir_label = rlang::env_label(envir)),
+                                                              var_name = "....envirr"),
                                               location$location_in_fun))
   getDefaultReactiveDomain()$reload()
 }
@@ -155,13 +154,14 @@ determine_location <- function(at) {
 #' @param at returned from determine_location.
 #' @param location_in_fun returned from determine_location.
 #' @param var_name variable name used in user environment in reactive context.
+#' @param envir_label label of environment where is object.
 #' @param var_sym var_name as a symbol.
 #'
 #' @return list - each element is an line of code to insert.
 #' @importFrom rlang !!
 #' @noRd
 get_code_to_put <- function(envir, name, at, location_in_fun, var_name,
-                            envir_label, var_sym = as.symbol(var_name)) {
+                            envir_label = rlang::env_label(envir), var_sym = as.symbol(var_name)) {
   list(
     quote(browser()),
     rlang::expr(assign(!!var_name, shinybreakpoint:::get_envir(!!envir_label, rlang::current_env()))),

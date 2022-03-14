@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## State of 21.02.2022
+## State of 14.03.2022
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -30,26 +30,24 @@ You can install the development version of shinybreakpoint from
 devtools::install_github("gsmolinski/shinybreakpoint")
 ```
 
-### MRE
+### Example
+
+Press `"F1"` to open the modal dialog and then set the breakpoint on the
+line where is `input$num` and push `Activate` button - you will be in
+the debug mode in your IDE.
 
 **app.R**
 
 ``` r
 library(shiny)
-library(magrittr)
 
 ui <- fluidPage(
-  modUI("mod"),
-  actionButton("debug", "Debug")  
+  modUI("mod")
 )
 
 server <- function(input, output, session) {
+  shinybreakpoint::shinybreakpointServer()
   modServer("mod")
-  observe({
-    obj <- shinybreakpoint:::find_object("R/mod.R", 13, environment(modServer))
-    shinybreakpoint:::put_browser(obj)
-  }) %>% 
-    bindEvent(input$debug)
 }
 
 shinyApp(ui, server)

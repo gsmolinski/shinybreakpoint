@@ -26,6 +26,16 @@ setting breakpoint. Must be used in the \code{server} part of
 Shiny app or in the function which is then used in the
 \code{server} part of app.
 }
+\details{
+One of the core concepts which founds this module is the
+necessity to re-run the objects present in the \code{server}
+part of app. This is possible only when these objects
+do not live directly in the \code{server}, but in the function
+which is then used in \code{server}. This naturally harmonizes
+with the modules, but it needs the separate function for
+objects which would be used directly in the \code{server}
+(see example).
+}
 \examples{
 # To run example, copy-paste to file, save the file
 # and run the app. Then press "F1" to open the modal dialog.

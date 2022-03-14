@@ -37,6 +37,14 @@ shinybreakpointUI <- function(id) {
 #' with the options to set breakpoint. Modal dialog is shown
 #' when the key specified in `keyEvent` is pressed.
 #' @details
+#' One of the core concepts which founds this module is the
+#' necessity to re-run the objects present in the `server`
+#' part of app. This is possible only when these objects
+#' do not live directly in the `server`, but in the function
+#' which is then used in `server`. This naturally harmonizes
+#' with the modules, but it needs the separate function for
+#' objects which would be used directly in the `server`
+#' (see example).
 #'
 #' @export
 #' @import shiny

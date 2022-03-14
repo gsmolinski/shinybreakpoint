@@ -36,7 +36,7 @@ server <- function(input, output, session) {
   })
   observe({
     assign("parse_data", getParseData(environment(server)$server, includeText = NA),
-           envir = .GlobalEnv)
+           envir = new.env())
     test3()
   })
 

@@ -18,6 +18,52 @@ shinybreakpointUI <- function(id) {
   singleton(tags$head(tags$script(HTML(js))))
 }
 
+#' Use Module to Set Breakpoint
+#'
+#' Module of Shiny app needed to enable functionality to
+#' setting breakpoint. Must be used in the `server` part of
+#' Shiny app or in the function which is then used in the
+#' `server` part of app.
+#'
+#' @param keyEvent key to run modal dialog with the functionality
+#' to set breakpoint. `"F1"` by default.
+#' @param id namespace used for all inputs in this module.
+#' `"shinybreakpoint"` by default. Change if in the app some
+#' other module is used which already has `"shinybreakpoint"`
+#' namespace.
+#'
+#' @return
+#' Used for side effect - adds modal dialog to the Shiny app
+#' with the options to set breakpoint. Modal dialog is shown
+#' when the key specified in `keyEvent` is pressed.
+#' @details
+#'
+#' @export
+#' @import shiny
+#' @importFrom magrittr %>%
+#' @examples
+#' # To run example, copy-paste to file, save the file
+#' # and run the app. Then press "F1" to open the modal dialog.
+#'
+#' \dontrun{
+#' library(shiny)
+#'
+#' server_app <- function(input, output, session) {
+#'   observe({
+#'     input$num
+#'   })
+#' }
+#'
+#' shinyApp(
+#'   ui = fluidPage(
+#'     numericInput("num", "Num", 0)
+#'   ),
+#'   server = function(input, output, session) {
+#'     shinybreakpoint::shinybreakpointServer()
+#'     server_app(input, output, session)
+#'   }
+#' )
+#' }
 shinybreakpointServer <- function(keyEvent = "F1",
                                   id = "shinybreakpoint") {
 

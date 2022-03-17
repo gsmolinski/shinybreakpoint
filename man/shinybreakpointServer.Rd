@@ -19,7 +19,7 @@ to set breakpoint. \code{"F1"} by default.}
 other module is used which already has \code{"shinybreakpoint"}
 namespace.}
 
-\item{varName}{setting breakpoint is not only equal to inserting
+\item{varName}{setting breakpoint is not equal to inserting only
 \code{browser()}, but also additional code, one of which is assignment
 operation. This parameter determines the variable name to assign
 value. \code{"....envirr"} by default. Change if this name is already

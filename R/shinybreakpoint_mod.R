@@ -31,7 +31,7 @@ shinybreakpointUI <- function(id) {
 #' `"shinybreakpoint"` by default. Change if in the app some
 #' other module is used which already has `"shinybreakpoint"`
 #' namespace.
-#' @param varName setting breakpoint is not only equal to inserting
+#' @param varName setting breakpoint is not equal to inserting only
 #' `browser()`, but also additional code, one of which is assignment
 #' operation. This parameter determines the variable name to assign
 #' value. `"....envirr"` by default. Change if this name is already

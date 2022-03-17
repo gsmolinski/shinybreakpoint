@@ -37,8 +37,9 @@ test_that("put_browser adds correct number of exprs to the body of fun before ch
   obj <- find_object(path, 35, envir)
   location <- determine_location(obj$at)
   obj_orig_body_len <- length(body(obj$name)[[obj$at[-length(obj$at)]]])
+  varName <- "....envirr"
   # because of error from shiny::getDefaultReactiveDomain$reload() if not inside server, use 'try'
-  try(put_browser(obj), silent = TRUE)
+  try(put_browser(obj, varName), silent = TRUE)
   obj_body_len <- length(body(obj$name)[[obj$at[-length(obj$at)]]])
 
   expect_equal(obj_body_len, obj_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun,
@@ -52,8 +53,9 @@ test_that("put_browser adds code which will remove added code", {
   # otherwise 'server()' won't make added code to run and thus code won't be removed
   obj <- find_object(path, 34, envir)
   orig_body <- body(obj$name)
+  varName <- "....envirr"
   # because of error from shiny::getDefaultReactiveDomain$reload() if not inside server, use 'try'
-  try(put_browser(obj), silent = TRUE)
+  try(put_browser(obj, varName), silent = TRUE)
   try(server(NULL, NULL, NULL), silent = TRUE)
 
   expect_identical(body(obj$name), orig_body)

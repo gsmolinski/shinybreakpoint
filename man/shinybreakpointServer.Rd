@@ -4,7 +4,11 @@
 \alias{shinybreakpointServer}
 \title{Use Module to Set Breakpoint}
 \usage{
-shinybreakpointServer(keyEvent = "F1", id = "shinybreakpoint")
+shinybreakpointServer(
+  keyEvent = "F1",
+  id = "shinybreakpoint",
+  varName = "....envirr"
+)
 }
 \arguments{
 \item{keyEvent}{key to run modal dialog with the functionality
@@ -14,6 +18,12 @@ to set breakpoint. \code{"F1"} by default.}
 \code{"shinybreakpoint"} by default. Change if in the app some
 other module is used which already has \code{"shinybreakpoint"}
 namespace.}
+
+\item{varName}{setting breakpoint is not only equal to inserting
+\code{browser()}, but also additional code, one of which is assignment
+operation. This parameter determines the variable name to assign
+value. \code{"....envirr"} by default. Change if this name is already
+in use somewhere in the app.}
 }
 \value{
 Used for side effect - adds modal dialog to the Shiny app

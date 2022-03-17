@@ -31,6 +31,11 @@ shinybreakpointUI <- function(id) {
 #' `"shinybreakpoint"` by default. Change if in the app some
 #' other module is used which already has `"shinybreakpoint"`
 #' namespace.
+#' @param varName setting breakpoint is not only equal to inserting
+#' `browser()`, but also additional code, one of which is assignment
+#' operation. This parameter determines the variable name to assign
+#' value. `"....envirr"` by default. Change if this name is already
+#' in use somewhere in the app.
 #'
 #' @return
 #' Used for side effect - adds modal dialog to the Shiny app
@@ -73,9 +78,10 @@ shinybreakpointUI <- function(id) {
 #' )
 #' }
 shinybreakpointServer <- function(keyEvent = "F1",
-                                  id = "shinybreakpoint") {
+                                  id = "shinybreakpoint",
+                                  varName = "....envirr") {
 
-  check_requirements_shinybreakpointServer(keyEvent, id)
+  check_requirements_shinybreakpointServer(keyEvent, id, varName)
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
   insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)
   filenames_src_code_envirs <- prepare_src_code(rlang::caller_env())
@@ -137,7 +143,7 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
       observe({
         req(breakpoint_can_be_set())
-        put_browser(object())
+        put_browser(object(), varName)
       }) %>%
         bindEvent(input$activate)
 

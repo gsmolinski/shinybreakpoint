@@ -2,10 +2,11 @@
 #'
 #' @param keyEvent passed from 'shinybreakpointServer'.
 #' @param id passed from 'shinybreakpointServer'.
+#' @param varName passed from 'shinybreakpointServer'.
 #'
 #' @import shiny
 #' @noRd
-check_requirements_shinybreakpointServer <- function(keyEvent, id) {
+check_requirements_shinybreakpointServer <- function(keyEvent, id, varName) {
 
   if (!length(keyEvent) == 1 || !is.character(keyEvent) || is.na(keyEvent) || keyEvent == "") {
     stop("'keyEvent' must be of type character of length 1 and can't be NA or empty character.",
@@ -14,6 +15,11 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id) {
 
   if (!length(id) == 1 || !is.character(id) || is.na(id) || id == "") {
     stop("'id' must be of type character of length 1 and can't be NA or empty character.",
+         call. = FALSE)
+  }
+
+  if (!length(varName) == 1 || !is.character(varName) || is.na(varName) || varName == "") {
+    stop("'varName' must be of type character of length 1 and can't be NA or empty character.",
          call. = FALSE)
   }
 

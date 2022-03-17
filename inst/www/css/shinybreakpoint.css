@@ -1,5 +1,6 @@
 .shinybreakpoint-modal .modal-dialog {
     height: 89%;
+    max-width: 95%;
 }
 
 .shinybreakpoint-modal .modal-content {

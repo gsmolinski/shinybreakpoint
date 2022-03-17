@@ -104,6 +104,8 @@ does_breakpoint_can_be_set <- function(object) {
 #' @param object list with object's name in which 'browser()' will be inserted, indices to know
 #' in which location of 'body()' code should be inserted, environment in which object lives and
 #' full path to file in which object is defined.
+#' @param varName passed from 'shinybreakpointServer'. Name used as variable name for environment.
+#' Is used in the user's environment, so need to be chosen carefully - keeping in mind possible clashes.
 #'
 #' @details
 #' The point is not to just insert 'browser()', but also to remove 'browser()' immediately after
@@ -119,12 +121,12 @@ does_breakpoint_can_be_set <- function(object) {
 #' reloaded - it is like that, because only the code inside this object is rerun, not the object itself.
 #' @import shiny
 #' @noRd
-put_browser <- function(object) {
+put_browser <- function(object, varName) {
   location <- determine_location(object$at)
   envir <- object$envir
   body(envir[[object$name]])[[location$at]] <- as.call(append(as.list(body(envir[[object$name]])[[location$at]]),
                                               get_code_to_put(envir, object$name, location$at, location$location_in_fun,
-                                                              var_name = "....envirr"),
+                                                              var_name = varName),
                                               location$location_in_fun))
   getDefaultReactiveDomain()$reload()
 }

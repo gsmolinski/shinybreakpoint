@@ -53,7 +53,7 @@ objects which would be used directly in the \code{server}
 \dontrun{
 library(shiny)
 
-server_app <- function(input, output, session) {
+appServer <- function(input, output, session) {
   observe({
     input$num
   })
@@ -65,7 +65,7 @@ shinyApp(
   ),
   server = function(input, output, session) {
     shinybreakpoint::shinybreakpointServer()
-    server_app(input, output, session)
+    appServer(input, output, session)
   }
 )
 }

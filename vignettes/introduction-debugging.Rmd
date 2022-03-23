@@ -29,7 +29,7 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 ### Usage
 
-#### Setting breakpoint
+#### Setting Breakpoint
 
 We will start from the snippet - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
@@ -95,14 +95,220 @@ Immediately after the breakpoint is set (i.e. when the `Activate` button in the 
 
 Before we move into debug mode, something more has to be said about *visible code blocks*. `shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects.
 
-#### Debug mode
+#### Debug Mode
 
 As already said, debug mode is an (temporary) environment when is possible to run arbitrary code and thus is very helpful to check if e.g. variables have the expected values. Although this vignette is not about debugging (many helpful documents are possible to find easy), some things in the context of the `shinybreakpoint` package should be highlighted.
 
 Setting breakpoint is nothing more than inserting `browser()` in some place of code, but `shinybreakpoint` inserts more than this. All of the added code (in total four lines of code) is harmless, but will be visible in the debug mode. It can be run (if one would like to step down line-by-line) or ignore.
 
-Breakpoint is constructed to be a one-time breakpoint, which means that after pressing `c` or `f` in the debug mode, Shiny app won't have active breakpoint anymore (to set it again, modal dialog delivered by `shinybreakpoint` must be use again). There is, however, case when it could look like the breakpoint persist - during the debug mode, the app still runs and the objects in `UI` can be use. If we take as an example our example above we could notice the following behavior: set the breakpoint on `input$num1` line, activate it and during the debug mode, change the `input$num1` in the app - then when we press `c` in the debug mode (to continue execution of code to the end of block and then exit), we will notice that we end up in the debug mode again, but now with the different value of `input$num1`. If we decide to change again `input$num1` in the app, this situation will repeat, but if not, the debug mode will close successfully after pressing `c`.
+Breakpoint is constructed to be a one-time breakpoint, which means that after pressing `c` or `f` in the debug mode, Shiny app won't have active breakpoint anymore (to set it again, modal dialog delivered by `shinybreakpoint` must be use again). There is, however, case when it could look like the breakpoint persist - during the debug mode, the app still runs and the objects in `UI` can be use. If we take as an example our example above, we could notice the following behavior: set the breakpoint on `input$num1` line, activate it and during the debug mode, change the `input$num1` in the app - then when we press `c` in the debug mode (to continue execution of code to the end of block and then exit), we will notice that we end up in the debug mode again, but now with the different value of `input$num1`. If we decide to change again `input$num1` in the app, this situation will repeat, but if not, the debug mode will close successfully after pressing `c`.
 
 And the last thing - if something is displayed on the screen in the app, it can be impossible to see its value just be typing the variable name in the debug mode, and it can be necessary to use `sink()` before (in the debug mode). In our example that would be the case if we would have `renderPrint` where we would like to display `input$num1`.
 
 ## II. The Story
+
+### The Myth
+
+In his talk given at 2016 Shiny Developer Conference, Jonathan McPherson noticed:
+
+> If you're a seasoned R programmer, you may have used the `trace()` function to add tracing without modifying your script. Unfortunately, it's not possible to use this utility (or any that depend on it, such as `setBreakpoint`) with Shiny. `trace()` works by rewriting the body of the function to be traced, so the function must already exist when you run it. Shiny generates functions at runtime that aren't easily addressable.
+
+It was a fragment titled "What about trace()?" and is now available as a official documentation for Shiny ([Debugging Shiny applications](https://shiny.rstudio.com/articles/debugging.html)). And we could say it is somehow *suspicious*, since in the same paragraph we have that something is impossible, because other thing is not *easily* addressable, but not - as we could expect - *impossible* to be addressable. It's a good paragraph to start with, even that by saying that everything started, because of this suspicion, would be nothing more than founding myth.
+
+### Where Are You, Objects?
+
+Our aim will be the modification of the body of function to insert `browser()` there, but at first we need to find all functions. We can do this using `lapply(rlang::env_parents(rlang::current_env()), names)` in the example below:
+
+**app.R**
+
+```
+library(shiny)
+
+ui <- fluidPage(
+  modUI("mod"),
+  textOutput("env")
+)
+
+server <- function(input, output, session) {
+  modServer("mod")
+  
+  output$env <- renderPrint({
+    lapply(rlang::env_parents(rlang::current_env()), names)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+**R/mod.R**
+
+```
+modUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    numericInput(ns("num"), "Num", 0)
+  )
+}
+
+modServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+    }
+  )
+}
+```
+
+By running this, we will learn that the structure of objects in the Shiny app have the following characteristic:
+
+- on the top (or: as the parent) is `global` environment, but in our example it doesn't contain any objects created by us
+- next, going from the top to the bottom (i.e. to the first child) we will find the objects from our module (saved in *R/mod.R* file) - `UI` and `server` part (but named as `modUI` and `modServer`)
+- finally, as the grandchild we see the objects from the file where we have started - `server` and `ui` from *app.R* file (we can ignore the rest of the objects and environments)
+
+This is, of course, the evidence that documentation was right:
+
+> all R code in a Shiny app is run in the global environment or a child of it^[[Scoping rules for Shiny apps](https://shiny.rstudio.com/articles/scoping.html)]
+
+Now, because we were able to find the objects (and our search was very precise - we also get the environments where these objects live), we can try to modify them.
+
+### And Where Are Your Elements?
+
+We want to modify *body* of function and we will use `body()` for this. Not trying to be precise, but just useful for our purposes, we can say that `body()` returns *very* complex list.
+
+```
+fun1 <- function() {
+  x <- 2
+  x
+}
+
+fun_env <- environment(fun1) # get environment where `fun1` is defined
+
+body(fun_env$fun1)
+#> {
+#>     x <- 2
+#>     x
+#> }
+
+body(fun_env$fun1)[[2]]
+#> x <- 2
+body(fun_env$fun1)[[2]][[1]]
+#> `<-`
+```
+This list can be manipulate - elements can be added, removed etc. We just need some additional functions for this, like `as.list()` (so we can use `append()`), `as.call()` (to turn back the list into `language` object):
+
+```
+fun1 <- function() {
+  x <- 2
+  x
+}
+
+fun_env <- environment(fun1)
+
+body(fun_env$fun1) <- as.call(append(as.list(body(fun_env$fun1)), quote(browser()), 1))
+
+fun1()
+```
+now the `fun1()` call will move us into debug mode. Let's do the same in Shiny app:
+
+**app.R**
+
+```
+library(shiny)
+library(magrittr)
+
+ui <- fluidPage(
+  modUI("mod"),
+  textOutput("env"),
+  actionButton("browser", "Add browser")
+)
+
+server <- function(input, output, session) {
+  modServer("mod")
+  
+  output$env <- renderPrint({
+    mod_env <- environment(modServer)
+    as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]])
+  })
+  
+  observe({
+    mod_env <- environment(modServer)
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(browser()), 1))
+  }) %>% 
+    bindEvent(input$browser)
+}
+
+shinyApp(ui, server)
+```
+
+**R/mod.R**
+
+```
+modUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    numericInput(ns("num"), "Num", 0)
+  )
+}
+
+modServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      observe({
+        input$num
+      })
+    }
+  )
+}
+```
+We can notice that when *Add browser* button is pushed, nothing happens. However, it is not true - `browser()` is added, but moving back to our example with `fun1()` function, we are still here:
+
+```
+body(fun_env$fun1) <- as.call(append(as.list(body(fun_env$fun1)), quote(browser()), 1))
+```
+i.e. `browser()` was added, but we didn't yet run the function again. We can achieve this by refreshing the session - manually, refreshing the app in the web browser or adding `getDefaultReactiveDomain()$reload()` to reload the session:
+
+**app.R**
+
+```
+library(shiny)
+library(magrittr)
+
+ui <- fluidPage(
+  modUI("mod"),
+  textOutput("env"),
+  actionButton("browser", "Add browser")
+)
+
+server <- function(input, output, session) {
+  modServer("mod")
+  
+  output$env <- renderPrint({
+    mod_env <- environment(modServer)
+    as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]])
+  })
+  
+  observe({
+    mod_env <- environment(modServer)
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(browser()), 1))
+    getDefaultReactiveDomain()$reload() # added
+  }) %>% 
+    bindEvent(input$browser)
+}
+
+shinyApp(ui, server)
+```
+
+Doing this, we re-run the `modServer()` function.
+
+### Find Them Again (And Again)
+
+Among other (not yet mentioned) problems, we still need a tools to find *where* to insert `browser()`, because since now we have just used our eyes. This is somehow secondary issue as we mainly would like to show in this vignette the core concept of setting breakpoint, even if *by hand*, so solutions below are rather only signaled.
+
+Having a (named) function, which is in a saved file (which was `source()`d), we can use the following functions:
+
+- `utils::getParseData()` to get the `data.frame` needed to reconstruct the whole script in this saved file (`utils::getParseText()` can be useful in this context as well)
+- `utils::getSrcFilename()` to get the name of the file
+- `utils::findLineNum()` to get the (1) name of the object; (2) environment where this object lives; (3) location in the body of this object based on line number in the script (i.e. which indices to use to get the right location when using `body()[[]]`)
+
+

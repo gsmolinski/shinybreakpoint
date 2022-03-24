@@ -101,9 +101,16 @@ As already said, debug mode is an (temporary) environment when is possible to ru
 
 Setting breakpoint is nothing more than inserting `browser()` in some place of code, but `shinybreakpoint` inserts more than this. All of the added code (in total four lines of code) is harmless, but will be visible in the debug mode. It can be run (if one would like to step down line-by-line) or ignore.
 
-Breakpoint is constructed to be a one-time breakpoint, which means that after pressing `c` or `f` in the debug mode, Shiny app won't have active breakpoint anymore (to set it again, modal dialog delivered by `shinybreakpoint` must be use again). There is, however, case when it could look like the breakpoint persist - during the debug mode, the app still runs and the objects in `UI` can be use. If we take as an example our example above, we could notice the following behavior: set the breakpoint on `input$num1` line, activate it and during the debug mode, change the `input$num1` in the app - then when we press `c` in the debug mode (to continue execution of code to the end of block and then exit), we will notice that we end up in the debug mode again, but now with the different value of `input$num1`. If we decide to change again `input$num1` in the app, this situation will repeat, but if not, the debug mode will close successfully after pressing `c`.
+Breakpoint is constructed to be a one-time breakpoint, which means that after pressing `c` or `f` in the debug mode, Shiny app won't have active breakpoint anymore (to set it again, modal dialog delivered by `shinybreakpoint` must be use again). There is, however, case when it could look like the breakpoint persist - during the debug mode, the app still runs and the objects in `UI` can be use. If we take as an example our example above, we could notice the following behavior: set the breakpoint on `input$num1` line, activate it and during the debug mode, change the `input$num1` in the app - then when we press `c` in the debug mode (to continue execution of code to the end of block and then exit), we will notice that we end up in the debug mode again, but now with the different value of `input$num1`. If we decide to change again `input$num1` in the app, this situation will repeat, but if not, the debug mode will close successfully after pressing `c`. To avoid this problem, we can generally say that *it is not recommended to use app during the debug mode*.
 
 And the last thing - if something is displayed on the screen in the app, it can be impossible to see its value just be typing the variable name in the debug mode, and it can be necessary to use `sink()` before (in the debug mode). In our example that would be the case if we would have `renderPrint` where we would like to display `input$num1`.
+
+### Additional Comments
+
+Not previously mentioned and possibly important remarks are:
+
+- when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
+- session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
 
 ## II. The Story
 
@@ -261,7 +268,7 @@ modServer <- function(id) {
   )
 }
 ```
-We can notice that when *Add browser* button is pushed, nothing happens. However, it is not true - `browser()` is added, but moving back to our example with `fun1()` function, we are still here:
+We can notice that when `Add browser` button is pushed, nothing happens. However, it is not true - `browser()` is added, but moving back to our example with `fun1()` function, we are still here:
 
 ```
 body(fun_env$fun1) <- as.call(append(as.list(body(fun_env$fun1)), quote(browser()), 1))
@@ -303,12 +310,73 @@ Doing this, we re-run the `modServer()` function.
 
 ### Find Them Again (And Again)
 
-Among other (not yet mentioned) problems, we still need a tools to find *where* to insert `browser()`, because since now we have just used our eyes. This is somehow secondary issue as we mainly would like to show in this vignette the core concept of setting breakpoint, even if *by hand*, so solutions below are rather only signaled.
+Among other (not yet mentioned) problems, we still need a tools to find *where* to insert `browser()`, because until now we have just used our eyes. This is somehow secondary issue as we mainly would like to show in this vignette the core concept of setting breakpoint, even if *by hand*, so solutions below are rather only signaled.
 
 Having a (named) function, which is in a saved file (which was `source()`d), we can use the following functions:
 
 - `utils::getParseData()` to get the `data.frame` needed to reconstruct the whole script in this saved file (`utils::getParseText()` can be useful in this context as well)
 - `utils::getSrcFilename()` to get the name of the file
 - `utils::findLineNum()` to get the (1) name of the object; (2) environment where this object lives; (3) location in the body of this object based on line number in the script (i.e. which indices to use to get the right location when using `body()[[]]`)
+
+However, we quickly find that after modifying the body of function, we broke it up - `utils::findLineNum()` no longer returns the correct indices (`at` element of returned list):
+
+**app.R**
+
+```
+library(shiny)
+library(magrittr)
+
+ui <- fluidPage(
+  modUI("mod"),
+  textOutput("env"),
+  actionButton("browser", "Add browser")
+)
+
+server <- function(input, output, session) {
+  modServer("mod")
+  
+  output$env <- renderPrint({
+    findLineNum("R/mod.R", 13)[[1]]$at # check how this changed after the first use of button 'Add browser'
+  })
+  
+  observe({
+    mod_env <- environment(modServer)
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(browser()), 1))
+    getDefaultReactiveDomain()$reload()
+  }) %>% 
+    bindEvent(input$browser)
+}
+
+shinyApp(ui, server)
+```
+**R/mod.R**
+
+```
+modUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    numericInput(ns("num"), "Num", 0)
+  )
+}
+
+modServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      observe({
+        input$num
+      })
+    }
+  )
+}
+```
+In the example above, we display the `at` element of returned list - when the `Add browser` button is pushed by the first time (and after that the debug mode is closed by pressing `c` or `f`), we can see that the displayed indices changed and we no longer can use this element to find the correct location in the body of function. In other words, our code now works just one time - after the first use, the app should be closed and run again (if `at` would be use to determine the location of body, of course; in the example above we are still using hard-coded location). To resolve this problem, we need to retrieve the original body of object (function) - one way to do this would be to use `parse()`. We already know the name of file (and full path as well) from which comes the function, so it is possible to parse the file and assign the original body of function to the broken one, before the `browser()` is added.
+
+### And Forget Them
+
+All of our actions taken until now led us to the state of greed; we find objects, modify them and never undo the changes; and then we modify them again, again, adding more `browser()`s. This can be seen in our previous example - each time the `Add browser` button is pushed, next `browser()` is added at the top of the previous one. Now this greed leads us into trouble:
+
+- we need to escape (using `c` or `f`) from debug mode multiple times before we escape for real - each `browser()` nests us into debug mode
+- but what is much worse - the `browser()` persists and each time the `observe()` runs (and it runs every time the `input$num` changes), we end up in the debug mode
 
 

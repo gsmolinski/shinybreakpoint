@@ -111,6 +111,7 @@ Not previously mentioned and possibly important remarks are:
 
 - when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
 - session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
+- if one uses RStudio IDE, `shinybreakpoint` recognizes the file opened in the source editor and if this file is used in Shiny app and contains reactive blocks of code, it will open it as default file in modal dialog. This works only in a moment when the key specified in `keyEvent` parameter is pressed
 
 ## II. The Story
 
@@ -120,7 +121,7 @@ In his talk given at 2016 Shiny Developer Conference, Jonathan McPherson noticed
 
 > If you're a seasoned R programmer, you may have used the `trace()` function to add tracing without modifying your script. Unfortunately, it's not possible to use this utility (or any that depend on it, such as `setBreakpoint`) with Shiny. `trace()` works by rewriting the body of the function to be traced, so the function must already exist when you run it. Shiny generates functions at runtime that aren't easily addressable.
 
-It was a fragment titled "What about trace()?" and is now available as a official documentation for Shiny ([Debugging Shiny applications](https://shiny.rstudio.com/articles/debugging.html)). And we could say it is somehow *suspicious*, since in the same paragraph we have that something is impossible, because other thing is not *easily* addressable, but not - as we could expect - *impossible* to be addressable. It's a good paragraph to start with, even that by saying that everything started, because of this suspicion, would be nothing more than founding myth.
+It was a fragment titled "What about trace()?" and is now available as a official documentation for Shiny^[[Debugging Shiny applications](https://shiny.rstudio.com/articles/debugging.html)]. And we could say it is somehow *suspicious*, since in the same paragraph we have that something is impossible, because other thing is not *easily* addressable, but not - as we could expect - *impossible* to be addressable. It's a good paragraph to start with, even that by saying that everything started, because of this suspicion, would be nothing more than founding myth.
 
 ### Where Are You, Objects?
 
@@ -379,4 +380,106 @@ All of our actions taken until now led us to the state of greed; we find objects
 - we need to escape (using `c` or `f`) from debug mode multiple times before we escape for real - each `browser()` nests us into debug mode
 - but what is much worse - the `browser()` persists and each time the `observe()` runs (and it runs every time the `input$num` changes), we end up in the debug mode
 
+The remedy for this would be to remove the `browser()` after each use, i.e. after pressing `c` or `f` in the debug mode. But it must be done *inside* the function which is debugged. In other words, elements (codes) which constitute the function will modify this function and remove itself from this function. The possibility of this, i.e. that line of code can be executed and this execution is a recipe to remove this line of code, is very interesting (and useful!). 
 
+```
+fun2 <- function() {
+  2
+  env <- environment(fun2)
+  body(env$fun2) <- body(env$fun2)[-c(3, 4)]
+}
+
+body(fun2)
+#> {
+#>     2
+#>     env <- environment(fun2)
+#>     body(env$fun2) <- body(env$fun2)[-c(3, 4)]
+#> }
+
+fun2()
+
+body(fun2)
+#> {
+#>     2
+#> }
+```
+
+We can see above how to include the code which removes itself; this code can be added to the function using other function as well. In case of Shiny app, we need to remember that another session reload will be necessary as an equivalent of function call (equivalent of `fun2()`). Below is an example of Shiny app with one-time breakpoint.
+
+**app.R**
+
+```
+library(shiny)
+library(magrittr)
+
+ui <- fluidPage(
+  modUI("mod"),
+  actionButton("browser", "Add browser"),
+)
+
+server <- function(input, output, session) {
+  modServer("mod")
+  
+  observe({
+    mod_env <- environment(modServer)
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(browser()), 1))
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(body(env$modServer)[[2]][[3]][[3]][[2]][[2]] <- body(env$modServer)[[2]][[3]][[3]][[2]][[2]][-c(2, 3, 4, 5)]), 3))
+    body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(getDefaultReactiveDomain()$reload()), 4))
+    getDefaultReactiveDomain()$reload()
+  }) %>% 
+    bindEvent(input$browser)
+}
+
+shinyApp(ui, server)
+```
+**R/mod.R**
+
+```
+modUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    numericInput(ns("num"), "Num", 0)
+  )
+}
+
+modServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      observe({
+        input$num
+      })
+    }
+  )
+}
+```
+The other useful thing is that the line of code can remove the *next* line of code, but at the same time this next line of code can still execute - we are using this to reload the session *after* the added code was self-removed *and* to remove the code responsible for this reload. Perhaps it is clearer to see it, taking as an example regular function:
+
+```
+fun2 <- function() {
+  2
+  env <- environment(fun2)
+  body(env$fun2) <- body(env$fun2)[-c(3, 4, 5)]
+  "two"
+}
+
+body(fun2)
+#> {
+#>     2
+#>     env <- environment(fun2)
+#>     body(env$fun2) <- body(env$fun2)[-c(3, 4, 5)]
+#>     "two"
+#> }
+
+fun2()
+#> [1] "two"
+
+body(fun2)
+#> {
+#>     2
+#> }
+```
+The call of `fun2` (`fun2()`) removes (among others) the last line - `"two"` - but it still returns the string `"two"`. Of course, when call again, it would return number `2`, not string `"two"`, which is in line with what we tried to achieve in Shiny app - the function should behave like before, when the added code wasn't added yet, i.e. it should not induce the start of debug mode when the `observe()` runs (means: when the `input$num` changes). It should be noted here, that even if it looks like we are retrieving the original body of function, this is not an answer for the (mentioned earlier) problem with element `at` in list returned by `utils::findLineNum()` - `at` will still contains the wrong indices.
+
+There is also one last thing to talk about - getting the right environment.

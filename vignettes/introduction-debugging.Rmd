@@ -480,6 +480,74 @@ body(fun2)
 #>     2
 #> }
 ```
-The call of `fun2` (`fun2()`) removes (among others) the last line - `"two"` - but it still returns the string `"two"`. Of course, when call again, it would return number `2`, not string `"two"`, which is in line with what we tried to achieve in Shiny app - the function should behave like before, when the added code wasn't added yet, i.e. it should not induce the start of debug mode when the `observe()` runs (means: when the `input$num` changes). It should be noted here, that even if it looks like we are retrieving the original body of function, this is not an answer for the (mentioned earlier) problem with element `at` in list returned by `utils::findLineNum()` - `at` will still contains the wrong indices.
+The call of `fun2` (`fun2()`) removes (among others) the last line - `"two"` - but it still returns the string `"two"`. Of course, when call again, it would return number `2`, not string `"two"`, which is in line with what we tried to achieve in Shiny app - the function should behave like before, when the added code wasn't added yet, i.e. it should not induce the start of debug mode when the `observe()` runs (means: when the `input$num` changes). It should be noted here, that even if it looks like we are retrieving the original body of function, this is not an answer for the (mentioned earlier) problem with element `at` in list returned by `utils::findLineNum()` - `at` will still contain the wrong indices.
 
-There is also one last thing to talk about - getting the right environment.
+### "Where Are You, Objects?"
+
+There is one last thing to talk about - getting the right environment. In all examples of Shiny app presented until now, we have used `environment()` to get the environment of object (function). And in all of our examples it was unnecessary - we could easily refer to the object directly, but this is not safe - what if there would be a functions having the same name, but in different environments? How to refer to *this* function, not *that* function? `environment()` returns the environment for the *nearest* function and it may be not enough for our purposes.
+
+```
+env_inner <- ""
+env_outer <- ""
+
+fun3 <- function() {
+  fun3 <- function() {
+    fun3 <- function() {
+      env_inner <<- environment(fun3)
+    }
+    fun3()
+  }
+  fun3()
+  env_outer <<- environment(fun3)
+}
+
+fun3()
+
+env_inner
+#> <environment: 0x0000000022e49560>
+
+env_outer
+#> <environment: 0x0000000022e49678>
+```
+
+We see three functions, all of them have the same name and all of them live in different environment - one of them in global environment, the rest are showed above. To be able to refer precise to given function, it is needed to know the environment. Relatively easy would be to connect object with environment upfront, when searching for objects across the environments using mentioned at the beginning `lapply(rlang::env_parents(rlang::current_env()), names)`. We could at first use `rlang::env_parents(rlang::current_env())` to get the list of environments and then get the objects in list, using `lapply()` and `names()`. This way we would have two lists of the same length and every element will *point* to the same environment, but the problem will occur when trying to use this environment in the code added together with `browser()`. Coming back to the Shiny app, we have used this line of code before:
+
+```
+body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))
+```
+
+We are constructing the `env` variable which is an environment, but how to know if this is the environment which contains `modServer` which we are looking for and not the other function of the same name, but in the different environment? We know that it is possible to have the list of environments and objects (functions) which belong to the given environment, but how to use this knowledge? This solution below won't work:
+
+```
+fun4 <- function() {
+  "x"
+}
+
+envir <- environment(fun4) # global environment
+
+rlang::expr(env <- !!envir)
+#> env <- <environment>
+```
+But the idea is not bad - we already have the object (`fun4`) and the environment (`envir`), so we could just add to the body of function the code which will bind environment to the name `env`. This way we would have the correct environment to refer to it, but as we see, instead of get something like `env <- .GlobalEnv`, we have the incorrect syntax: `env <- <environment>`. We can, however, keep the label of environment we need and search for the correct environment using this label. Label is the name of environment (if named) or address in memory - to get the label, we use `rlang::env_label()`.
+
+```
+fun4 <- function() {
+  "x"
+}
+
+envir_label <- rlang::env_label(environment(fun4)) # global environment
+
+get_envir <- function(label) {
+  envirs <- rlang::env_parents(rlang::current_env())
+  names(envirs) <- lapply(envirs, rlang::env_label)
+  envirs[[label]]
+}
+
+rlang::expr(env <- get_envir(!!envir_label))
+#> env <- get_envir("global")
+```
+The expression `env <- get_envir("global")` can be now added together with `browser()` to get the right environment - we know that it is "global" environment and our search (function `get_envir()`) will give us precise environment - the labels are unique. Of course, we still should think how to make sure that `get_envir()` will be visible in the environment (function) where this code will be added. In case of Shiny app this could be hard-coded, for example we could know that this function always will be in global environment. In case of `shinybreakpoint`, well, this function lives in the `shnybreakpoint` environment (namespace), so the access to this function is not a problem as well.
+
+### Closure
+
+

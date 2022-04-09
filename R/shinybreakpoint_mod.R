@@ -106,14 +106,24 @@ shinybreakpointServer <- function(keyEvent = "F1",
       output$src_code <- reactable::renderReactable({
         req(which_file())
         reactable::reactable(filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]],
+                             columns = list(line = reactable::colDef(align = "left",
+                                                                     width = 60,
+                                                                     name = ""),
+                                            src_code = reactable::colDef(name = "",
+                                                                         style = list(whiteSpace = "pre-wrap"))),
+                             columnGroups = list(reactable::colGroup(name = filenames_src_code_envirs$filenames_parse_data$filename[[which_file()]],
+                                                                     columns = c("line", "src_code"))),
                              selection = "single",
                              onClick = "select",
                              sortable = FALSE,
                              pagination = FALSE,
-                             borderless = TRUE,
                              compact = TRUE,
+                             borderless = TRUE,
                              highlight = TRUE,
-                             height = "84vh")
+                             height = "84vh",
+                             theme = reactable::reactableTheme(
+                               backgroundColor = "#f2eeeb", highlightColor = "#DFD6D2"
+                             ))
       })
 
       selected_line <- reactive({
@@ -200,17 +210,33 @@ create_UI <- function(session, filenames_src_code) {
   if (is.null(filenames_src_code)) {
     UI <- tags$div(class = "no-file", tags$p(""))
   } else {
+    if (length(filenames_src_code$filename) < 9) {
+      files <- shinyWidgets::radioGroupButtons(session$ns("file"), label = "",
+                                               choices = stats::setNames(filenames_src_code$filename_full_path,
+                                                                         filenames_src_code$filename),
+                                               direction = "vertical") %>%
+        tagAppendAttributes(class = "shinybreakpoint-radioGroupButtons")
+    } else {
+      files <- selectizeInput(session$ns("file"), label = "",
+                              choices = stats::setNames(filenames_src_code$filename_full_path,
+                                                        filenames_src_code$filename),
+                              options = list(maxOptions = 7), width = "100%") %>%
+        tagAppendAttributes(class = "shinybreakpoint-selectInput")
+    }
+
     UI <- tagList(
       fluidRow(
         column(3,
-             actionButton(session$ns("activate"), label = "Activate"),
-             HTML(rep("<br/>", 2)),
-             selectInput(session$ns("file"), label = "File",
-                         choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                   filenames_src_code$filename))
+               tags$div(class = "shinybreakpoint-div-activate",
+                        actionButton(session$ns("activate"), label = "Activate", class = "shinybreakpoint-activate-btn")
+               ),
+               HTML(rep("<br/>", 2)),
+               tags$div(class = "shinybreakpoint-div-files",
+                        files
+               )
         ),
         column(9,
-             reactable::reactableOutput(session$ns("src_code"))
+               reactable::reactableOutput(session$ns("src_code"))
         )
       )
     )

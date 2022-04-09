@@ -219,8 +219,7 @@ create_UI <- function(session, filenames_src_code) {
     } else {
       files <- selectizeInput(session$ns("file"), label = "",
                               choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                        filenames_src_code$filename),
-                              options = list(maxOptions = 7), width = "100%") %>%
+                                                        filenames_src_code$filename), width = "100%") %>%
         tagAppendAttributes(class = "shinybreakpoint-selectInput")
     }
 

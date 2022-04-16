@@ -5,14 +5,14 @@
 \title{Use Module to Set Breakpoint}
 \usage{
 shinybreakpointServer(
-  keyEvent = "F1",
+  keyEvent = "F4",
   id = "shinybreakpoint",
   varName = "....envirr"
 )
 }
 \arguments{
 \item{keyEvent}{key to run modal dialog with the functionality
-to set breakpoint. \code{"F1"} by default.}
+to set breakpoint. \code{"F4"} by default.}
 
 \item{id}{namespace used for all inputs in this module.
 \code{"shinybreakpoint"} by default. Change if in the app some

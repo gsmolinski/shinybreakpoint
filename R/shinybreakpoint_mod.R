@@ -26,7 +26,7 @@ shinybreakpointUI <- function(id) {
 #' `server` part of app.
 #'
 #' @param keyEvent key to run modal dialog with the functionality
-#' to set breakpoint. `"F1"` by default.
+#' to set breakpoint. `"F4"` by default.
 #' @param id namespace used for all inputs in this module.
 #' `"shinybreakpoint"` by default. Change if in the app some
 #' other module is used which already has `"shinybreakpoint"`
@@ -77,7 +77,7 @@ shinybreakpointUI <- function(id) {
 #'   }
 #' )
 #' }
-shinybreakpointServer <- function(keyEvent = "F1",
+shinybreakpointServer <- function(keyEvent = "F4",
                                   id = "shinybreakpoint",
                                   varName = "....envirr") {
 

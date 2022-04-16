@@ -81,7 +81,9 @@ retrieve_body <- function(obj_changed, obj_original, envir, e) {
 #' Check if breakpoint can be set before inserting 'browser()' to let user know if this is possible.
 #' Breakpoint can be set if:
 #' (1) location is inside braces - needs to remove last 'at' to check this and
-#' (2) location is inside reactive context - needs to check in any previous 'at'
+#' (2) location is inside reactive context - needs to check in any previous 'at' except the last two
+#' The reason, why the last one or last one and one before last are removed is based on trying, so
+#' it may be not reliable - now it only works, nothing more.
 #' @noRd
 does_breakpoint_can_be_set <- function(object) {
   is_possible <- FALSE
@@ -90,7 +92,8 @@ does_breakpoint_can_be_set <- function(object) {
     if (length(object$at) > 2) {
       at_this_whole <- object$at[-length(object$at)]
       expr <- body(envir[[object$name]])
-      any_reactive_context <- any(vapply(seq_along(object$at), function(x) is_reactive_context(expr[[object$at[1:x]]]),
+      any_reactive_context <- any(vapply(seq_along(object$at[-c(length(object$at) - 1, length(object$at))]),
+                                         function(x) is_reactive_context(expr[[object$at[1:x]]]),
                                          FUN.VALUE = logical(1)))
       if (rlang::is_call(expr[[at_this_whole]], "{") && any_reactive_context) {
         is_possible <- TRUE

@@ -83,6 +83,7 @@ shinybreakpointServer <- function(keyEvent = "F1",
 
   check_requirements_shinybreakpointServer(keyEvent, id, varName)
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
+  insertUI("head", "beforeEnd", shinyjs::useShinyjs(), immediate = TRUE)
   insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)
   filenames_src_code_envirs <- prepare_src_code(rlang::caller_env())
 
@@ -125,7 +126,8 @@ shinybreakpointServer <- function(keyEvent = "F1",
                              highlight = TRUE,
                              height = "84vh",
                              theme = reactable::reactableTheme(
-                               backgroundColor = "#f2eeeb", highlightColor = "#DFD6D2"
+                               backgroundColor = "#f2eeeb", highlightColor = "#DFD6D2",
+                               rowSelectedStyle = list(backgroundColor = "#DFD6D2", boxShadow = "inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);")
                              ))
       })
 
@@ -150,8 +152,14 @@ shinybreakpointServer <- function(keyEvent = "F1",
       })
 
       observe({
-        req(breakpoint_can_be_set())
-        reactable::updateReactable("src_code")
+        req(object())
+        if (isTruthy(breakpoint_can_be_set())) {
+          shinyjs::addCssClass(class = "shinybreakpoint-set",
+                               selector = ".shinybreakpoint-modal .rt-tr-selected")
+        } else {
+          shinyjs::addCssClass(class = "shinybreakpoint-not-set",
+                               selector = ".shinybreakpoint-modal .rt-tr-selected")
+        }
       })
 
       observe({

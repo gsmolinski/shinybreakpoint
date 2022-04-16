@@ -19,6 +19,7 @@ Imports:
     rlang,
     rstudioapi,
     shiny (>= 1.5.0),
+    shinyjs,
     shinyWidgets,
     stats,
     utils

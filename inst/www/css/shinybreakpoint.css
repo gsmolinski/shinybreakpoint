@@ -189,3 +189,11 @@
 .shinybreakpoint-modal .rt-td {
   padding: 3px 0 !important;
 }
+
+.shinybreakpoint-set {
+  box-shadow: inset -3px -3px 15px #984747 !important;
+}
+
+.shinybreakpoint-not-set {
+  box-shadow: inset -3px -3px 15px #9a9096 !important;
+}

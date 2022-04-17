@@ -83,7 +83,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
   check_requirements_shinybreakpointServer(keyEvent, id, varName)
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
-  insertUI("head", "beforeEnd", shinyjs::useShinyjs(), immediate = TRUE)
+  insertUI("head", "beforeEnd", singleton(shinyjs::useShinyjs()), immediate = TRUE)
   insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)
   filenames_src_code_envirs <- prepare_src_code(rlang::caller_env())
 

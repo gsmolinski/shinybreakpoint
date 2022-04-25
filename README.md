@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## State of 03.04.2022
+## State of 25.04.2022
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -14,6 +14,16 @@ You can install the development version of shinybreakpoint from
 ``` r
 # install.packages("devtools")
 devtools::install_github("gsmolinski/shinybreakpoint")
+```
+
+### Vignette
+
+Run the code below to see the whole vignette where usage, but also the
+core idea behind the package is explained. Alternatively, in the next
+section the usage is showed as well.
+
+``` r
+vignette("introduction-debugging", package = "shinybreakpoint")
 ```
 
 ### Overview
@@ -36,10 +46,10 @@ occurred.
 `shinybreakpoint` do not provide *new* technique for Shiny apps - it is
 already possible to set breakpoint using e.g. RStudio IDE, but the
 current solution has its own limitation. Breakpoint can’t be set when
-the code is split into multiple files (which is often the case when app
-is built of modules). Although `shinybreakpoint` gives the solution for
-that, it makes it in the radical way - the code has to be split into (at
-least one), separated from `server` part, function.
+the code is split into multiple files (which is often the case when the
+app is built of modules). Although `shinybreakpoint` gives the solution
+for that, it makes it in the radical way - the code has to be split into
+(at least one), separated from `server` part, function.
 
 ### Usage
 
@@ -114,7 +124,7 @@ definition*, but when not, then `shinybreakpoint` needs this additional
 step.
 
 To run the example above, one should save the file with the code, run
-the app and press `F1` (as this is key used by default, check out the
+the app and press `F4` (as this is key used by default, check out the
 other parameters by running `?shinybreakpoint::shinybreakpointServer` in
 the console) - the modal dialog will pop up. In our example there are
 two numeric inputs and one button in the `UI` as well as two `observe`s
@@ -165,8 +175,10 @@ after pressing `c` or `f` in the debug mode, Shiny app won’t have active
 breakpoint anymore (to set it again, modal dialog delivered by
 `shinybreakpoint` must be use again). There is, however, case when it
 could look like the breakpoint persist - during the debug mode, the app
-still runs and the objects in `UI` can be use. If we take as an example
-our example above, we could notice the following behavior: set the
+still runs (i.e. user interface is available, so e.g. `input`s can be
+changed) - the objects in `UI` can be use (but the app itself is not
+computing anything during the debug mode). If we take as an example our
+example above, we could notice the following behavior: set the
 breakpoint on `input$num1` line, activate it and during the debug mode,
 change the `input$num1` in the app - then when we press `c` in the debug
 mode (to continue execution of code to the end of block and then exit),
@@ -197,6 +209,6 @@ Not previously mentioned and possibly important remarks are:
     session starts
 -   if one uses RStudio IDE, `shinybreakpoint` recognizes the file
     opened in the source editor and if this file is used in Shiny app
-    and contains reactive blocks of code, it will open it as default
+    and contains reactive blocks of code, it will be opened as default
     file in modal dialog. This works only in a moment when the key
     specified in `keyEvent` parameter is pressed

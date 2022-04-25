@@ -121,7 +121,7 @@ In his talk given at 2016 Shiny Developer Conference, Jonathan McPherson noticed
 
 > If you're a seasoned R programmer, you may have used the `trace()` function to add tracing without modifying your script. Unfortunately, it's not possible to use this utility (or any that depend on it, such as `setBreakpoint`) with Shiny. `trace()` works by rewriting the body of the function to be traced, so the function must already exist when you run it. Shiny generates functions at runtime that aren't easily addressable.
 
-It was a fragment titled "What about trace()?" and is now available as a official documentation for Shiny^[[Debugging Shiny applications](https://shiny.rstudio.com/articles/debugging.html)]. And we could say it is somehow *suspicious*, since in the same paragraph it is said that something is impossible, because other thing is not *easily* addressable, but not - as we could expect - *impossible* to be addressable. It's a good paragraph to start with, even that by saying that everything started, because of this suspicion, would be nothing more than founding myth.
+It was a fragment titled "What about trace()?" and is now available as a official documentation for Shiny^[[Debugging Shiny applications](https://shiny.rstudio.com/articles/debugging.html)]. And we could say it is somehow *suspicious*, since in the same paragraph it is said that something is impossible, because some other thing is not *easily* addressable, but not - as we could expect - *impossible* to be addressable. It's a good paragraph to start with, even that by saying that everything started, because of this suspicion, would be nothing more than founding myth.
 
 ### Where Are You, Objects?
 
@@ -219,7 +219,7 @@ body(server)[[2]][[2]][[2]][[1]]
 #> `<-`
 ```
 
-This list can be manipulate - elements can be added, removed etc. We just need some additional functions for this, like `as.list()` (so we can use `append()` to add elements to the list), `as.call()` (to turn back the list into `language` object) or `quote()` to not evaluate `browser()`:
+This list can be manipulated - elements can be added, removed etc. We just need some additional functions for this, like `as.list()` (so we can use `append()` to add elements to the list), `as.call()` (to turn back the list into `language` object) or `quote()` to not evaluate `browser()`:
 
 ```
 server <- function(input, output) {
@@ -421,7 +421,7 @@ All of our actions taken until now led us to the state of greed; we find objects
 - we need to escape (using `c` or `f`) from debug mode multiple times before we escape for real - each `browser()` nests us into debug mode
 - but what is much worse - the `browser()` persists and each time the `observe()` runs (and it runs every time the `input$num` changes), we end up in the debug mode
 
-The remedy for this would be to remove the `browser()` after each use, i.e. after pressing `c` or `f` (after closing) in the debug mode. But it must be done *within* the function which is debugged (because of the session reload). In other words, the function will remove its own elements.
+The remedy for this would be to remove the `browser()` after each use, i.e. after pressing `c` or `f` (after closing) in the debug mode. But it must be done *within* the function which is debugged (because of the session reload). In other words, the function will remove its own elements. Here is an exemplification of this mechanism:
 
 ```
 fun2 <- function() {
@@ -499,10 +499,10 @@ This example looks quite complex now, so it may be useful to describe (even if r
 
 - `mod_env <- environment(modServer)` - we are just getting the environment where `modServer()` function is defined - it will be later explained, why we use this
 - `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(browser()), 1))` - browser is added
-- `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))` - to the function we are adding the code responsible to get the environment where is defined the function in which we are setting the breakpoint
+- `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))` - to the function we are adding the code responsible to get the environment where this function is defined (i.e. function in which we are setting the breakpoint)
 - `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(body(env$modServer)[[2]][[3]][[3]][[2]][[2]] <- body(env$modServer)[[2]][[3]][[3]][[2]][[2]][-c(2, 3, 4, 5)]), 3))` - we are adding to the function the code responsible to remove the added code from the function
-- `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(getDefaultReactiveDomain()$reload()), 4))` - we are adding the session reload to the function
-- `getDefaultReactiveDomain()$reload()` - we are reloading the session (after the breakpoint is set)
+- `body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(getDefaultReactiveDomain()$reload()), 4))` - we are adding the session reload to the function (session will be refreshed after closing debug mode)
+- `getDefaultReactiveDomain()$reload()` - we are reloading the session (after breakpoint is set)
 
 The very interesting and useful thing is that the line of code can remove the *next* line of code, but at the same time this next line of code can still be executed - we are using this to reload the session *after* the added code was removed *and* to remove the code responsible for this reload. Perhaps it will be clearer to see it, taking as an example regular function:
 
@@ -531,7 +531,7 @@ body(fun2)
 #> }
 ```
 
-When we run the function `fun2` first time, the last element (string `"two"`), which we are removing, is returned, so when run first time, the function will execute all lines of code, but after this we can check that the body has changed and if we would run the function again, only the number `2` would be returned/ This is very important, becase it means that we can add the session reload to the function and this session reload will be run (so the changes can be applied) and then removed from the function.
+When we run the function `fun2` first time, the last element (string `"two"`), which we are removing, is returned, so when run first time, the function will execute all lines of code, but after this we can check that the body has changed and if we would run the function again, only the number `2` would be returned. This is very important, because it means that we can add the session reload to the function and this session reload will be run (so the changes can be applied) and then removed from the function.
 
 It should be noted here, that even if it looks like we are retrieving the original body of function (because added elements has been removed), this is not an answer for the (mentioned earlier) problem with element `at` in list returned by `utils::findLineNum()` function - `at` will still contain the wrong indices.
 
@@ -560,7 +560,7 @@ a
 #> [1] 2
 ```
 
-If we stop thinking about this problem in terms of self-referencing, it looks simple - we can't modify the object defined in the parent from the child environment, because of the isolation (function closures the environment), however we can do this if we explicitly refer to the environment where the object if defined. Now we just need to remind yourselves that the function is defined in different environment than environment where exist its elements- is defined in the parent environment. Thus to modify the function (from that function) we need to refer explicitly to the environment where this function is defined - this is not different from our example with the `a` variable above.
+If we stop thinking about this problem in terms of self-referencing, it looks simple - we can't modify the object defined in the parent from the child environment, because of the isolation (function closures the environment), however we can do this if we explicitly refer to the environment where the object if defined. Now we just need to remind ourselves that the function is defined in different environment than environment where exist function's elements- is defined in the parent environment. Thus to modify the function (from that function) we need to refer explicitly to the environment where this function is defined - this is not different from our example with the `a` variable above.
 
 That was the answer, why we needed to refer to the environment inside the function, but why we needed this also in the `observe` at the beginning, where we set the breakpoint? On the one hand, it was indeed unnecessary - we could easily refer to the object directly, but (on the other hand) this is not safe - what if there would be a functions having the same name, but in different environments? How to refer to *this* function, not *that* function? `environment()` returns the environment for the *nearest* function and it may be not enough for our purposes.
 
@@ -590,9 +590,9 @@ env_outer
 
 We see three functions, all of them have the same name and all of them live in different environment. We already know that the function we want to refer to is in an upper environment (because we are inside this function), but if we are not sure if it is a direct parent, we can end up having the reference to the wrong object, because - as already said - `environment()` gives us environment for the nearest object of chosen name.
 
-In our previous examples we have used `environment()`, but that was just for simplicity - we see now that it wasn't a great idea. `shinybreakpoint` uses something different - function which searches though the environments to get the needed environment.
+In our previous examples we have used `environment()`, but that was just for simplicity - we see now that it wasn't a great idea. `shinybreakpoint` uses something different - function which searches through the environments to get the needed environment.
 
-To be able to refer precise to given function, it is needed to know the environment. Relatively easy would be to connect object with environment upfront, when searching for objects across the environments using code mentioned at the beginning, i.e.  `lapply(rlang::env_parents(rlang::current_env()), names)`. We could at first use `rlang::env_parents(rlang::current_env())` to get the list of environments and then get the objects in list, using `lapply()` and `names()`. This way we would have two lists of the same length and every element will *point* to the same environment, but the problem will occur when trying to use this environment in the code added along with `browser()`. Coming back to the Shiny app, we have used this line of code before:
+To be able to refer precise to given function, it is needed to know the environment. Relatively easy would be to connect object with environment upfront, when searching for objects across the environments using code mentioned at the beginning, i.e.  `lapply(rlang::env_parents(rlang::current_env()), names)`. We could at first use `rlang::env_parents(rlang::current_env())` to get the list of environments and then get the objects as a list, using `lapply()` and `names()`. This way we would have two lists of the same length and every element will *point* to the same environment, but the problem will occur when trying to use this environment in the code added along with `browser()`. Coming back to the Shiny app, we have used this line of code before:
 
 ```
 body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))
@@ -612,7 +612,7 @@ call("assign", "envir", env)
 # Error: unexpected '<' in "assign("envir", <"
 ```
 
-We have constructed the call (which is an assignment), using the variable `env` which is an environment where `fun3` is defined, but this call is not correct - we see that it is impossible to treat the environment like regular values - we can't simply evaluate the variable to get the value
+We have constructed the call (which is an assignment), using the variable `env` which is an environment where `fun3` is defined, but this call is not correct - we see that it is impossible to treat the environment like regular value - we can't simply evaluate the variable to get the value.
 
 But the idea is not bad - we already have the object (`fun3`) and the environment (`env`), so we could just add to the body of function the code which will bind environment to the name `envir`. This way we would have the correct environment to refer to it, but as we see, instead of get something like `assign("envir", .GlobalEnv)`, we have the incorrect syntax: `assign("envir", <environment>)`. We can, however, keep the label of environment we need and search for the correct environment using this label. Label is the name of environment (if named) or address in memory - to get the label, we use `rlang::env_label()`.
 
@@ -631,11 +631,11 @@ get_envir <- function(label) {
 call("assign", "envir", call("get_envir", env_lab))
 #> assign("envir", get_envir("global"))
 ```
-The expression `assign("envir", get_envir("global"))` can now be added along with `browser()` to get the right environment - we know that it is (in the example above) `"global"` environment and our search (function `get_envir()`) will give us precise environment - the labels are unique. Of course, we still should think how to make sure that `get_envir()` will be visible in the environment (function) where this code will be added. In case of Shiny app it can be stored in global environment (all objects from global environment are visible in any environment in the app, because it is a top environment). In case of `shinybreakpoint`, well, this function lives in the `shnybreakpoint` environment (namespace), so the access to this function is not a problem as well.
+The expression `assign("envir", get_envir("global"))` can now be added along with `browser()` to get the right environment - we know that it is (in the example above) `"global"` environment and our search (function `get_envir()`) will give us precise environment - the labels are unique. Of course, we still should think how to make sure that `get_envir()` will be visible in the environment (function) where this code will be added. In case of Shiny app it can be stored in global environment (all objects from global environment are visible in any environment in the app, because it is a top environment). In case of `shinybreakpoint`, because this function lives in the `shnybreakpoint` environment (namespace), access to this function is not a problem as well (if package is installed).
 
 ## III. Closure
 
-Setting breakpoint is a technique which is based on source code understanding as a commands executed line-by-line. This is how the source code is visible by humans - it is stored like a text and we all used to read the text knowing that the next statement is on the left, right, down. Functions makes it a little more complicated - function definition can be far, far away from the line where this function is called, so to know, why we received the results we see, it may be necessary to jump in the different place in the file to check the function body (or set breakpoint). Reactive programming makes it even more complicated - it is not so easy to know, which code block has been executed when some input changed.
+Setting breakpoint is a technique which is based on source code understanding as a commands executed line-by-line. This is how the source code is visible by humans - it is stored like a text and we all used to read the text knowing that the next statement is on the left, right, down. Functions make it a little more complicated - function definition can be far, far away from the line where this function is called, so to know, why we received the results we see, it may be necessary to jump in the different place in the file to check the function body (or set breakpoint). Reactive programming makes it even more complicated - it is not so easy to know, which code block has been executed when some input changed.
 
 The idea of storing functions, grouped functions or modules in separated files is a try to give a source code more intuitive structure and this is a point where difference between text being a story and text being a code becomes tangible. We could even start thinking that affinity of *code* to the *text* is a ballast. Isn't true that we split source code into multiple files because we want to be able to read it as a text (story) as easily as possible and not as a fragmented text (story)? And don't we feel that setting breakpoint is now the same as selecting a text fragment in a book even if we are not writing or reading a book? Of course, someone could say that we can use digital tools to search a text fragment in a source code or a book, but there is one more important difference between story and a code - story is *executed* in our brains, but code is not. Do we really need to expose ourselves on all of this source code written as text, on each line? And even if in some smaller file - do we still need to always see all of these characters?
 

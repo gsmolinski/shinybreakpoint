@@ -24,7 +24,7 @@ You can install the development version of shinybreakpoint from [GitHub](https:/
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("gsmolinski/shinybreakpoint")
+devtools::install_github("gsmolinski/shinybreakpoint", build_vignettes = FALSE) # change into TRUE if you want to have access to the vignette
 ```
 
 ### Vignette

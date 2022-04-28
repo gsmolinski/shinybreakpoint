@@ -94,8 +94,13 @@ shinybreakpointServer <- function(keyEvent = "F4",
       observe({
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
-        updateSelectInput(session, "file",
-                          selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
+          shinyWidgets::updateRadioGroupButtons(session, "file",
+                                                selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        } else {
+          updateSelectizeInput(session, "file",
+                               selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        }
       }) %>%
         bindEvent(input$key_pressed)
 

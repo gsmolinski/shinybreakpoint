@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis&family=Quattrocento+Sans&display=swap');
+
+.shinybreakpoint-modal {
+  font-family: "Dosis";
+  letter-spacing: 2px;
+}
+
 .shinybreakpoint-modal .reactable {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   padding: 1px;
@@ -23,7 +30,7 @@
 }
 
 .shinybreakpoint-modal .rt-thead.-headerGroups .rt-tr {
-  box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+  box-shadow: 0 0 20px #c09eb1 !important;
   border-width: 0;
   border-style: solid;
   border-color: #e2e2e2;
@@ -107,6 +114,8 @@
 }
 
 .shinybreakpoint-modal .rt-tbody {
+  font-family: "Quattrocento Sans";
+  letter-spacing: 0;
   cursor: pointer;
 }
 
@@ -202,6 +211,8 @@
   background-color: #ebeff2 !important;
   color: #87585c !important;
   border-color: inherit !important;
+  font-family: "Dosis"!important;
+  letter-spacing: 2px!important;
 }
 
 .shinybreakpoint-modal .shinybreakpoint-activate-btn:focus {
@@ -209,9 +220,36 @@
 }
 
 .shinybreakpoint-modal .shinybreakpoint-activate-btn:focus-visible {
-  box-shadow: 0 0 20px #8fb6b4 !important;
+  box-shadow: none !important;
 }
 
 .shinybreakpoint-modal .shinybreakpoint-activate-btn:active {
   background-color: #bbc9d3 !important;
+}
+
+.shinybreakpoint-activate-btn-ready {
+  box-shadow: 0 0 20px #8fb6b4 !important;
+}
+
+.shinybreakpoint-modal .selectize-dropdown .option {
+  cursor: pointer;
+}
+
+.shinybreakpoint-modal #shinybreakpoint-name {
+  text-align: center;
+  color: #a89d40;
+  box-shadow: inset 0 0 20px #bdbfd4;
+  border-radius: 30px;
+  font-family: "Dosis"!important;
+  letter-spacing: 3px;
+  font-style: italic;
+}
+
+.shinybreakpoint-modal #shinybreakpoint-name-div {
+  box-shadow: 0 0 20px #bdbfd4;
+  border-radius: 30px;
+}
+
+.shinybreakpoint-modal .rt-th-group {
+  color: #c09eb1;
 }

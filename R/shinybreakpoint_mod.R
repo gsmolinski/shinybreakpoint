@@ -138,6 +138,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
       selected_line <- reactive({
         req(which_file())
+        shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
+                                selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         src_code <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
         row <- reactable::getReactableState("src_code", "selected")
         # if row is NULL, then returns numeric(0), which is not truthy
@@ -161,6 +163,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
         if (isTruthy(breakpoint_can_be_set())) {
           shinyjs::addCssClass(class = "shinybreakpoint-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
+          shinyjs::addCssClass(class = "shinybreakpoint-activate-btn-ready",
+                               selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         } else {
           shinyjs::addCssClass(class = "shinybreakpoint-not-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")

@@ -48,7 +48,7 @@ objects which would be used directly in the \code{server}
 }
 \examples{
 # To run example, copy-paste to file, save the file
-# and run the app. Then press "F1" to open the modal dialog.
+# and run the app. Then press "F4" to open the modal dialog.
 
 \dontrun{
 library(shiny)

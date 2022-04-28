@@ -250,7 +250,9 @@ create_UI <- function(session, filenames_src_code) {
                         files
                ),
                br(),
-               tags$div(tags$p("shinybreakpoint", id = "shinybreakpoint-name"))
+               tags$div(id = "shinybreakpoint-name-div",
+                        tags$p("shinybreakpoint", id = "shinybreakpoint-name")
+               )
         ),
         column(9,
                reactable::reactableOutput(session$ns("src_code"))

@@ -190,10 +190,28 @@
   padding: 3px 0 !important;
 }
 
-.shinybreakpoint-set {
+.shinybreakpoint-modal .shinybreakpoint-set {
   box-shadow: inset -3px -3px 15px #984747 !important;
 }
 
-.shinybreakpoint-not-set {
+.shinybreakpoint-modal .shinybreakpoint-not-set {
   box-shadow: inset -3px -3px 15px #9a9096 !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn {
+  background-color: #ebeff2 !important;
+  color: #87585c !important;
+  border-color: inherit !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:focus {
+  box-shadow: none !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:focus-visible {
+  box-shadow: 0 0 20px #8fb6b4 !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:active {
+  background-color: #bbc9d3 !important;
 }

@@ -94,3 +94,30 @@ insert_css <- function() {
   singleton(tags$link(rel = "stylesheet", type = "text/css",
                       href = file.path("shinybreakpoint-resources", "css", "shinybreakpoint.css")))
 }
+
+#' Add '<span>' Tag with Given Classes to the Parts of String
+#'
+#' It allows to colorize the parts of string according to the classes.
+#'
+#' @param code character length 1.
+#'
+#' @return
+#' Used for side effect - string will be inserted again into the HTML element, but
+#' with the 'dangerouslySetInnerHTML' mode (available in React),
+#' so the HTML code won't be escaped and thus colors will be visible.
+#' @import shiny
+colorize_code <- function(code) {
+  code <- stringi::stri_replace_all_regex(code, "([\"'].*[\"'])", "<span class = 'string_code'>$1</span>")
+  code <- stringi::stri_replace_all_regex(code, "(#.*)", "<span class = 'comment_code'>$1</span>")
+  code <- stringi::stri_replace_all_fixed(code, "(", "<span class = 'bracket_code'>(</span>")
+  code <- stringi::stri_replace_all_fixed(code, ")", "<span class = 'bracket_code'>)</span>")
+  code <- stringi::stri_replace_all_fixed(code, "[", "<span class = 'select_code'>[</span>")
+  code <- stringi::stri_replace_all_fixed(code, "]", "<span class = 'select_code'>]</span>")
+  code <- stringi::stri_replace_all_fixed(code, "$", "<span class = 'select_code'>$</span>")
+  code <- stringi::stri_replace_all_regex(code, "\\b(if|else|repeat|while|function|for|in|next|break)(?=[^\\w])\\b", "<span class = 'keyword_code'>$1</span>")
+  code <- stringi::stri_replace_all_fixed(code, "%>%", "<span class = 'pipe_code'>%>%</span>")
+  code <- stringi::stri_replace_all_fixed(code, "|>", "<span class = 'pipe_code'>|></span>")
+  code <- stringi::stri_replace_all_regex(code, "\\b(TRUE|FALSE|T|F|NULL|NA|NA_character_|NA_integer_|NA_real_|NA_complex_)(?=[^\\w])\\b", "<span class = 'specials_code'>$1</span>")
+  code <- stringi::stri_replace_all_regex(code, "(\\w+:{3}|\\w+:{2})", "<span class = 'namespace_code'>$1</span>")
+  tags$span(dangerouslySetInnerHTML = list("__html" = code))
+}

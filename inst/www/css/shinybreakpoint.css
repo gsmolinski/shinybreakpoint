@@ -250,6 +250,68 @@
   border-radius: 30px;
 }
 
+#br-shinybreakpoint-name {
+  height: 7vh;
+}
+
 .shinybreakpoint-modal .rt-th-group {
   color: #c09eb1;
+}
+
+.shinybreakpoint-modal .string_code {
+  color: green;
+}
+
+.shinybreakpoint-modal .comment_code {
+  color: gray;
+}
+
+.shinybreakpoint-modal .string_code .comment_code,
+.shinybreakpoint-modal .string_code .comment_code .bracket_code,
+.shinybreakpoint-modal .string_code .bracket_code,
+.shinybreakpoint-modal .string_code .comment_code .select_code,
+.shinybreakpoint-modal .string_code .select_code,
+.shinybreakpoint-modal .string_code .comment_code .keyword_code,
+.shinybreakpoint-modal .string_code .keyword_code,
+.shinybreakpoint-modal .string_code .comment_code .pipe_code,
+.shinybreakpoint-modal .string_code .pipe_code,
+.shinybreakpoint-modal .string_code .comment_code .specials_code,
+.shinybreakpoint-modal .string_code .specials_code,
+.shinybreakpoint-modal .string_code .comment_code .namespace_code,
+.shinybreakpoint-modal .string_code .namespace_code {
+  color: green;
+}
+
+.shinybreakpoint-modal .comment_code .string_code,
+.shinybreakpoint-modal .comment_code .bracket_code,
+.shinybreakpoint-modal .comment_code .select_code,
+.shinybreakpoint-modal .comment_code .keyword_code,
+.shinybreakpoint-modal .comment_code .pipe_code,
+.shinybreakpoint-modal .comment_code .specials_code,
+.shinybreakpoint-modal .comment_code .namespace_code{
+  color: gray;
+}
+
+.shinybreakpoint-modal .bracket_code {
+  color: gold;
+}
+
+.shinybreakpoint-modal .select_code {
+  color: purple;
+}
+
+.shinybreakpoint-modal .keyword_code {
+  color: blue;
+}
+
+.shinybreakpoint-modal .pipe_code {
+  color: pink;
+}
+
+.shinybreakpoint-modal .specials_code {
+  color: red;
+}
+
+.shinybreakpoint-modal .namespace_code {
+  color: cyan;
 }

@@ -118,6 +118,14 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                                                      name = ""),
                                             src_code = reactable::colDef(name = "",
                                                                          style = list(whiteSpace = "pre-wrap"),
+                                                                         cell = function(value) {
+                                                                           # do not colorize if HTML code can be in chosen line
+                                                                           if (!is.na(value) && !stringi::stri_detect_regex(value, "[\"'].*[<>].*[\"']")) {
+                                                                             colorize_code(value)
+                                                                           } else {
+                                                                             value
+                                                                           }
+                                                                         }
                                             )),
                              columnGroups = list(reactable::colGroup(name = filenames_src_code_envirs$filenames_parse_data$filename[[which_file()]],
                                                                      columns = c("line", "src_code"))),
@@ -253,7 +261,7 @@ create_UI <- function(session, filenames_src_code) {
                tags$div(class = "shinybreakpoint-div-files",
                         files
                ),
-               br(),
+               tags$div(id = "br-shinybreakpoint-name"),
                tags$div(id = "shinybreakpoint-name-div",
                         tags$p("shinybreakpoint", id = "shinybreakpoint-name")
                )

@@ -250,7 +250,7 @@
   border-radius: 30px;
 }
 
-#br-shinybreakpoint-name {
+.shinybreakpoint-modal #br-shinybreakpoint-name {
   height: 7vh;
 }
 
@@ -258,38 +258,24 @@
   color: #c09eb1;
 }
 
-.shinybreakpoint-modal .string_code {
+.shinybreakpoint-modal .string_code,
+.shinybreakpoint-modal .string_code .comment_code,
+.shinybreakpoint-modal .string_code .bracket_code,
+.shinybreakpoint-modal .string_code .select_code,
+.shinybreakpoint-modal .string_code .keyword_code,
+.shinybreakpoint-modal .string_code .pipe_code,
+.shinybreakpoint-modal .string_code .specials_code,
+.shinybreakpoint-modal .string_code .namespace_code,
+.shinybreakpoint-modal .string_code .fun_call_code,
+.shinybreakpoint-modal .string_code .brace_code,
+.shinybreakpoint-modal .string_code .assign_code {
   color: green;
+  font-size: inherit;
 }
 
 .shinybreakpoint-modal .comment_code {
   color: gray;
-}
-
-.shinybreakpoint-modal .string_code .comment_code,
-.shinybreakpoint-modal .string_code .comment_code .bracket_code,
-.shinybreakpoint-modal .string_code .bracket_code,
-.shinybreakpoint-modal .string_code .comment_code .select_code,
-.shinybreakpoint-modal .string_code .select_code,
-.shinybreakpoint-modal .string_code .comment_code .keyword_code,
-.shinybreakpoint-modal .string_code .keyword_code,
-.shinybreakpoint-modal .string_code .comment_code .pipe_code,
-.shinybreakpoint-modal .string_code .pipe_code,
-.shinybreakpoint-modal .string_code .comment_code .specials_code,
-.shinybreakpoint-modal .string_code .specials_code,
-.shinybreakpoint-modal .string_code .comment_code .namespace_code,
-.shinybreakpoint-modal .string_code .namespace_code {
-  color: green;
-}
-
-.shinybreakpoint-modal .comment_code .string_code,
-.shinybreakpoint-modal .comment_code .bracket_code,
-.shinybreakpoint-modal .comment_code .select_code,
-.shinybreakpoint-modal .comment_code .keyword_code,
-.shinybreakpoint-modal .comment_code .pipe_code,
-.shinybreakpoint-modal .comment_code .specials_code,
-.shinybreakpoint-modal .comment_code .namespace_code{
-  color: gray;
+  font-size: x-large;
 }
 
 .shinybreakpoint-modal .bracket_code {
@@ -314,4 +300,16 @@
 
 .shinybreakpoint-modal .namespace_code {
   color: cyan;
+}
+
+.shinybreakpoint-modal .fun_call_code {
+  color: orange;
+}
+
+.shinybreakpoint-modal .brace_code {
+  color: coral;
+}
+
+.shinybreakpoint-modal .assign_code {
+  color: Plum;
 }

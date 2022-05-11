@@ -23,10 +23,11 @@ collect_filenames_parse_data <- function(caller_env) {
       dplyr::filter(!duplicated(.data$filename_full_path)) %>%
       dplyr::mutate(filename_full_path = normalizePath(.data$filename_full_path, "/"),
                     filename = basename(.data$filename_full_path)) %>%
+      dplyr::arrange(.data$filename) %>%
       dplyr::relocate(.data$filename, .before = .data$parse_data)
 
     names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
-    envirs <- envirs[filenames_parse_data$env_label]
+    envirs <- envirs[filenames_parse_data$env_label] # now envirs have the same order as files in data.frame
 
     list(filenames_parse_data = filenames_parse_data,
          envirs = envirs)

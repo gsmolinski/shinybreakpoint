@@ -115,11 +115,11 @@ shinybreakpointServer <- function(keyEvent = "F4",
         reactable::reactable(src_data,
                              columns = list(line = reactable::colDef(align = "center",
                                                                      width = 60,
-                                                                     name = ""),
+                                                                     name = "",
+                                                                     style = list(color = "#8b8589")),
                                             src_code = reactable::colDef(name = "",
-                                                                         style = list(whiteSpace = "pre-wrap"),
+                                                                         style = list(whiteSpace = "pre-wrap", color = "#2f4f4f"),
                                                                          cell = function(value) {
-                                                                           # do not colorize if HTML code can be in chosen line
                                                                            if (!is.na(value) && !stringi::stri_detect_regex(value, "[\"'].*[<>].*[\"']")) {
                                                                              colorize_code(value)
                                                                            } else {

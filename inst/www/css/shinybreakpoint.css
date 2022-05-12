@@ -79,6 +79,7 @@
   outline-width: 0;
   outline-style: solid;
   outline-color: #e2e2e2;
+  text-align: center;
 }
 
 .shinybreakpoint-div-files .selectize-dropdown {
@@ -91,6 +92,7 @@
   outline-width: 0;
   outline-style: solid;
   outline-color: #e2e2e2;
+  text-align: center;
 }
 
 .shinybreakpoint-div-files .selectize-input:hover {
@@ -268,44 +270,49 @@
 .shinybreakpoint-modal .string_code .fun_call_code,
 .shinybreakpoint-modal .string_code .brace_code,
 .shinybreakpoint-modal .string_code .number_code {
-  color: green;
+  color: #4e9a06;
   background-color: inherit;
 }
 
 .shinybreakpoint-modal .comment_code {
-  color: gray;
-  background-color: #bdbfd4;
+  color: white;
+  background-color: #6f7850;
 }
 
 .shinybreakpoint-modal .bracket_code {
-  color: gold;
+  color: #FF6600;
 }
 
 .shinybreakpoint-modal .select_code {
-  color: purple;
+  color: #a2006d;
 }
 
 .shinybreakpoint-modal .keyword_code {
-  color: blue;
+  color: #0099FF;
 }
 
 .shinybreakpoint-modal .number_code {
-  color: brown;
+  color: #8f5902;
 }
 
 .shinybreakpoint-modal .specials_code {
-  color: red;
+  color: #CF4F5F;
 }
 
 .shinybreakpoint-modal .namespace_code {
-  color: cyan;
+  color: #b88a00;
 }
 
 .shinybreakpoint-modal .fun_call_code,
 .shinybreakpoint-modal .fun_call_code .keyword_code {
-  color: orange;
+  color: #6464dd;
 }
 
 .shinybreakpoint-modal .brace_code {
-  color: coral;
+  color: #fc0fc0;
+}
+
+.shinybreakpoint-modal .reactable ::selection {
+  color: white;
+  background: #898a74;
 }

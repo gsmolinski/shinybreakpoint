@@ -263,19 +263,18 @@
 .shinybreakpoint-modal .string_code .bracket_code,
 .shinybreakpoint-modal .string_code .select_code,
 .shinybreakpoint-modal .string_code .keyword_code,
-.shinybreakpoint-modal .string_code .pipe_code,
 .shinybreakpoint-modal .string_code .specials_code,
 .shinybreakpoint-modal .string_code .namespace_code,
 .shinybreakpoint-modal .string_code .fun_call_code,
 .shinybreakpoint-modal .string_code .brace_code,
-.shinybreakpoint-modal .string_code .assign_code {
+.shinybreakpoint-modal .string_code .number_code {
   color: green;
-  font-size: inherit;
+  background-color: inherit;
 }
 
 .shinybreakpoint-modal .comment_code {
   color: gray;
-  font-size: x-large;
+  background-color: #bdbfd4;
 }
 
 .shinybreakpoint-modal .bracket_code {
@@ -290,8 +289,8 @@
   color: blue;
 }
 
-.shinybreakpoint-modal .pipe_code {
-  color: pink;
+.shinybreakpoint-modal .number_code {
+  color: brown;
 }
 
 .shinybreakpoint-modal .specials_code {
@@ -302,14 +301,11 @@
   color: cyan;
 }
 
-.shinybreakpoint-modal .fun_call_code {
+.shinybreakpoint-modal .fun_call_code,
+.shinybreakpoint-modal .fun_call_code .keyword_code {
   color: orange;
 }
 
 .shinybreakpoint-modal .brace_code {
   color: coral;
-}
-
-.shinybreakpoint-modal .assign_code {
-  color: Plum;
 }

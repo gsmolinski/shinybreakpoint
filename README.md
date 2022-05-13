@@ -1,9 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## State of 25.04.2022
+## State of 13.05.2022
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 ### Installation
@@ -25,6 +28,16 @@ section the usage is showed as well.
 ``` r
 vignette("introduction-debugging", package = "shinybreakpoint")
 ```
+
+Core idea behind the package was also presented during the 2022 Appsilon
+Shiny Conference (this talk covers most of the information included in
+the vignette):
+
+<div align="center">
+
+<a href="https://www.youtube.com/watch?v=nDxYgBgeEQ4"><img width="550" height="400"  src="https://yt-embed.live/embed?v=nDxYgBgeEQ4" alt="Click to go to the youtube channel."></a>
+
+</div>
 
 ### Overview
 

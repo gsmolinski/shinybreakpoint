@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis&family=Quattrocento+Sans&display=swap');
+
+.shinybreakpoint-modal {
+  font-family: "Dosis";
+  letter-spacing: 2px;
+}
+
 .shinybreakpoint-modal .reactable {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   padding: 1px;
@@ -23,7 +30,7 @@
 }
 
 .shinybreakpoint-modal .rt-thead.-headerGroups .rt-tr {
-  box-shadow: inset 0 3px 5px rgba(0,0,0,.125);
+  box-shadow: 0 0 20px #c09eb1 !important;
   border-width: 0;
   border-style: solid;
   border-color: #e2e2e2;
@@ -72,6 +79,8 @@
   outline-width: 0;
   outline-style: solid;
   outline-color: #e2e2e2;
+  text-align: center;
+  color: #635147;
 }
 
 .shinybreakpoint-div-files .selectize-dropdown {
@@ -84,10 +93,19 @@
   outline-width: 0;
   outline-style: solid;
   outline-color: #e2e2e2;
+  text-align: center;
+}
+
+.shinybreakpoint-div-files .selectize-dropdown .option {
+  color: #635147;
 }
 
 .shinybreakpoint-div-files .selectize-input:hover {
   background-color: #DFD6D2 !important;
+}
+
+.shinybreakpoint-div-files .selectize-input.focus {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);;
 }
 
 .shinybreakpoint-modal .modal-dialog {
@@ -107,6 +125,8 @@
 }
 
 .shinybreakpoint-modal .rt-tbody {
+  font-family: "Quattrocento Sans";
+  letter-spacing: 0;
   cursor: pointer;
 }
 
@@ -135,7 +155,7 @@
 .shinybreakpoint-div-files .active,
 .shinybreakpoint-div-files .btn-check:checked+.btn-outline-primary {
   background-color: #DFD6D2 !important;
-  color: black;
+  color: #635147;
   border-color: #e2e2e2;
 }
 
@@ -145,7 +165,7 @@
 
 .shinybreakpoint-div-files .btn {
   background-color: #f2eeeb;
-  color: black;
+  color: #635147;
 }
 
 .shinybreakpoint-div-files .btn-outline-primary {
@@ -190,10 +210,118 @@
   padding: 3px 0 !important;
 }
 
-.shinybreakpoint-set {
+.shinybreakpoint-modal .shinybreakpoint-set {
   box-shadow: inset -3px -3px 15px #984747 !important;
 }
 
-.shinybreakpoint-not-set {
+.shinybreakpoint-modal .shinybreakpoint-not-set {
   box-shadow: inset -3px -3px 15px #9a9096 !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn {
+  background-color: #ebeff2 !important;
+  color: #87585c !important;
+  border-color: inherit !important;
+  font-family: "Dosis"!important;
+  letter-spacing: 2px!important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:focus {
+  box-shadow: none !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:focus-visible {
+  box-shadow: none !important;
+}
+
+.shinybreakpoint-modal .shinybreakpoint-activate-btn:active {
+  background-color: #bbc9d3 !important;
+}
+
+.shinybreakpoint-activate-btn-ready {
+  box-shadow: 0 0 20px #8fb6b4 !important;
+}
+
+.shinybreakpoint-modal .selectize-dropdown .option {
+  cursor: pointer;
+}
+
+.shinybreakpoint-modal #shinybreakpoint-name {
+  text-align: center;
+  color: #a89d40;
+  box-shadow: inset 0 0 20px #bdbfd4;
+  border-radius: 30px;
+  font-family: "Dosis"!important;
+  letter-spacing: 3px;
+  font-style: italic;
+}
+
+.shinybreakpoint-modal #shinybreakpoint-name-div {
+  box-shadow: 0 0 20px #bdbfd4;
+  border-radius: 30px;
+}
+
+.shinybreakpoint-modal #br-shinybreakpoint-name {
+  height: 7vh;
+}
+
+.shinybreakpoint-modal .rt-th-group {
+  color: #c09eb1;
+}
+
+.shinybreakpoint-modal .string_code,
+.shinybreakpoint-modal .string_code .comment_code,
+.shinybreakpoint-modal .string_code .bracket_code,
+.shinybreakpoint-modal .string_code .select_code,
+.shinybreakpoint-modal .string_code .keyword_code,
+.shinybreakpoint-modal .string_code .specials_code,
+.shinybreakpoint-modal .string_code .namespace_code,
+.shinybreakpoint-modal .string_code .fun_call_code,
+.shinybreakpoint-modal .string_code .brace_code,
+.shinybreakpoint-modal .string_code .number_code {
+  color: #4e9a06;
+  background-color: inherit;
+}
+
+.shinybreakpoint-modal .comment_code {
+  color: white;
+  background-color: #6f7850;
+}
+
+.shinybreakpoint-modal .bracket_code {
+  color: #FF6600;
+}
+
+.shinybreakpoint-modal .select_code {
+  color: #a2006d;
+}
+
+.shinybreakpoint-modal .keyword_code {
+  color: #0099FF;
+}
+
+.shinybreakpoint-modal .number_code {
+  color: #8f5902;
+}
+
+.shinybreakpoint-modal .specials_code {
+  color: #CF4F5F;
+}
+
+.shinybreakpoint-modal .namespace_code {
+  color: #b88a00;
+}
+
+.shinybreakpoint-modal .fun_call_code,
+.shinybreakpoint-modal .fun_call_code .keyword_code {
+  color: #6464dd;
+}
+
+.shinybreakpoint-modal .brace_code {
+  color: #fc0fc0;
+}
+
+.shinybreakpoint-modal .reactable ::selection {
+  color: white;
+  background: #898a74;
 }

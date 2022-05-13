@@ -115,9 +115,17 @@ shinybreakpointServer <- function(keyEvent = "F4",
         reactable::reactable(src_data,
                              columns = list(line = reactable::colDef(align = "center",
                                                                      width = 60,
-                                                                     name = ""),
+                                                                     name = "",
+                                                                     style = list(color = "#8b8589")),
                                             src_code = reactable::colDef(name = "",
-                                                                         style = list(whiteSpace = "pre-wrap"),
+                                                                         style = list(whiteSpace = "pre-wrap", color = "#2f4f4f"),
+                                                                         cell = function(value) {
+                                                                           if (!is.na(value) && !stringi::stri_detect_regex(value, "[\"'].*[<>].*[\"']")) {
+                                                                             colorize_code(value)
+                                                                           } else {
+                                                                             value
+                                                                           }
+                                                                         }
                                             )),
                              columnGroups = list(reactable::colGroup(name = filenames_src_code_envirs$filenames_parse_data$filename[[which_file()]],
                                                                      columns = c("line", "src_code"))),
@@ -138,6 +146,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
       selected_line <- reactive({
         req(which_file())
+        shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
+                                selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         src_code <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
         row <- reactable::getReactableState("src_code", "selected")
         # if row is NULL, then returns numeric(0), which is not truthy
@@ -161,6 +171,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
         if (isTruthy(breakpoint_can_be_set())) {
           shinyjs::addCssClass(class = "shinybreakpoint-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
+          shinyjs::addCssClass(class = "shinybreakpoint-activate-btn-ready",
+                               selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         } else {
           shinyjs::addCssClass(class = "shinybreakpoint-not-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
@@ -249,8 +261,10 @@ create_UI <- function(session, filenames_src_code) {
                tags$div(class = "shinybreakpoint-div-files",
                         files
                ),
-               br(),
-               tags$div(tags$p("shinybreakpoint", id = "shinybreakpoint-name"))
+               tags$div(id = "br-shinybreakpoint-name"),
+               tags$div(id = "shinybreakpoint-name-div",
+                        tags$p("shinybreakpoint", id = "shinybreakpoint-name")
+               )
         ),
         column(9,
                reactable::reactableOutput(session$ns("src_code"))

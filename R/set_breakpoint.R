@@ -41,7 +41,7 @@ find_object <- function(file, line, envir) {
 #' we need to retrieve body of all functions, but only functions to do not introduce any side effects.
 #' @noRd
 restore_body_funs <- function(file, envir) {
-  original_file <- parse(file)
+  original_file <- parse(file, keep.source = TRUE)
   original_file_only_fun <- Filter(is_named_fun, original_file)
   if (length(original_file_only_fun) > 0) {
     e <- new.env()
@@ -103,6 +103,119 @@ does_breakpoint_can_be_set <- function(object) {
   is_possible
 }
 
+#' Set Attributes to Modified Function
+#'
+#' This function ensures that during the debugging the whole script from the
+#' file will be visible for the user, however, it will be temporary file, not
+#' the original file where the breakpoint was set.
+#'
+#' @param file original file.
+#' @param line final line where breakpoint will be set.
+#' @param object_name name returned by 'find_object()'.
+#' @param object_envir environment returned by 'find_object()'.
+#' @param object_at 'at' element (step in the body) returned by 'find_object()'.
+#'
+#' @return
+#' Used for side effects - set attributes to function in which breakpoint was set,
+#' so RStudio can find the file and display it for the user. However, we are not
+#' using original file, but temporary file - the purpose is to show user the whole
+#' context (script) for convenience.
+#' @details
+#' When the function is modified, attributes are lost, so it is unknown from which
+#' file this function comes from. We are constructing temporary file with this modified
+#' function and setting the attributes using this temporary file.
+#' @noRd
+set_attr <- function(file, line, object_name, object_envir, object_at) {
+  path <- tempfile("DEBUGGING_", fileext = ".R")
+  write_file_modified(file, line, object_name, object_envir, object_at, path)
+  parsed_modified <- parse(path, keep.source = TRUE)
+  parsed_modified_only_fun <- Filter(is_named_fun, parsed_modified)
+  if (length(parsed_modified_only_fun) > 0) {
+    e <- new.env()
+    for (i in seq_along(parsed_modified_only_fun)) {
+      try(eval(parsed_modified_only_fun[[i]], envir = e), silent = TRUE)
+    }
+    attr(body(object_envir[[object_name]]), "srcref") <- attr(body(e[[object_name]]), "srcref")
+    attr(body(object_envir[[object_name]]), "srcfile") <- attr(body(e[[object_name]]), "srcfile")
+    attr(object_envir[[object_name]],"srcref") <- attr(e[[object_name]], "srcref")
+  }
+}
+
+#' Write Temporary File With Breakpoint Set
+#'
+#' Breakpoint is set on-the-fly, but to display the user properly
+#' the file with the breakpoint, we need to reconstruct this file.
+#'
+#' @param file original file.
+#' @param line final line where breakpoint will be set.
+#' @param object_name name returned by 'find_object()'.
+#' @param object_envir environment returned by 'find_object()'.
+#' @param object_at 'at' element (step in the body) returned by 'find_object()'.
+#' @param path path to constructed (temporary) file.
+#'
+#' @return
+#' Used for side effect - writes the file with the breakpoint to the temporary location.
+#' @details
+#' To restore the attributes (see 'set_attr()'), we need to parse the file where will be
+#' a function with added code (with breakpoint set), so then we can add these attr to the
+#' function we have modified and point it to the temporary file, so IDE will open this file
+#' during the debugging and user would see the whole script which should be convenient.
+#' @noRd
+write_file_modified <- function(file, line, object_name, object_envir, object_at, path) {
+  location <- determine_location(object_at)$location_in_fun
+  added_lines <- c(0, 1, 2, 3) # 4, because 4 lines of code added to the body
+  locations <- replicate(length(added_lines), location, simplify = FALSE)
+  for (i in seq_along(locations)) {
+    locations[[i]][[length(locations[[i]])]] <- locations[[i]][[length(locations[[i]])]] + added_lines[[i]]
+  }
+  added_code <- lapply(locations, function(e) deparse(body(object_envir[[object_name]])[[e]]))
+
+  file_orig <- as.list(readLines(file, warn = FALSE))
+  file_modified <- unlist(append(file_orig, added_code, line), use.names = FALSE)
+  writeLines(file_modified, path)
+}
+
+#' Determine Exact Line Where Breakpoint Will Be Inserted
+#'
+#' The line where the 'browser()' will be inserted can be different then
+#' line chosen by user. This function returns the exact line.
+#'
+#' @param file full path to the file.
+#' @param line line chosen by user.
+#' @param object_envir environment returned by 'find_object()'.
+#' @param object_at  'at' element (step in the body) returned by 'find_object()'.
+#'
+#' @return
+#' Line (numeric length 1) where the code (breakpoint) will be inserted.
+#' @details
+#' If e.g. function is divided into multiple lines and user is choosing the line
+#' inside the function, breakpoint won't be set there, but before the function call. This
+#' case shows that the line chosen by user can be different than line where the breakpoint
+#' will be set. However, to prepare the file with modified function, we need to know
+#' the exact line and this is the aim of this function.
+#' The idea is that if returned 'at' is the same for two lines, then the breakpoint
+#' is set in the first line - so we need to iterate over previous (in the file) lines
+#' to check when 'at' has changed.
+#' @noRd
+determine_line <- function(file, line, object_envir_orig, object_at_orig) {
+  still_lines_to_check <- TRUE
+  while (still_lines_to_check) {
+    line <- line - 1
+    obj <- utils::findLineNum(file, line, nameonly = FALSE, envir = object_envir_orig, lastenv = object_envir_orig)
+    if (length(obj) > 0) {
+      obj <- obj[[length(obj)]]
+      at <- obj$at
+      if (!identical(object_at_orig, at)) {
+        line <- line + 1 # previous checked line was the line where breakpoint will be set
+        still_lines_to_check <- FALSE
+      }
+    } else {
+      still_lines_to_check <- FALSE
+    }
+  }
+  line
+}
+
 #' Insert 'browser()' and Code to Remove 'browser()'
 #'
 #' @param object list with object's name in which 'browser()' will be inserted, indices to know
@@ -118,7 +231,10 @@ does_breakpoint_can_be_set <- function(object) {
 #'
 #' It is also necessary to 'reload()' a session, because then all code inside 'server' is run again
 #' and only then changes which was made on 'body()' can actually work - otherwise inserted or removed
-#' code won't work, i.e. even that 'body()' will be changed, the previous state will be call.
+#' code won't work, i.e. even that 'body()' will be changed, the previous state will be call. However,
+#' because we are taking the body of modified function to construct the file with this function, see
+#' 'set_attr' function, we need to reload the session outside this function, currently it is done in the
+#' module.
 #'
 #' This is also the reason why object passed to 'shinyApp(server = server)' as a 'server' cannot be
 #' modified using 'body()'- because this object is never rerun, even when the session is
@@ -132,7 +248,6 @@ put_browser <- function(object, varName) {
                                               get_code_to_put(envir, object$name, location$at, location$location_in_fun,
                                                               var_name = varName),
                                               location$location_in_fun))
-  getDefaultReactiveDomain()$reload()
 }
 
 #' Determine Location in Fun and 'at' Step in Body

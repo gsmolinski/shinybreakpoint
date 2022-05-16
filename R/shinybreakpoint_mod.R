@@ -182,6 +182,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
       observe({
         req(breakpoint_can_be_set())
         put_browser(object(), varName)
+        getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
         bindEvent(input$activate)
 

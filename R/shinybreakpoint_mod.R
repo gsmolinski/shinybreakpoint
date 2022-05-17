@@ -181,7 +181,10 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
       observe({
         req(breakpoint_can_be_set())
+        file <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[which_file()]]
+        exact_line <- determine_line(file, selected_line(), object()$envir, object()$at)
         put_browser(object(), varName)
+        set_attr(file, exact_line, object()$name, object()$envir, object()$at)
         getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
         bindEvent(input$activate)

@@ -162,15 +162,15 @@ set_attr <- function(file, line, object_name, object_envir, object_at) {
 #' during the debugging and user would see the whole script which should be convenient.
 #' @noRd
 write_file_modified <- function(file, line, object_name, object_envir, object_at, path) {
-  location <- determine_location(object_at)$location_in_fun
   added_lines <- c(0, 1, 2, 3) # 4, because 4 lines of code added to the body
-  locations <- replicate(length(added_lines), location, simplify = FALSE)
-  for (i in seq_along(locations)) {
-    locations[[i]][[length(locations[[i]])]] <- locations[[i]][[length(locations[[i]])]] + added_lines[[i]]
+  locations_added_code <- replicate(length(added_lines), object_at, simplify = FALSE)
+  for (i in seq_along(locations_added_code)) {
+    locations_added_code[[i]][[length(locations_added_code[[i]])]] <- locations_added_code[[i]][[length(locations_added_code[[i]])]] + added_lines[[i]]
   }
-  added_code <- lapply(locations, function(e) deparse(body(object_envir[[object_name]])[[e]]))
+  added_code <- lapply(locations_added_code, function(e) deparse(body(object_envir[[object_name]])[[e]]))
 
   file_orig <- as.list(readLines(file, warn = FALSE))
+  line <- line - 1 # because we want to add before chosen line
   file_modified <- unlist(append(file_orig, added_code, line), use.names = FALSE)
   writeLines(file_modified, path)
 }

@@ -125,7 +125,7 @@ does_breakpoint_can_be_set <- function(object) {
 #' file this function comes from. We are constructing temporary file with this modified
 #' function and setting the attributes using this temporary file.
 #' @noRd
-set_attr <- function(file, line, object_name, object_envir, object_at) {
+set_attrs <- function(file, line, object_name, object_envir, object_at) {
   path <- tempfile("DEBUGGING_", fileext = ".R")
   write_file_modified(file, line, object_name, object_envir, object_at, path)
   parsed_modified <- parse(path, keep.source = TRUE)
@@ -156,7 +156,7 @@ set_attr <- function(file, line, object_name, object_envir, object_at) {
 #' @return
 #' Used for side effect - writes the file with the breakpoint to the temporary location.
 #' @details
-#' To restore the attributes (see 'set_attr()'), we need to parse the file where will be
+#' To restore the attributes (see 'set_attrs()'), we need to parse the file where will be
 #' a function with added code (with breakpoint set), so then we can add these attr to the
 #' function we have modified and point it to the temporary file, so IDE will open this file
 #' during the debugging and user would see the whole script which should be convenient.

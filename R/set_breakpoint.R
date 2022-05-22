@@ -131,16 +131,24 @@ does_breakpoint_can_be_set <- function(object) {
 #' function and setting the attributes using this temporary file.
 #' @noRd
 set_attrs <- function(file, line, object_name, object_envir, object_at, caller_envir) {
-  path <- tempfile("DEBUGGING_", fileext = ".R")
+  path <- tempfile(paste0("DEBUGGING_", basename(file), "_"), fileext = ".R")
   write_file_modified(file, line, object_name, object_envir, object_at, path)
   parsed_modified <- parse(path, keep.source = TRUE)
   parsed_modified_only_fun <- Filter(is_named_fun, parsed_modified)
-  if (length(parsed_modified_only_fun) > 0) {
+  parsed_original <- parse(file, keep.source = TRUE)
+  parsed_original_only_fun <- Filter(is_named_fun, parsed_original)
+  if (length(parsed_modified_only_fun) > 0 & length(parsed_original_only_fun) > 0) {
     e <- new.env(parent = caller_envir)
     for (i in seq_along(parsed_modified_only_fun)) {
       try(eval(parsed_modified_only_fun[[i]], envir = e), silent = TRUE)
     }
+    g <- new.env(parent = caller_envir)
+    for (i in seq_along(parsed_original_only_fun)) {
+      try(eval(parsed_original_only_fun[[i]], envir = g), silent = TRUE)
+    }
     object_envir[[object_name]] <- e[[object_name]]
+    # make 'get_filename()' to return original filename, not temporary
+    attr(body(object_envir[[object_name]]), "srcref") <- attr(body(g[[object_name]]), "srcref")
   }
 }
 
@@ -286,10 +294,10 @@ get_code_to_put <- function(envir, name, at, location_in_fun, var_name) {
   envir_label <- rlang::env_label(envir)
   var_sym <- as.symbol(var_name)
   list(
-    quote(browser()),
     rlang::expr(assign(!!var_name, shinybreakpoint:::get_envir(!!envir_label, rlang::current_env()))),
     remove_body_expr(name, at, location_in_fun, var_sym),
-    quote(try(shiny::getDefaultReactiveDomain()$reload(), TRUE))
+    quote(try(shiny::getDefaultReactiveDomain()$reload(), TRUE)),
+    quote(browser())
   )
 }
 

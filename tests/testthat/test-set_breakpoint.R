@@ -44,6 +44,7 @@ test_that("put_browser adds correct number of exprs to the body of fun before ch
 
   expect_equal(obj_body_len, obj_orig_body_len + length(get_code_to_put(envir, obj$name, location$at, location$location_in_fun,
                                                                         "....envirr")))
+  obj$at[[length(obj$at)]] <- obj$at[[length(obj$at)]] + 3 # because 'browser()' is last line added
   expect_true(body(obj$name)[[obj$at]] == quote(browser()))
 })
 

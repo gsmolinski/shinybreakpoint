@@ -85,7 +85,9 @@ shinybreakpointServer <- function(keyEvent = "F4",
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
   insertUI("head", "beforeEnd", singleton(shinyjs::useShinyjs()), immediate = TRUE)
   insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)
-  filenames_src_code_envirs <- prepare_src_code(rlang::caller_env())
+
+  caller_envir <- rlang::caller_env()
+  filenames_src_code_envirs <- prepare_src_code(caller_envir)
 
   moduleServer(
     id,
@@ -184,7 +186,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         file <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[which_file()]]
         exact_line <- determine_line(file, selected_line(), object()$envir, object()$at)
         put_browser(object(), varName)
-        set_attrs(file, exact_line, object()$name, object()$envir, object()$at)
+        set_attrs(file, exact_line, object()$name, object()$envir, object()$at, caller_envir)
         getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
         bindEvent(input$activate)

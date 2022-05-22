@@ -114,6 +114,11 @@ does_breakpoint_can_be_set <- function(object) {
 #' @param object_name name returned by 'find_object()'.
 #' @param object_envir environment returned by 'find_object()'.
 #' @param object_at 'at' element (step in the body) returned by 'find_object()'.
+#' @param caller_envir to have an access to environment search by 'get_envir()',
+#' we need to have an access to as many as possible environments and thus
+#' we need to parse in the environemnt which is a child of caller environemnt, so
+#' the 'server' environment. This is probably necessary, because we restore
+#' function not using some specific attr,but we re-assign whole function.
 #'
 #' @return
 #' Used for side effects - set attributes to function in which breakpoint was set,
@@ -125,19 +130,17 @@ does_breakpoint_can_be_set <- function(object) {
 #' file this function comes from. We are constructing temporary file with this modified
 #' function and setting the attributes using this temporary file.
 #' @noRd
-set_attrs <- function(file, line, object_name, object_envir, object_at) {
+set_attrs <- function(file, line, object_name, object_envir, object_at, caller_envir) {
   path <- tempfile("DEBUGGING_", fileext = ".R")
   write_file_modified(file, line, object_name, object_envir, object_at, path)
   parsed_modified <- parse(path, keep.source = TRUE)
   parsed_modified_only_fun <- Filter(is_named_fun, parsed_modified)
   if (length(parsed_modified_only_fun) > 0) {
-    e <- new.env()
+    e <- new.env(parent = caller_envir)
     for (i in seq_along(parsed_modified_only_fun)) {
       try(eval(parsed_modified_only_fun[[i]], envir = e), silent = TRUE)
     }
-    attr(body(object_envir[[object_name]]), "srcref") <- attr(body(e[[object_name]]), "srcref")
-    attr(body(object_envir[[object_name]]), "srcfile") <- attr(body(e[[object_name]]), "srcfile")
-    attr(object_envir[[object_name]],"srcref") <- attr(e[[object_name]], "srcref")
+    object_envir[[object_name]] <- e[[object_name]]
   }
 }
 

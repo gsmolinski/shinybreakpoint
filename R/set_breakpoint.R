@@ -131,7 +131,7 @@ does_breakpoint_can_be_set <- function(object) {
 #' function and setting the attributes using this temporary file.
 #' @noRd
 set_attrs <- function(file, line, object_name, object_envir, object_at, caller_envir) {
-  path <- tempfile(paste0("DEBUGGING_", basename(file), "_"), fileext = ".R")
+  path <- tempfile(paste0("DEBUGGING_", basename(file), "_____"), fileext = ".R")
   write_file_modified(file, line, object_name, object_envir, object_at, path)
   parsed_modified <- parse(path, keep.source = TRUE)
   parsed_modified_only_fun <- Filter(is_named_fun, parsed_modified)
@@ -206,7 +206,10 @@ write_file_modified <- function(file, line, object_name, object_envir, object_at
 #' the exact line and this is the aim of this function.
 #' The idea is that if returned 'at' is the same for two lines, then the breakpoint
 #' is set in the first line - so we need to iterate over previous (in the file) lines
-#' to check when 'at' has changed.
+#' to check when 'at' has changed. But if we meet nested expr (in curly braces), then
+#' 'at' will change, so this is not enough. However, because we iterate over previous
+#' lines, we can check if sum of  'at' is lower than original (nested expr will have
+#' higher sum).
 #' @noRd
 determine_line <- function(file, line, object_envir_orig, object_at_orig) {
   still_lines_to_check <- TRUE
@@ -216,7 +219,7 @@ determine_line <- function(file, line, object_envir_orig, object_at_orig) {
     if (length(obj) > 0) {
       obj <- obj[[length(obj)]]
       at <- obj$at
-      if (!identical(object_at_orig, at)) {
+      if (sum(at) < sum(object_at_orig)) {
         line <- line + 1 # previous checked line was the line where breakpoint will be set
         still_lines_to_check <- FALSE
       }

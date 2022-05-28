@@ -230,7 +230,7 @@ retrieve_src_code <- function(one_parse_data) {
                               src_code = parse_data)
 
   line_src_code <- line_src_code %>%
-    dplyr::filter(!stringi::stri_detect_regex(.data$src_code, "^\\s*#.*|^\\t*#.*") | is.na(.data$src_code)) # remove lines with comments only
+    dplyr::filter(!grepl("^\\s*#.*|^\\t*#.*", .data$src_code, perl = TRUE) | is.na(.data$src_code)) # remove lines with comments only
 
   line_src_code
 }

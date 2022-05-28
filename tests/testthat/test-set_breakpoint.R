@@ -15,13 +15,14 @@ test_that("find_object returns list if obj found with adequate type of elements"
   expect_type(obj$env, "environment")
 })
 
-test_that("restore_body_funs restores fun body", {
+test_that("restore_attrs_funs restores fun attrs", {
   server_old <- server
-  body(server)[[1]] <- quote("b")
+  body(server)[[1]] <- "b"
   expect_false(body(server_old) == body(server))
 
-  restore_body_funs(path, rlang::current_env())
+  restore_attrs_funs(path, rlang::current_env())
   expect_identical(body(server), body(server_old))
+  expect_identical(attr(server, "srcref"), attr(server_old, "srcref"))
 })
 
 test_that("does_brakpoint_can_be_set returns TRUE if breakpoint would be set
@@ -30,6 +31,43 @@ test_that("does_brakpoint_can_be_set returns TRUE if breakpoint would be set
   expect_false(does_breakpoint_can_be_set(find_object(path, 34, envir)))
   expect_true(does_breakpoint_can_be_set(find_object(path, 35, envir)))
   expect_true(does_breakpoint_can_be_set(find_object(path, 58, envir)))
+})
+
+test_that("determine_line returns exact line where code will be added", {
+  skip_if_not(interactive())
+  path <- system.file("tests_helpers", "determine_line_test_helper.R", package = "shinybreakpoint")
+  source(path, local = TRUE, keep.source = TRUE)
+
+  expect_equal(determine_line(path, 15, environment(fun1), findLineNum(path, 15)[[1]]$at), 6)
+  expect_equal(determine_line(path, 20, environment(fun1), findLineNum(path, 20)[[1]]$at), 20)
+})
+
+test_that("write_file_modified writes code to the correct lines", {
+  skip_if_not(interactive())
+  path <- system.file("tests_helpers", "determine_line_test_helper.R", package = "shinybreakpoint")
+  source(path, local = TRUE, keep.source = TRUE)
+  line <- determine_line(path, 15, environment(fun1), findLineNum(path, 15)[[1]]$at) # returns 6
+  obj <- find_object(path, 15, environment(fun1))
+  path_temp <- tempfile(paste0("DEBUGGING_", basename(path), "_____"), fileext = ".R")
+  put_browser(obj, "....envirr")
+  write_file_modified(path, line, obj$name, obj$envir, obj$at, path = path_temp)
+  parsed <- eval(parse(path_temp)[[1]])
+
+  expect_true(grepl("^assign\\(.+", readLines(path_temp)[[line]]))
+  expect_equal(body(fun1), body(parsed))
+})
+
+test_that("set_attrs keeps original scrfile", {
+  skip_if_not(interactive())
+  path <- system.file("tests_helpers", "determine_line_test_helper.R", package = "shinybreakpoint")
+  source(path, local = TRUE, keep.source = TRUE)
+  line <- determine_line(path, 15, environment(fun1), findLineNum(path, 15)[[1]]$at) # returns 6
+  obj <- find_object(path, 15, environment(fun1))
+  put_browser(obj, "....envirr")
+  original_srcfile <- utils::getSrcFilename(fun1)
+  set_attrs(path, line, obj$name, obj$envir, obj$at, environment())
+
+  expect_equal(utils::getSrcFilename(fun1), original_srcfile)
 })
 
 test_that("put_browser adds correct number of exprs to the body of fun before chosen line", {

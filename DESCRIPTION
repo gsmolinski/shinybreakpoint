@@ -4,12 +4,12 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Grzegorz", "Smoliński", , "g.smolinski1@gmail.com", role = c("aut", "cre"))
 Description: Insert 'browser()' into chosen location in reactive context
-    even when working with modules stored in separated files, what opens
+    (even when working with modules stored in separate files), what opens
     the interactive debugger and allows to inspect objects and run
     arbitrary code.
 License: MIT + file LICENSE
-URL: https://github.com/gsmolinski/shinybrowser
-BugReports: https://github.com/gsmolinski/shinybrowser/issues
+URL: https://github.com/gsmolinski/shinybreakpoint
+BugReports: https://github.com/gsmolinski/shinybreakpoint/issues
 Depends: 
     R (>= 3.3.0)
 Imports: 

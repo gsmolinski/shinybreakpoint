@@ -15,7 +15,7 @@
 #' if user explicitly assigned it to the global environment).
 #' @noRd
 find_object <- function(file, line, envir) {
-    restore_body_funs(file, envir)
+  restore_attrs_funs(file, envir)
     object <- utils::findLineNum(file, line, envir = envir, lastenv = envir, nameonly = FALSE)
     if (length(object) > 0) {
       object <- object[[length(object)]]
@@ -27,20 +27,20 @@ find_object <- function(file, line, envir) {
     }
 }
 
-#' Restore Body of Functions from Chosen File.
+#' Restore Attrs of Functions from Chosen File.
 #'
 #' @param file full path to file where is defined obj to put 'browser()'.
 #' @param envir environment where should be object to which user wants to put browser().
 #'
 #' @return
-#' Used for side effect - set 'body()' for funs.
+#' Used for side effect - set 'attrs' for funs.
 #' @details
 #' It is necessary to retrieve original body of fun even if we have deleted added code (see
 #' 'put_browser()' function). This is needed to get adequate 'at' from 'findLineNum()' when putting
 #' again 'browser()' to the same location. Because we don't know yet which function we are looking for,
 #' we need to retrieve body of all functions, but only functions to do not introduce any side effects.
 #' @noRd
-restore_body_funs <- function(file, envir) {
+restore_attrs_funs <- function(file, envir) {
   original_file <- parse(file, keep.source = TRUE)
   original_file_only_fun <- Filter(is_named_fun, original_file)
   if (length(original_file_only_fun) > 0) {
@@ -50,13 +50,13 @@ restore_body_funs <- function(file, envir) {
     }
     obj_changed <- sort(names(envir)[names(envir) %in% names(e)])
     obj_original <- sort(names(e)[names(e) %in% names(envir)])
-    mapply(retrieve_body, obj_changed, obj_original, MoreArgs = list(envir = envir, e = e))
+    mapply(retrieve_attrs, obj_changed, obj_original, MoreArgs = list(envir = envir, e = e))
   }
 }
 
-#' Set Original Body of Object
+#' Set Original Attrs of Object
 #'
-#' Helper function for 'restore_body_funs'.
+#' Helper function for 'restore_attrs_funs'.
 #'
 #' @param obj_changed all objects from chosen app environment.
 #' @param obj_original all objects from environment in which parsed file was evaluated.
@@ -64,10 +64,10 @@ restore_body_funs <- function(file, envir) {
 #' @param envir environment in which exists objects in app.
 #'
 #' @return
-#' Used for side effect - change body of object.
+#' Used for side effect - change attrs of object.
 #' @noRd
-retrieve_body <- function(obj_changed, obj_original, envir, e) {
-  body(envir[[obj_changed]]) <- body(e[[obj_original]])
+retrieve_attrs <- function(obj_changed, obj_original, envir, e) {
+  envir[[obj_changed]] <- e[[obj_original]]
 }
 
 #' Check if Possible to Set Breakpoint
@@ -146,6 +146,7 @@ set_attrs <- function(file, line, object_name, object_envir, object_at, caller_e
     for (i in seq_along(parsed_original_only_fun)) {
       try(eval(parsed_original_only_fun[[i]], envir = g), silent = TRUE)
     }
+
     object_envir[[object_name]] <- e[[object_name]]
     # make 'get_filename()' to return original filename, not temporary
     attr(body(object_envir[[object_name]]), "srcref") <- attr(body(g[[object_name]]), "srcref")

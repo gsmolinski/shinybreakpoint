@@ -121,13 +121,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                                                      style = list(color = "#8b8589")),
                                             src_code = reactable::colDef(name = "",
                                                                          style = list(whiteSpace = "pre-wrap", color = "#2f4f4f"),
-                                                                         cell = function(value) {
-                                                                           if (!is.na(value) && !stringi::stri_detect_regex(value, "[\"'].*[<>].*[\"']")) {
-                                                                             colorize_code(value)
-                                                                           } else {
-                                                                             value
-                                                                           }
-                                                                         }
+                                                                         cell = reactable::JS(colorize_code())
                                             )),
                              columnGroups = list(reactable::colGroup(name = filenames_src_code_envirs$filenames_parse_data$filename[[which_file()]],
                                                                      columns = c("line", "src_code"))),

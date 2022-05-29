@@ -53,7 +53,7 @@ test_that("write_file_modified writes code to the correct lines", {
   write_file_modified(path, line, obj$name, obj$envir, obj$at, path = path_temp)
   parsed <- eval(parse(path_temp)[[1]])
 
-  expect_true(grepl("^assign\\(.+", readLines(path_temp)[[line]]))
+  expect_equal(readLines(path_temp)[[line]], "#================ ADDED BY SHINYBREAKPOINT =======================")
   expect_equal(body(fun1), body(parsed))
 })
 

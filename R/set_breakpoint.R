@@ -183,8 +183,10 @@ write_file_modified <- function(file, line, object_name, object_envir, object_at
 
   file_orig <- as.list(readLines(file, warn = FALSE))
   line <- line - 1 # because we want to add before chosen line
-  file_modified <- unlist(append(file_orig, added_code, line), use.names = FALSE)
-  writeLines(file_modified, path)
+  file_modified <- append(file_orig, added_code, line)
+  file_modified <- append(file_modified, "#================ ADDED BY SHINYBREAKPOINT =======================", line)
+  file_modified <- append(file_modified, "#================ THIS IS TEMPORARY FILE =========================", line + 5)
+  writeLines(unlist(file_modified, use.names = FALSE), path)
 }
 
 #' Determine Exact Line Where Breakpoint Will Be Inserted

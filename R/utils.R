@@ -41,7 +41,7 @@ check_requirements_shinybreakpointServer <- function(keyEvent, id, varName) {
 #' @noRd
 is_named_fun <- function(expr) {
   expr_3 <- try(expr[[3]], silent = TRUE)
-  if (class(expr_3) != "try-error") {
+  if (!inherits(expr_3, "try-error")) {
     has_assignment(expr) && is.call(expr_3) && rev(as.character(expr_3[[1]]))[[1]] == "function"
   } else {
     FALSE

@@ -49,24 +49,31 @@ objects which would be used directly in the \code{server}
 \examples{
 # To run example, copy-paste to file, save the file
 # and run the app. Then press "F4" to open the modal dialog.
+# Make sure 'bslib' package is installed.
 
 \dontrun{
+
 library(shiny)
 
-appServer <- function(input, output, session) {
-  observe({
-    input$num
-  })
-}
+if (interactive() && requireNamespace("bslib", quietly = TRUE)) {
 
-shinyApp(
-  ui = fluidPage(
-    numericInput("num", "Num", 0)
-  ),
-  server = function(input, output, session) {
-    shinybreakpoint::shinybreakpointServer()
-    appServer(input, output, session)
+  appServer <- function(input, output, session) {
+    observe({
+      input$num
+    })
   }
-)
+
+  shinyApp(
+    ui = fluidPage(
+      theme = bslib::bs_theme(5),
+      numericInput("num", "Num", 0)
+    ),
+    server = function(input, output, session) {
+      shinybreakpoint::shinybreakpointServer()
+      appServer(input, output, session)
+    }
+  )
+
+}
 }
 }

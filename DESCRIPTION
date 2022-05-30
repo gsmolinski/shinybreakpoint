@@ -9,7 +9,7 @@ Description: Insert 'browser()' into chosen location in reactive context
     arbitrary code.
 License: MIT + file LICENSE
 URL: https://gsmolinski.github.io/shinybreakpoint/,
-     https://github.com/gsmolinski/shinybreakpoint,
+    https://github.com/gsmolinski/shinybreakpoint,
 BugReports: https://github.com/gsmolinski/shinybreakpoint/issues
 Depends: 
     R (>= 3.3.0)
@@ -26,6 +26,7 @@ Imports:
     stats,
     utils
 Suggests: 
+    bslib,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)

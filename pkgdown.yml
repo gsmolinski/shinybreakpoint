@@ -1,0 +1,12 @@
+pandoc: 2.7.3
+pkgdown: 2.0.3
+pkgdown_sha: ~
+articles:
+  background: background.html
+  introduction-code: introduction-code.html
+  2022-appsilon-shiny-conference: web_only/2022-appsilon-shiny-conference.html
+last_built: 2022-05-30T11:42Z
+urls:
+  reference: https://gsmolinski.github.io/shinybreakpoint/reference
+  article: https://gsmolinski.github.io/shinybreakpoint/articles
+

@@ -23,7 +23,9 @@ server <- function(id) {
 }
 
 test_that("'which_file' reactive returns indice where is file", {
-  skip_on_covr()
+
+  skip_on_ci()
+
   testServer(server, {
     filenames_src_code_envirs <- prepare_src_code(g)
     session$setInputs(file = filenames_src_code_envirs$filenames_parse_data$filename_full_path)
@@ -33,7 +35,9 @@ test_that("'which_file' reactive returns indice where is file", {
 
 test_that("'selected_line' reactive returns not truthy object if no line selected
           or NA (empty line) selected and truthy otherwise", {
-            skip_on_covr()
+
+  skip_on_ci()
+
   testServer(server, {
     filenames_src_code_envirs <- prepare_src_code(g)
     session$setInputs(file = filenames_src_code_envirs$filenames_parse_data$filename_full_path,

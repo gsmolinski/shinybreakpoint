@@ -9,6 +9,7 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/shinybreakpoint)](https://CRAN.R-project.org/package=shinybreakpoint)
+[![R-CMD-check](https://github.com/gsmolinski/shinybreakpoint/workflows/R-CMD-check/badge.svg)](https://github.com/gsmolinski/shinybreakpoint/actions)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->

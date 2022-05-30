@@ -1,5 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+<br/>
+
+## shinybreakpoint
+
 <!-- badges: start -->
 
 [![CRAN
@@ -8,7 +13,7 @@ status](https://www.r-pkg.org/badges/version/shinybreakpoint)](https://CRAN.R-pr
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-<br/>
+<hr/>
 
 ### Description
 

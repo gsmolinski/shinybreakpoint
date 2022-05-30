@@ -18,9 +18,7 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 `shinybreakpoint` do not provide *new* technique for Shiny apps - it is already possible to set breakpoint using e.g. RStudio IDE, but the current solution has its own limitation. Breakpoint can't be set when the code is split into multiple files (which is often the case when the app is built of modules). Although `shinybreakpoint` gives the solution for that, it makes it in the radical way - the code has to be split into (at least one), separated from `server` part, function.
 
-## Usage
-
-### Setting Breakpoint
+## Setting Breakpoint
 
 We will start from the snippet - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
@@ -84,22 +82,13 @@ other possibilities won't work. Generally we can say that breakpoint won't be se
 
 Immediately after the breakpoint is set (i.e. when the `Activate` button in the modal dialog is pushed), session is refreshed. That means that if the breakpoint in our example was set on the `input$num1` line, debug mode will open up immediately, but if it was set on the `input$num2`, then `Go` button needs to be pushed. That fact strictly depends on the reactive programming - debug mode opens up when the code block (where breakpoint is set) starts and the chosen line is achieved.
 
-Before we move into debug mode, something more has to be said about *visible code blocks*. `shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects.
-
-### Debug Mode
-
-As already said, debug mode is an (temporary) environment when is possible to run arbitrary code and thus is very helpful to check if e.g. variables have the expected values. Although this vignette is not about debugging (many helpful documents are possible to find easy), some things in the context of the `shinybreakpoint` package should be highlighted.
-
-Setting breakpoint is nothing more than inserting `browser()` in some place of code, but `shinybreakpoint` inserts more than this. All of the added code (in total four lines of code) is harmless, but will be visible in the debug mode. It can be run (if one would like to step down line-by-line) or ignore.
-
-Breakpoint is constructed to be a one-time breakpoint, which means that after pressing `c` or `f` in the debug mode, Shiny app won't have active breakpoint anymore (to set it again, modal dialog delivered by `shinybreakpoint` must be use again). There is, however, case when it could look like the breakpoint persist - during the debug mode, the app still runs (i.e. user interface is available, so e.g. `input`s can be changed) - the objects in `UI` can be use (but the app itself is not computing anything during the debug mode). If we take as an example our example above, we could notice the following behavior: set the breakpoint on `input$num1` line, activate it and during the debug mode, change the `input$num1` in the app - then when we press `c` in the debug mode (to continue execution of code to the end of block and then exit), we will notice that we end up in the debug mode again, but now with the different value of `input$num1`. If we decide to change again `input$num1` in the app, this situation will repeat, but if not, the debug mode will close successfully after pressing `c`. To avoid this problem, we can generally say that *it is not recommended to use app during the debug mode*.
-
-And the last thing - if something is displayed on the screen in the app, it can be impossible to see its value just be typing the variable name in the debug mode, and it can be necessary to use `sink()` before (in the debug mode). In our example that would be the case if we would have `renderPrint` where we would like to display `input$num1`.
+ `shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects.
 
 ## Additional Comments
 
 Not previously mentioned and possibly important remarks are:
 
+- debugging is not performed on the *original* file, but the temporary copy of the file
 - when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
 - session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
 - if one uses RStudio IDE, `shinybreakpoint` recognizes the file opened in the source editor and if this file is used in Shiny app and contains reactive blocks of code, it will be opened as default file in modal dialog. This works only in a moment when the key specified in `keyEvent` parameter is pressed

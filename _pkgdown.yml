@@ -2,3 +2,16 @@ url: https://gsmolinski.github.io/shinybreakpoint/
 template:
   bootstrap: 5
 
+articles:
+- title: Usage
+  navbar: ~
+  contents:
+  - introduction-code
+
+- title: Idea
+  contents:
+  - background
+
+- title: Talks
+  contents:
+  - web_only/2022-appsilon-shiny-conference

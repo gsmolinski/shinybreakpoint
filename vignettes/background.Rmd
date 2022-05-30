@@ -1,8 +1,8 @@
 ---
-title: '"What about trace()?". Idea behind the package.'
+title: '"What about trace()?". Idea behind the package'
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{"What about trace()?". Two Introductions}
+  %\VignetteIndexEntry{"What about trace()?". Idea behind the package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

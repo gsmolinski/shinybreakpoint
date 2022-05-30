@@ -62,9 +62,9 @@ shinybreakpointUI <- function(id) {
 #'
 #' \dontrun{
 #'
-#' library(shiny)
-#'
 #' if (interactive() && requireNamespace("bslib", quietly = TRUE)) {
+#'
+#'   library(shiny)
 #'
 #'   appServer <- function(input, output, session) {
 #'     observe({

@@ -1,3 +1,3 @@
-# shinybreakpoint 0.0.0.9000
+# shinybreakpoint 0.0.1
 
-* Dev version.
+* First version

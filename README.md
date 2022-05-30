@@ -1,8 +1,5 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-## shinybreakpoint
-
 <!-- badges: start -->
 
 [![CRAN
@@ -11,11 +8,16 @@ status](https://www.r-pkg.org/badges/version/shinybreakpoint)](https://CRAN.R-pr
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+<br/>
+
+### Description
+
 `shinybreakpoint` is a Shiny module which one can add to the Shiny
 application. Is an answer to the problem with setting (editor)
 breakpoint in the modules stored in separate files - currently it is not
 possible to do this in RStudio IDE. With `shinybreakpoint` breakpoint
-can be set in the reactive context in any file.
+can be set in the reactive context in any file making developing
+modularized Shiny applications easier.
 
 ### Installation
 

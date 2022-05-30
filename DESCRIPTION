@@ -1,6 +1,6 @@
 Package: shinybreakpoint
 Title: Set Breakpoint in 'Shiny'
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: 
     person("Grzegorz", "Smoliński", , "g.smolinski1@gmail.com", role = c("aut", "cre"))
 Description: Insert 'browser()' into chosen location in reactive context

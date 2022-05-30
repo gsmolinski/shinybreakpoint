@@ -1,6 +1,7 @@
 url: https://gsmolinski.github.io/shinybreakpoint/
 template:
   bootstrap: 5
+  bootswatch: litera
 
 articles:
 - title: Usage

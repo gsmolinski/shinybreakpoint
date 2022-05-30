@@ -8,7 +8,8 @@ Description: Insert 'browser()' into chosen location in reactive context
     the interactive debugger and allows to inspect objects and run
     arbitrary code.
 License: MIT + file LICENSE
-URL: https://github.com/gsmolinski/shinybreakpoint
+URL: https://gsmolinski.github.io/shinybreakpoint/,
+     https://github.com/gsmolinski/shinybreakpoint,
 BugReports: https://github.com/gsmolinski/shinybreakpoint/issues
 Depends: 
     R (>= 3.3.0)

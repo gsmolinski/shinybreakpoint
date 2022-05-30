@@ -7,6 +7,7 @@
 #' @return HTML script tag with JavaScript code - returns
 #' key pressed.
 #' @import shiny
+#' @noRd
 shinybreakpointUI <- function(id) {
   ns <- NS(id)
   key_pressed <- ns("key_pressed")

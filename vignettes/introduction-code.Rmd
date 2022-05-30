@@ -1,49 +1,13 @@
 ---
-output: github_document
+title: 'Introduction: Code'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction: Code}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
-
-## State of `r format(Sys.Date(), "%d.%m.%Y")`
-
-<!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/shinybreakpoint)](https://CRAN.R-project.org/package=shinybreakpoint)
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-<!-- badges: end -->
-
-### Installation
-
-You can install the development version of shinybreakpoint from [GitHub](https://github.com/) with:
-
-``` r
-# install.packages("devtools")
-devtools::install_github("gsmolinski/shinybreakpoint", build_vignettes = FALSE) # change into TRUE if you want to have access to the vignette
-```
-
-### Vignette
-
-Run the code below to see the whole vignette where usage, but also the core idea behind the package is explained. Alternatively, in the next section the usage is showed as well.
-
-```r
-vignette("introduction-debugging", package = "shinybreakpoint")
-```
-
-Core idea behind the package was also presented during the 2022 Appsilon Shiny Conference (this talk covers most of the information included in the vignette):
-
-<div align="center">
-  <a href="https://www.youtube.com/watch?v=nDxYgBgeEQ4"><img width="550" height="400"  src="https://yt-embed.live/embed?v=nDxYgBgeEQ4" alt="Click to go to the youtube channel."></a>
-</div>
-
-### Overview
+## Overview
 
 `shinybreakpoint` is designed to display in the Shiny app (i.e. when the app runs) parts of the source code used in the app and to allow to set breakpoint in *some* places of the displayed source code. Thus it should be clear from the beginning that this package has two-stage limitations:
 
@@ -54,9 +18,9 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 `shinybreakpoint` do not provide *new* technique for Shiny apps - it is already possible to set breakpoint using e.g. RStudio IDE, but the current solution has its own limitation. Breakpoint can't be set when the code is split into multiple files (which is often the case when the app is built of modules). Although `shinybreakpoint` gives the solution for that, it makes it in the radical way - the code has to be split into (at least one), separated from `server` part, function.
 
-### Usage
+## Usage
 
-#### Setting Breakpoint
+### Setting Breakpoint
 
 We will start from the snippet - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
@@ -122,7 +86,7 @@ Immediately after the breakpoint is set (i.e. when the `Activate` button in the 
 
 Before we move into debug mode, something more has to be said about *visible code blocks*. `shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects.
 
-#### Debug Mode
+### Debug Mode
 
 As already said, debug mode is an (temporary) environment when is possible to run arbitrary code and thus is very helpful to check if e.g. variables have the expected values. Although this vignette is not about debugging (many helpful documents are possible to find easy), some things in the context of the `shinybreakpoint` package should be highlighted.
 
@@ -132,7 +96,7 @@ Breakpoint is constructed to be a one-time breakpoint, which means that after pr
 
 And the last thing - if something is displayed on the screen in the app, it can be impossible to see its value just be typing the variable name in the debug mode, and it can be necessary to use `sink()` before (in the debug mode). In our example that would be the case if we would have `renderPrint` where we would like to display `input$num1`.
 
-### Additional Comments
+## Additional Comments
 
 Not previously mentioned and possibly important remarks are:
 

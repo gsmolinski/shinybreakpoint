@@ -323,6 +323,7 @@ get_code_to_put <- function(envir, name, at, location_in_fun, var_name) {
 #' To get environment, function has to be run in user's environment, but to find
 #' searched environment, we need to know what to search and for this label is used.
 #' Environment is necessary to be sure that proper object will be found.
+#' @noRd
 get_envir <- function(envir_label, current_env) {
   envirs <- rlang::env_parents(current_env)
   envirs <- append(current_env, envirs)

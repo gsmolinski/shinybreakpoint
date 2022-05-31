@@ -81,18 +81,17 @@ get_reactive_context_regex <- function() {
   "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render"
 }
 
-#' Get Path to css File and Insert It.
+#' Insert CSS dependency.
 #'
 #' @return
-#' HTML which inserts css file.
-#' @import shiny
+#' htmltools::htmlDependency object with CSS.
 #' @noRd
 insert_css <- function() {
-  addResourcePath("shinybreakpoint-resources",
-                  system.file("www", package = "shinybreakpoint"))
-
-  singleton(tags$link(rel = "stylesheet", type = "text/css",
-                      href = file.path("shinybreakpoint-resources", "css", "shinybreakpoint.css")))
+  htmltools::htmlDependency("shinybreakpoint-css",
+                            version = packageVersion("shinybreakpoint"),
+                            package = "shinybreakpoint",
+                            src = "www",
+                            stylesheet = "css/shinybreakpoint.css")
 }
 
 #' Add 'span' Tag with Given Classes to the Parts of String

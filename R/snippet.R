@@ -45,7 +45,7 @@ snippet <- function(append = TRUE) {
   path <- tryCatch(rstudioapi::getSourceEditorContext()$path,
                    error = function(e) NULL)
   if (is.null(path) || path == "") { # "" if not yet saved file
-    stop("Can't find saved and opened file in RStudio")
+    stop("Can't find saved and opened file in RStudio", call. = FALSE)
   } else {
     snippet_template <- readLines(file.path(system.file("snippet", package = "shinybreakpoint"),
                                             "snippet_template.R"))

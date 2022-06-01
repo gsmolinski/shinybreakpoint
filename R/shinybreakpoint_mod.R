@@ -105,7 +105,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
 
-        req(nrow(filenames_src_code_envirs$filenames_parse_data) > 0)
+        req(!is.null(filenames_src_code_envirs$filenames_parse_data) && nrow(filenames_src_code_envirs$filenames_parse_data) > 0)
         if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
           shinyWidgets::updateRadioGroupButtons(session, "file",
                                                 selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
@@ -245,7 +245,7 @@ modal_dialog <- function(session, filenames_src_code) {
 #' button, list of files and table with source code.
 #' @noRd
 create_UI <- function(session, filenames_src_code) {
-  if (nrow(filenames_src_code) == 0) {
+  if (is.null(filenames_src_code) || nrow(filenames_src_code) == 0) {
     UI <- tags$div(class = "no-file")
   } else {
     if (length(filenames_src_code$filename) < 9) {

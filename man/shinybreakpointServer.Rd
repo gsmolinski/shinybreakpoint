@@ -69,8 +69,8 @@ if (interactive() && requireNamespace("bslib", quietly = TRUE)) {
       numericInput("num", "Num", 0)
     ),
     server = function(input, output, session) {
-      appServer(input, output, session)
       shinybreakpoint::shinybreakpointServer()
+      appServer(input, output, session)
     }
   )
 

@@ -35,8 +35,8 @@
 #' }
 #'
 #' server <- function(input, output, session) {
-#'   appServer(input, output, session)
 #'   shinybreakpoint::shinybreakpointServer() # TODO: remove
+#'   appServer(input, output, session)
 #' }
 #'
 #' shinyApp(ui, server)

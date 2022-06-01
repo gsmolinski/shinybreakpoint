@@ -65,12 +65,12 @@ if (interactive() && requireNamespace("bslib", quietly = TRUE)) {
 
   shinyApp(
     ui = fluidPage(
-      theme = bslib::bs_theme(5),
+      theme = bslib::bs_theme(),
       numericInput("num", "Num", 0)
     ),
     server = function(input, output, session) {
-      shinybreakpoint::shinybreakpointServer()
       appServer(input, output, session)
+      shinybreakpoint::shinybreakpointServer()
     }
   )
 

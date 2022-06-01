@@ -2,15 +2,15 @@
 % Please edit documentation in R/snippet.R
 \name{snippet}
 \alias{snippet}
-\title{Write Shiny Snippet With Shinybreakpoint Functionality}
+\title{Write Basic Shiny App With Shinybreakpoint Functionality}
 \usage{
 snippet(append = TRUE)
 }
 \arguments{
-\item{append}{should the code be added to the existing content of file or replace it? Added (\code{TRUE}) by default.}
+\item{append}{should the code be added to the existing content or replace it? Added (\code{TRUE}) by default.}
 }
 \value{
-Writes code to the file.
+Writes code skeleton to the file.
 }
 \description{
 Add code skeleton with \code{shinybreakpoint} functionality to the
@@ -20,6 +20,9 @@ active (opened) file in RStudio if this file is saved.
 \code{shinybreakpoint} needs server logic to be included in the function separated
 from the 'server' part of app and also was developed having latest Bootstrap
 version in mind. This snippet takes care of that.
+
+It may be necessary to click inside the file after this function was used
+to refresh the editor.
 }
 \examples{
 

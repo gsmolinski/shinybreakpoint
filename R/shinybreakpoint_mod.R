@@ -62,28 +62,25 @@ shinybreakpointUI <- function(id) {
 #'
 #' \dontrun{
 #'
-#' if (interactive() && requireNamespace("bslib", quietly = TRUE)) {
+#' # install.packages("bslib") if needed
+#' library(shiny)
 #'
-#'   library(shiny)
-#'
-#'   appServer <- function(input, output, session) {
-#'     observe({
-#'       input$num
-#'     })
-#'   }
-#'
-#'   shinyApp(
-#'     ui = fluidPage(
-#'       theme = bslib::bs_theme(),
-#'       numericInput("num", "Num", 0)
-#'     ),
-#'     server = function(input, output, session) {
-#'       shinybreakpoint::shinybreakpointServer()
-#'       appServer(input, output, session)
-#'     }
-#'   )
-#'
+#' appServer <- function(input, output, session) {
+#'   observe({
+#'     input$num
+#'   })
 #' }
+#'
+#' shinyApp(
+#'   ui = fluidPage(
+#'     theme = bslib::bs_theme(),
+#'     numericInput("num", "Num", 0)
+#'   ),
+#'   server = function(input, output, session) {
+#'     shinybreakpoint::shinybreakpointServer()
+#'     appServer(input, output, session)
+#'   }
+#' )
 #' }
 shinybreakpointServer <- function(keyEvent = "F4",
                                   id = "shinybreakpoint",

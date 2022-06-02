@@ -325,3 +325,23 @@
   color: white;
   background: #898a74;
 }
+
+.shinybreakpoint-modal .no-file .circle-div {
+  display: flex;
+  justify-content: center;
+  height: 84vh;
+}
+
+.shinybreakpoint-modal .no-file .circle-div .circle {
+  align-self: center;
+  border: 1px solid #984747;
+  background-color: #f2eeeb;
+  height: 50vh;
+  border-radius:50%;
+  width: 50vh;
+}
+
+.shinybreakpoint-modal .no-file p {
+  font-style: italic;
+  text-align: right;
+}

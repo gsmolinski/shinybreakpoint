@@ -243,7 +243,10 @@ modal_dialog <- function(session, filenames_src_code) {
 #' @noRd
 create_UI <- function(session, filenames_src_code) {
   if (is.null(filenames_src_code) || nrow(filenames_src_code) == 0) {
-    UI <- tags$div(class = "no-file")
+    UI <- tags$div(class = "no-file",
+                   tags$div(class = "circle-div",
+                            tags$div(class = "circle")),
+                   tags$p("There is nothing to see here"))
   } else {
     if (length(filenames_src_code$filename) < 9) {
       files <- shinyWidgets::radioGroupButtons(session$ns("file"), label = "",

@@ -1,8 +1,8 @@
 ---
-title: 'Introduction: Code'
+title: 'Code'
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction: Code}
+  %\VignetteIndexEntry{Code}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 ## Setting Breakpoint
 
-We will start from the snippet - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
+We will start from the snippet^[Run `?shinybreakpoint::snippet` to see the documentation for function to write the snippet to the opened (and saved) file in RStudio] - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
     library(shiny)
 
@@ -88,7 +88,8 @@ Immediately after the breakpoint is set (i.e. when the `Activate` button in the 
 
 Not previously mentioned and possibly important remarks are:
 
-- debugging is not performed on the *original* file, but the temporary copy of the file
+- debugging is not performed on the *original* file, but on the temporary copy of the file
+- breakpoint is designed to be an one-time breakpoint and it means that breakpoint do not persist and only one breakpoint can be set in one time
 - when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
 - session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
 - if one uses RStudio IDE, `shinybreakpoint` recognizes the file opened in the source editor and if this file is used in Shiny app and contains reactive blocks of code, it will be opened as default file in modal dialog. This works only in a moment when the key specified in `keyEvent` parameter is pressed

@@ -10,8 +10,8 @@
 #'
 #' @details
 #' `shinybreakpoint` needs server logic to be included in the function separated
-#' from the 'server' part of app and also was developed having latest Bootstrap
-#' version in mind. This snippet takes care of that.
+#' from the 'server' part of app and also was developed having Bootstrap
+#' version 5 in mind. This snippet takes care of that.
 #'
 #' It may be necessary to click inside the file after this function was used
 #' to refresh the editor.
@@ -27,7 +27,7 @@
 #' library(shiny)
 #'
 #' ui <- fluidPage(
-#'   theme = bslib::bs_theme(),
+#'   theme = bslib::bs_theme(5),
 #' )
 #'
 #' appServer <- function(input, output, session) {

@@ -73,7 +73,7 @@ shinybreakpointUI <- function(id) {
 #'
 #' shinyApp(
 #'   ui = fluidPage(
-#'     theme = bslib::bs_theme(),
+#'     theme = bslib::bs_theme(5),
 #'     numericInput("num", "Num", 0)
 #'   ),
 #'   server = function(input, output, session) {

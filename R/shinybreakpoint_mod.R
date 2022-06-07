@@ -123,6 +123,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         src_data <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
         reactable::reactable(src_data,
                              columns = list(line = reactable::colDef(align = "center",
+                                                                     vAlign = "center",
                                                                      width = 60,
                                                                      name = "",
                                                                      style = list(color = "#8b8589")),
@@ -263,7 +264,7 @@ create_UI <- function(session, filenames_src_code) {
 
     UI <- tagList(
       fluidRow(
-        column(3,
+        column(3, class = "col-xl-2",
                tags$div(class = "shinybreakpoint-div-activate",
                         actionButton(session$ns("activate"), label = "Activate", class = "shinybreakpoint-activate-btn")
                ),
@@ -276,7 +277,7 @@ create_UI <- function(session, filenames_src_code) {
                         tags$p("shinybreakpoint", id = "shinybreakpoint-name")
                )
         ),
-        column(9,
+        column(9, class = "col-xl-10",
                reactable::reactableOutput(session$ns("src_code"))
         )
       )

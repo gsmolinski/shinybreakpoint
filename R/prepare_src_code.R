@@ -212,8 +212,6 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
 #' Each block of code is separated by empty row (NA in both columns). This is only
 #' for readability and empty row is added also if is not present in an original
 #' source code, i.e. in file.
-#' Additionally, this function removes the lines with comments only.
-#' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
 retrieve_src_code <- function(one_parse_data) {
@@ -228,9 +226,6 @@ retrieve_src_code <- function(one_parse_data) {
 
   line_src_code <- data.frame(line = lines,
                               src_code = parse_data)
-
-  line_src_code <- line_src_code %>%
-    dplyr::filter(!grepl("^\\s*#.*|^\\t*#.*", .data$src_code, perl = TRUE) | is.na(.data$src_code)) # remove lines with comments only
 
   line_src_code
 }

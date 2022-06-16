@@ -2,33 +2,29 @@
 % Please edit documentation in R/snippet.R
 \name{snippet}
 \alias{snippet}
-\title{Write Basic Shiny App With Shinybreakpoint Functionality}
+\title{Write (Append) Basic Shiny App With Shinybreakpoint Functionality}
 \usage{
-snippet(append = TRUE)
-}
-\arguments{
-\item{append}{should the code be added to the existing content or replace it? Added (\code{TRUE}) by default.}
+snippet()
 }
 \value{
-Writes code skeleton to the file.
+Appends code skeleton to the file.
 }
 \description{
-Add code skeleton with \code{shinybreakpoint} functionality to the
-active (opened) file in RStudio if this file is saved.
+Append code skeleton with \code{shinybreakpoint} functionality to the
+active (opened) file in RStudio.
 }
 \details{
 \code{shinybreakpoint} needs server logic to be included in the function separated
 from the 'server' part of app and also was developed having Bootstrap
 version 5 in mind. This snippet takes care of that.
 
-It may be necessary to click inside the file after this function was used
-to refresh the editor.
+Snippet is also available as the addin.
 }
 \examples{
 
 \dontrun{
 # use shinybreakpoint::snippet() in the Console in RStudio
-# if there is an opened and saved file (in Source Editor),
+# if there is an opened file (in Source Editor),
 # then this skeleton should be added to the file:
 library(shiny)
 

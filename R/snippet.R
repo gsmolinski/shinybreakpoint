@@ -1,20 +1,17 @@
-#' Write Basic Shiny App With Shinybreakpoint Functionality
+#' Write (Append) Basic Shiny App With Shinybreakpoint Functionality
 #'
-#' Add code skeleton with `shinybreakpoint` functionality to the
-#' active (opened) file in RStudio if this file is saved.
-#'
-#' @param append should the code be added to the existing content or replace it? Added (`TRUE`) by default.
+#' Append code skeleton with `shinybreakpoint` functionality to the
+#' active (opened) file in RStudio.
 #'
 #' @return
-#' Writes code skeleton to the file.
+#' Appends code skeleton to the file.
 #'
 #' @details
 #' `shinybreakpoint` needs server logic to be included in the function separated
 #' from the 'server' part of app and also was developed having Bootstrap
 #' version 5 in mind. This snippet takes care of that.
 #'
-#' It may be necessary to click inside the file after this function was used
-#' to refresh the editor.
+#' Snippet is also available as the addin.
 #'
 #' @export
 #'
@@ -22,7 +19,7 @@
 #'
 #' \dontrun{
 #' # use shinybreakpoint::snippet() in the Console in RStudio
-#' # if there is an opened and saved file (in Source Editor),
+#' # if there is an opened file (in Source Editor),
 #' # then this skeleton should be added to the file:
 #' library(shiny)
 #'
@@ -41,14 +38,14 @@
 #'
 #' shinyApp(ui, server)
 #' }
-snippet <- function(append = TRUE) {
-  path <- tryCatch(rstudioapi::getSourceEditorContext()$path,
+snippet <- function() {
+  id <- tryCatch(rstudioapi::getSourceEditorContext()$id,
                    error = function(e) NULL)
-  if (is.null(path) || path == "") { # "" if not yet saved file
-    stop("Can't find saved and opened file in RStudio", call. = FALSE)
+  if (is.null(id)) {
+    stop("Can't find opened file in RStudio.", call. = FALSE)
   } else {
     snippet_template <- readLines(file.path(system.file("snippet", package = "shinybreakpoint"),
                                             "snippet_template.R"))
-    write(snippet_template, path, append = append)
+    invisible(rstudioapi::insertText(text = snippet_template, id = id))
   }
 }

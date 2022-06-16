@@ -1,0 +1,4 @@
+Name: snippet
+Description: Append code skeleton with `shinybreakpoint` functionality
+Binding: snippet
+Interactive: false

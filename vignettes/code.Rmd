@@ -20,7 +20,7 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 ## Setting Breakpoint
 
-We will start from the snippet^[Run `?shinybreakpoint::snippet` to see the documentation for function to write the snippet to the opened (and saved) file in RStudio] - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
+We will start from the snippet^[Run `?shinybreakpoint::snippet` to see the documentation for function to write the snippet to the opened file in RStudio or check the `snippet` addin] - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
     library(shiny)
 

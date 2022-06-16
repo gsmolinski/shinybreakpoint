@@ -88,7 +88,7 @@ get_reactive_context_regex <- function() {
 #' @noRd
 insert_css <- function() {
   htmltools::htmlDependency("shinybreakpoint-css",
-                            version = packageVersion("shinybreakpoint"),
+                            version = utils::packageVersion("shinybreakpoint"),
                             package = "shinybreakpoint",
                             src = "www",
                             stylesheet = "css/shinybreakpoint.css")

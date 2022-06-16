@@ -81,21 +81,28 @@ Shiny app or in the function which is then used in the
     <dl><dt>keyEvent</dt>
 <dd><p>key to run modal dialog with the functionality
 to set breakpoint. <code>"F4"</code> by default.</p></dd>
+
+
 <dt>id</dt>
 <dd><p>namespace used for all inputs in this module.
 <code>"shinybreakpoint"</code> by default. Change if in the app some
 other module is used which already has <code>"shinybreakpoint"</code>
 namespace.</p></dd>
+
+
 <dt>varName</dt>
 <dd><p>setting breakpoint is not equal to inserting only
 <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code>, but also additional code, one of which is assignment
 operation. This parameter determines the variable name to assign
 value. <code>"....envirr"</code> by default. Change if this name is already
 in use somewhere in the app.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Used for side effect - adds modal dialog to the Shiny app
+    
+
+<p>Used for side effect - adds modal dialog to the Shiny app
 with the options to set breakpoint. Modal dialog is shown
 when the key specified in <code>keyEvent</code> is pressed.</p>
     </div>
@@ -150,7 +157,7 @@ objects which would be used directly in the <code>server</code>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>

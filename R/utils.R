@@ -102,7 +102,7 @@ insert_css <- function() {
 #'
 #' @return
 #' Used for side effect - string will be inserted again into the HTML element, but
-#' with the 'dangerouslySetInnerHTML' mode (available in React),
+#' with the `dangerouslySetInnerHTML` mode (available in React),
 #' so the HTML code won't be escaped and thus colors will be visible.
 #' @import shiny
 #' @noRd
@@ -110,4 +110,20 @@ colorize_code <- function() {
   readLines(file.path(system.file("www", package = "shinybreakpoint"),
                       "js",
                       "colorize_code.js"))
+}
+
+#' Suppress Note If Package Namespace Is Not Used
+#'
+#' @return
+#' This function should not be used.
+#' @details
+#' Although `shinybreakpoint` works without
+#' packages `reactlog` and `bslib`, these
+#' packages should be installed when `shinybreakpoint`
+#' is installed, because snippet adds functions from
+#' these packages to the appended code.
+#' @noRd
+add_package_to_import_without_notes <- function() {
+  invisible(formals(reactlog::reactlog_disable))
+  invisible(formals(bslib::bootstrap))
 }

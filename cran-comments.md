@@ -6,5 +6,5 @@
 * There is a call `:::` in a package to refer to its own object.
 However, this call in reality is in the user's environment, not
 package environment. Package adds to the function chosen by user
-some code (on-the-fly) and one element of this code is internal
-function - `shinybreakpoint:::get_envir()`.
+some code (on-the-fly, using `body<-`) and one element of this
+code is internal function - `shinybreakpoint:::get_envir()`.

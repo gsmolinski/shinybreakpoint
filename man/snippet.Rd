@@ -15,18 +15,22 @@ active (opened) file in RStudio.
 }
 \details{
 \code{shinybreakpoint} needs server logic to be included in the function separated
-from the 'server' part of app and also was developed having Bootstrap
-version 5 in mind. This snippet takes care of that.
+from the \code{server} part of app, was also developed having Bootstrap
+version 5 in mind and some functionalities needs \link[shiny:reactlog]{shiny::reactlog} enabled.
+This snippet takes care of that.
 
-Snippet is also available as the addin.
+Snippet is also available as the addin, under the name \code{snippet}.
 }
 \examples{
 
 \dontrun{
 # use shinybreakpoint::snippet() in the Console in RStudio
+# (or find `snippet` addin in Addins menu)
 # if there is an opened file (in Source Editor),
 # then this skeleton should be added to the file:
 library(shiny)
+
+options(shiny.reactlog = TRUE) # TODO: remove
 
 ui <- fluidPage(
   theme = bslib::bs_theme(5),

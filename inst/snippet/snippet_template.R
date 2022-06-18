@@ -1,5 +1,7 @@
 library(shiny)
 
+options(shiny.reactlog = TRUE) # TODO: remove
+
 ui <- fluidPage(
   theme = bslib::bs_theme(5),
 )

@@ -49,21 +49,36 @@ shinybreakpointUI <- function(id) {
 #' do not live directly in the `server`, but in the function
 #' which is then used in `server`. This naturally harmonizes
 #' with the modules, but it needs the separate function for
-#' objects which would be used directly in the `server`
-#' (see example).
+#' objects which would be used directly in the `server`.
+#'
+#' `shinybreakpoint` module was developed having Bootstrap 5
+#' in mind, that's why it is recommended to use [bslib::bs_theme()]
+#' to set up Bootstrap 5. Otherwise the UI experience will be
+#' worse.
+#'
+#' Possibility to filter reactive context depending on specific
+#' `input` needs [shiny::reactlog] enabled, which is done by
+#' `options(shiny.reactlog = TRUE)`. This line of code needs to
+#' be removed before app will be sent to production (which is
+#' of course true also for `shinybreakpoint::shinybreakpointServer()`).
+#'
+#' See example for the idea of how to include all of this
+#' requirements in the app. This can also be done by
+#' [shinybreakpoint::snippet()] for new apps.
 #'
 #' @export
 #' @import shiny
 #' @importFrom magrittr %>%
 #' @examples
-#' # To run example, copy-paste to file, save the file
-#' # and run the app. Then press "F4" to open the modal dialog.
-#' # Make sure 'bslib' package is installed.
+#' # To run example, copy-paste to file, save
+#' # the file and run the app. Then press "F4"
+#' # to open the modal dialog.
 #'
 #' \dontrun{
 #'
-#' # install.packages("bslib") if needed
 #' library(shiny)
+#'
+#' options(shiny.reactlog = TRUE) # TODO: remove
 #'
 #' appServer <- function(input, output, session) {
 #'   observe({
@@ -77,7 +92,7 @@ shinybreakpointUI <- function(id) {
 #'     numericInput("num", "Num", 0)
 #'   ),
 #'   server = function(input, output, session) {
-#'     shinybreakpoint::shinybreakpointServer()
+#'     shinybreakpoint::shinybreakpointServer() # TODO: remove
 #'     appServer(input, output, session)
 #'   }
 #' )

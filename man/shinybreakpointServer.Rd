@@ -43,18 +43,33 @@ part of app. This is possible only when these objects
 do not live directly in the \code{server}, but in the function
 which is then used in \code{server}. This naturally harmonizes
 with the modules, but it needs the separate function for
-objects which would be used directly in the \code{server}
-(see example).
+objects which would be used directly in the \code{server}.
+
+\code{shinybreakpoint} module was developed having Bootstrap 5
+in mind, that's why it is recommended to use \code{\link[bslib:bs_theme]{bslib::bs_theme()}}
+to set up Bootstrap 5. Otherwise the UI experience will be
+worse.
+
+Possibility to filter reactive context depending on specific
+\code{input} needs \link[shiny:reactlog]{shiny::reactlog} enabled, which is done by
+\code{options(shiny.reactlog = TRUE)}. This line of code needs to
+be removed before app will be sent to production (which is
+of course true also for \code{shinybreakpoint::shinybreakpointServer()}).
+
+See example for the idea of how to include all of this
+requirements in the app. This can also be done by
+\code{\link[=snippet]{snippet()}} for new apps.
 }
 \examples{
-# To run example, copy-paste to file, save the file
-# and run the app. Then press "F4" to open the modal dialog.
-# Make sure 'bslib' package is installed.
+# To run example, copy-paste to file, save
+# the file and run the app. Then press "F4"
+# to open the modal dialog.
 
 \dontrun{
 
-# install.packages("bslib") if needed
 library(shiny)
+
+options(shiny.reactlog = TRUE) # TODO: remove
 
 appServer <- function(input, output, session) {
   observe({
@@ -68,7 +83,7 @@ shinyApp(
     numericInput("num", "Num", 0)
   ),
   server = function(input, output, session) {
-    shinybreakpoint::shinybreakpointServer()
+    shinybreakpoint::shinybreakpointServer() # TODO: remove
     appServer(input, output, session)
   }
 )

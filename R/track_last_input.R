@@ -10,12 +10,12 @@
 track_last_input <- function(id) {
   ns <- NS(id)
   last_input <- ns("last_input")
-  js <- glue::glue_safe('
+  js_track <- glue::glue_safe('
                          document.addEventListener("shiny:inputchanged", function(e) {{
                           if (!e.startsWith("{id}-")) {{
                             Shiny.setInputValue({last_input}, e.name);
                           }}
                          }});
                         ')
-  singleton(tags$head(tags$script(HTML(js))))
+  singleton(tags$head(tags$script(HTML(js_track))))
 }

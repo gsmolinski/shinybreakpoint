@@ -11,12 +11,12 @@
 shinybreakpointUI <- function(id) {
   ns <- NS(id)
   key_pressed <- ns("key_pressed")
-  js <- glue::glue_safe('
+  js_key <- glue::glue_safe('
     document.addEventListener("keydown", function(e) {{
      Shiny.setInputValue("{key_pressed}", e.key, {{priority: "event"}});
     }});
   ')
-  singleton(tags$head(tags$script(HTML(js))))
+  singleton(tags$head(tags$script(HTML(js_key))))
 }
 
 #' Use Module to Set Breakpoint

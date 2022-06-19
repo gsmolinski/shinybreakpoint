@@ -51,10 +51,11 @@ to set up Bootstrap 5. Otherwise the UI experience will be
 worse.
 
 Possibility to filter reactive context depending on specific
-\code{input} needs \link[shiny:reactlog]{shiny::reactlog} enabled, which is done by
-\code{options(shiny.reactlog = TRUE)}. This line of code needs to
-be removed before app will be sent to production (which is
-of course true also for \code{shinybreakpoint::shinybreakpointServer()}).
+\code{input}, \code{output} or \code{observe} needs \link[shiny:reactlog]{shiny::reactlog} enabled,
+which is done by \code{options(shiny.reactlog = TRUE)}. This line
+of code needs to be removed before app will be sent to production
+(which is of course true also for
+\code{shinybreakpoint::shinybreakpointServer()}).
 
 See example for the idea of how to include all of this
 requirements in the app. This can also be done by

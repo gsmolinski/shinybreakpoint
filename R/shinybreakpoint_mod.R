@@ -57,7 +57,7 @@ shinybreakpointUI <- function(id) {
 #' worse.
 #'
 #' Possibility to filter reactive context depending on specific
-#' `input`, `output` or `observe` needs [shiny::reactlog] enabled,
+#' `input` or `output` needs [shiny::reactlog] enabled,
 #' which is done by `options(shiny.reactlog = TRUE)`. This line
 #' of code needs to be removed before app will be sent to production
 #' (which is of course true also for

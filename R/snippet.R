@@ -29,6 +29,7 @@
 #'
 #' ui <- fluidPage(
 #'   theme = bslib::bs_theme(5),
+#'
 #' )
 #'
 #' appServer <- function(input, output, session) {

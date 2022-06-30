@@ -1,3 +1,3 @@
-find_dependencies <- function(id, type, src_code, reactlog_data) {
+find_dependencies <- function(id, src_code, reactlog_data) {
 
 }

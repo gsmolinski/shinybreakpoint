@@ -1,6 +1,6 @@
 # shinybreakpoint 0.0.2
 
-* Filter reactive context dependencies based on chosen input.
+* Filter reactive context dependencies based on chosen input or output.
 
 # shinybreakpoint 0.0.1
 

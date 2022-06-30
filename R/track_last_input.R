@@ -13,7 +13,7 @@ track_last_input <- function(id) {
   js_track <- glue::glue_safe('
                          document.addEventListener("shiny:inputchanged", function(e) {{
                           if (!e.startsWith("{id}-")) {{
-                            Shiny.setInputValue({last_input}, e.name);
+                            Shiny.setInputValue("{last_input}", e.name);
                           }}
                          }});
                         ')

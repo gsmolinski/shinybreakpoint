@@ -6,8 +6,10 @@
 #' @return
 #' Named list:
 #' 'filenames_parse_data': data.frame with full path to file, file name and parse data,
-#' but only if file contained at least one reactive funtion and this funtion wasn't live in
+#' but only if file contained at least one reactive function and this function wasn't live in
 #' Global Environment (because we have removed Global Environment previously from search path).
+#' 'labelled_observers': data.frame returned by `get_labelled_observers`. This is needed to filter
+#' dependencies based on chosen Id, because for observers there is no source reference in reactlog.
 #' 'envirs': list of environments for each file.
 #' @noRd
 prepare_src_code <- function(caller_env) {
@@ -16,15 +18,20 @@ prepare_src_code <- function(caller_env) {
     envirs <- filenames_parse_data_env$envirs
     filenames_parse_data <- filenames_parse_data_env$filenames_parse_data
 
+    parse_data_all <- dplyr::bind_rows(filenames_parse_data$parse_data)
+    parse_data_all$filename_full_path <- filenames_parse_data$filename_full_path[rownames(parse_data_all)]
+
     find_left_reactives_result <- find_left_reactives(filenames_parse_data$parse_data)
     filenames_parse_data$parse_data <- find_left_reactives_result$parse_data
     if (length(find_left_reactives_result$which_null) > 0) {
       filenames_parse_data <- filenames_parse_data[-find_left_reactives_result$which_null, ]
       envirs <- envirs[-find_left_reactives_result$which_null]
     }
+
     filenames_parse_data$parse_data <- lapply(filenames_parse_data$parse_data, retrieve_src_code)
 
     list(filenames_parse_data = filenames_parse_data,
+         labelled_observers = labelled_observers,
          envirs = envirs)
   }
 }
@@ -196,6 +203,44 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
       FALSE
     }
   }
+}
+
+#' Find And Get Only Labelled Observers
+#'
+#' Needed for reactlog to find dependencies (observers)
+#'
+#' @param parse_data_all data.frame with parse data from all
+#' files as well as a column with full path to file, but only
+#' with reactive context kept.
+#' @param filenames_parse_data parse data after checked for
+#' reactives.
+#'
+#' @return
+#' data.frame with only labelled observers and only if
+#' string was used for label, not variable; columns:
+#' - first line
+#' - last line
+#' - label
+#' - full path to file
+#' @details
+#' All rules for reactive context apply here as well -
+#' so only reactive context nested in named function.
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
+#' @noRd
+get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
+  parent_id_filename <- parse_data_all %>%
+    dplyr::filter(.data$filename_full_path %in% filenames_parse_data$filename_full_path &
+                    .data$token == "SYMBOL_FUNCTION_CALL") %>%
+    dplyr::filter(grepl(get_observers_regex(),
+                        .data$text, perl = TRUE)) %>%
+    dplyr::select(id = .data$parent, .data$filename_full_path)
+
+  expr_id_filename <- parent_id_filename %>%
+    dplyr::left_join(parse_data_all[c("id", "parent", "filename_full_path")],
+                     by = c("id", "filename_full_path")) %>%
+    dplyr::select(.data$parent, .data$filename_full_path)
+  # teraz trzeba sprawdzić, czy ten parent ma label i string
 }
 
 #' Get Text for Expr and Format It

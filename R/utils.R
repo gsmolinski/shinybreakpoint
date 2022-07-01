@@ -81,6 +81,18 @@ get_reactive_context_regex <- function() {
   "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render"
 }
 
+#' Get Regular Expression to Indicate Observers
+#'
+#' @return character length 1.
+#' @details
+#' Needed to find dependencies based on input or output Id.
+#' In reactlog there is no source reference for observers, so
+#' we need to find them based on parse data and labels.
+#' @noRd
+get_observers_regex <- function() {
+  "^observe$|^observeEvent$"
+}
+
 #' Insert CSS dependency.
 #'
 #' @return

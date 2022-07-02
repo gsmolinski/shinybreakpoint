@@ -10,7 +10,7 @@
 #' Global Environment (because we have removed Global Environment previously from search path).
 #' 'labelled_observers': data.frame returned by `get_labelled_observers`. This is needed to filter
 #' dependencies based on chosen Id, because for observers there is no source reference in reactlog.
-#' 'envirs': list of environments for each file.
+#' 'envirs': list of environments returned by `collect_filenames_parse_data`
 #' @noRd
 prepare_src_code <- function(caller_env) {
   filenames_parse_data_env <- collect_filenames_parse_data(caller_env)
@@ -29,6 +29,8 @@ prepare_src_code <- function(caller_env) {
     }
 
     filenames_parse_data$parse_data <- lapply(filenames_parse_data$parse_data, retrieve_src_code)
+
+    labelled_observers <- get_labelled_observers(parse_data_all, filenames_parse_data)
 
     list(filenames_parse_data = filenames_parse_data,
          labelled_observers = labelled_observers,
@@ -224,7 +226,10 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
 #' - full path to file
 #' @details
 #' All rules for reactive context apply here as well -
-#' so only reactive context nested in named function.
+#' so only reactive context (observers) nested in named function.
+#' It returns only observers labelled using only string (not e.g. variable),
+#' because reactlog can resolve variable or function, but we can't by reading
+#' just a source code.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
@@ -240,7 +245,42 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
     dplyr::left_join(parse_data_all[c("id", "parent", "filename_full_path")],
                      by = c("id", "filename_full_path")) %>%
     dplyr::select(.data$parent, .data$filename_full_path)
-  # teraz trzeba sprawdzić, czy ten parent ma label i string
+
+  labels_or_na <- mapply(extract_label, parent_id = expr_id_filename$parent, filename_full_path = expr_id_filename$filename_full_path,
+                         MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE)
+  expr_lines_label_filename <- expr_id_filename %>%
+    dplyr::mutate(label = unlist(labels_or_na, use.names = FALSE)) %>%
+    dplyr::filter(!is.na(.data$label)) %>%
+    dplyr::rename(id = .data$parent) %>%
+    dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
+    dplyr::select(.data$line1, .data$line2, .data$label, .data$filename_full_path)
+
+  expr_lines_label_filename
+
+}
+
+#' Helper for `get_labelled_observers`
+#'
+#' Search if observer is labelled by only string
+#'
+#' @param parent_id id for observer
+#' @param filename_full_path filename where observer exists
+#' @param parse_data_all all parse data, not only observers, from all files
+#'
+#' @return
+#' label text if string for observer or NA
+#' @noRd
+extract_label <- function(parent_id, filename_full_path, parse_data_all) {
+  indice_label <- which(parse_data_all$parent == parent_id &
+                        parse_data_all$token == "SYMBOL_SUB" &
+                        parse_data_all$text == "label" &
+                        parse_data_all$filename_full_path == filename_full_path)
+  if (tryCatch(parse_data_all[indice_label + 1, "token"] == "EQ_SUB", error = function() FALSE) &
+      tryCatch(parse_data_all[indice_label + 2, "token"] == "STR_CONST", error = function() FALSE)) {
+    parse_data_all[indice_label + 2, "text"]
+  } else {
+    NA_character_
+  }
 }
 
 #' Get Text for Expr and Format It

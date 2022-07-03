@@ -224,6 +224,7 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
 #' - last line
 #' - label
 #' - full path to file
+#' Or NULL if nothing found
 #' @details
 #' All rules for reactive context apply here as well -
 #' so only reactive context (observers) nested in named function.
@@ -255,7 +256,11 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
     dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
     dplyr::select(.data$line1, .data$line2, .data$label, .data$filename_full_path)
 
-  expr_lines_label_filename
+  if (nrow(expr_lines_label_filename) > 0) {
+    expr_lines_label_filename
+  } else {
+    NULL
+  }
 
 }
 
@@ -275,9 +280,13 @@ extract_label <- function(parent_id, filename_full_path, parse_data_all) {
                         parse_data_all$token == "SYMBOL_SUB" &
                         parse_data_all$text == "label" &
                         parse_data_all$filename_full_path == filename_full_path)
-  if (tryCatch(parse_data_all[indice_label + 1, "token"] == "EQ_SUB", error = function() FALSE) &
-      tryCatch(parse_data_all[indice_label + 2, "token"] == "STR_CONST", error = function() FALSE)) {
-    parse_data_all[indice_label + 2, "text"]
+  if (length(indice_label) > 0) { # for integer(0) cases, but should be length 1 exactly
+    if (tryCatch(parse_data_all[indice_label + 1, "token"] == "EQ_SUB", error = function() FALSE) &
+        tryCatch(parse_data_all[indice_label + 2, "token"] == "STR_CONST", error = function() FALSE)) {
+      parse_data_all[indice_label + 2, "text"]
+    } else {
+      NA_character_
+    }
   } else {
     NA_character_
   }

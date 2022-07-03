@@ -10,6 +10,14 @@ test_that("collect_filenames_parse_data returns list if srcfile", {
   expect_type(collect_filenames_parse_data(e), "list")
 })
 
+test_that("collect_filenames_parse_data returns named envirs
+          corresponding to filenames if srcfile", {
+  skip_if_not(interactive())
+  e <- new.env(parent = rlang::pkg_env("shinybreakpoint"))
+  expect_named(collect_filenames_parse_data(e)$envirs)
+  expect_equal(names(collect_filenames_parse_data(e)$envirs), collect_filenames_parse_data(e)$filenames_parse_data$filename_full_path)
+})
+
 test_that("drop_envs_too_far returns list", {
   expect_type(drop_envs_too_far(rlang::env_parents()), "list")
 })

@@ -2,6 +2,11 @@ path <- system.file("tests_helpers", "server_fun_with_srcref.R", package = "shin
 source(path, local = TRUE, keep.source = TRUE)
 parse_data_srcref <- utils::getParseData(server, includeText = NA)
 
+path_labelled_observers <- system.file("tests_helpers", "server_labelled_observers.R", package = "shinybreakpoint")
+source(path_labelled_observers, local = TRUE, keep.source = TRUE)
+parse_data_labelled_observers <- utils::getParseData(server_labelled_observers, includeText = NA)
+parse_data_labelled_observers$filename_full_path <- "test"
+
 test_that("'prepare_src_code' returns list if srcref", {
   skip_if_not(interactive())
   e <- new.env(parent = rlang::pkg_env("shinybreakpoint"))
@@ -32,6 +37,49 @@ test_that("filename is keep before using 'retrieve_src_code'", {
   remove_nested_result <- remove_nested_reactives(find_direct_result)
   filename <- attr(remove_nested_result, "srcfile")$filename
   expect_equal(filename, attr(attr(server, "srcref"), "srcfile")$filename)
+})
+
+test_that("'get_labelled_observers' returns NULL if no labelled observers", {
+  parse_data_srcref$filename_full_path <- "test"
+  filenames_parse_data <- data.frame(filename_full_path = "test")
+  expect_null(get_labelled_observers(parse_data_srcref, filenames_parse_data))
+})
+
+test_that("'get_labelled_observers' returns NULL if labels
+          are not strings", {
+  filenames_parse_data <- data.frame(filename_full_path = "test")
+  parse_data_not_correctly_labelled <- dplyr::filter(parse_data_labelled_observers, !dplyr::between(line1, 2, 9))
+  expect_null(get_labelled_observers(parse_data_not_correctly_labelled, filenames_parse_data))
+})
+
+test_that("'get_labelled_observers' returns correct results if labelled observers", {
+  filenames_parse_data <- data.frame(filename_full_path = "test")
+  expected <- data.frame(line1 = c(2, 6),
+                         line2 = c(4, 8),
+                         label = c("label1", "label2"),
+                         filename_full_path = "test")
+  expect_equal(get_labelled_observers(parse_data_labelled_observers, filenames_parse_data), expected, ignore_attr = TRUE)
+})
+
+test_that("'extract_label' returns NA_character_ if no labelled observers", {
+  filename_full_path <- "test"
+  parent_id <- 409 # some observe from server part
+  expect_equal(extract_label(parent_id, filename_full_path, parse_data_srcref), NA_character_)
+})
+
+test_that("'extract_label' returns NA_character_ if labels are not strings", {
+  filename_full_path <- "test"
+  parse_data_not_correctly_labelled <- dplyr::filter(parse_data_labelled_observers, !dplyr::between(line1, 2, 9))
+  parent_id_var <- 98
+  parent_id_fun <- 132
+  expect_equal(extract_label(parent_id_var, filename_full_path, parse_data_not_correctly_labelled), NA_character_)
+  expect_equal(extract_label(parent_id_fun, filename_full_path, parse_data_not_correctly_labelled), NA_character_)
+})
+
+test_that("'extract_label' returns correct results if labelled observers", {
+  filename_full_path <- "test"
+  expect_equal(extract_label(46, filename_full_path, parse_data_labelled_observers), "\"label1\"")
+  expect_equal(extract_label(72, filename_full_path, parse_data_labelled_observers), "\"label2\"")
 })
 
 test_that("'retrieve_src_code' returns data.frame with lines and src code", {

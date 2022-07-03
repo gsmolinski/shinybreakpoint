@@ -18,8 +18,8 @@ prepare_src_code <- function(caller_env) {
     envirs <- filenames_parse_data_env$envirs
     filenames_parse_data <- filenames_parse_data_env$filenames_parse_data
 
-    parse_data_all <- dplyr::bind_rows(filenames_parse_data$parse_data)
-    parse_data_all$filename_full_path <- filenames_parse_data$filename_full_path[rownames(parse_data_all)]
+    parse_data_all <- dplyr::bind_rows(filenames_parse_data$parse_data, .id = "filename_full_path")
+    parse_data_all$filename_full_path <- filenames_parse_data$filename_full_path[as.numeric(parse_data_all$filename_full_path)]
 
     find_left_reactives_result <- find_left_reactives(filenames_parse_data$parse_data)
     filenames_parse_data$parse_data <- find_left_reactives_result$parse_data
@@ -242,26 +242,30 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
                         .data$text, perl = TRUE)) %>%
     dplyr::select(id = .data$parent, .data$filename_full_path)
 
-  expr_id_filename <- parent_id_filename %>%
-    dplyr::left_join(parse_data_all[c("id", "parent", "filename_full_path")],
-                     by = c("id", "filename_full_path")) %>%
-    dplyr::select(.data$parent, .data$filename_full_path)
+  if (nrow(parent_id_filename) > 0) {
+    expr_id_filename <- parent_id_filename %>%
+      dplyr::left_join(parse_data_all[c("id", "parent", "filename_full_path")],
+                       by = c("id", "filename_full_path")) %>%
+      dplyr::select(.data$parent, .data$filename_full_path)
 
-  labels_or_na <- mapply(extract_label, parent_id = expr_id_filename$parent, filename_full_path = expr_id_filename$filename_full_path,
-                         MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE)
-  expr_lines_label_filename <- expr_id_filename %>%
-    dplyr::mutate(label = unlist(labels_or_na, use.names = FALSE)) %>%
-    dplyr::filter(!is.na(.data$label)) %>%
-    dplyr::rename(id = .data$parent) %>%
-    dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
-    dplyr::select(.data$line1, .data$line2, .data$label, .data$filename_full_path)
+    labels_or_na <- mapply(extract_label, parent_id = expr_id_filename$parent, filename_full_path = expr_id_filename$filename_full_path,
+                           MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE)
 
-  if (nrow(expr_lines_label_filename) > 0) {
-    expr_lines_label_filename
+    expr_lines_label_filename <- expr_id_filename %>%
+      dplyr::mutate(label = gsub('"', "", unlist(labels_or_na, use.names = FALSE), fixed = TRUE)) %>% # remove double quotes
+      dplyr::filter(!is.na(.data$label)) %>%
+      dplyr::rename(id = .data$parent) %>%
+      dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
+      dplyr::select(.data$line1, .data$line2, .data$label, .data$filename_full_path)
+
+    if (nrow(expr_lines_label_filename) > 0) {
+      expr_lines_label_filename
+    } else {
+      NULL
+    }
   } else {
     NULL
   }
-
 }
 
 #' Helper for `get_labelled_observers`

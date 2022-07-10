@@ -1,10 +1,13 @@
-#' Get Id of Chosen Element
+#' Get Id of Chosen Element And Its Parents
 #'
 #' @param id from `shinybreakpointServer`. Can be chosen by user.
 #'
 #' @return
 #' HTML script tag with JavaScript code - returns id of chosen
-#' element (input or output).
+#' element (input or output). Can returns multiple ids, because
+#' id of current element is taken as well as parent elements.
+#' Id is returned only if can be find in reactlog and is not
+#' from 'shinybreakpoint' namespace.
 #' @details
 #' User can (by ctrl + mouse move) save Id of chosen
 #' input or output and then this Id will be used to find
@@ -17,30 +20,46 @@ get_element_id <- function(id) {
   ns <- NS(id)
   chosen_id <- ns("chosen_id")
   js_chosen_id <- glue::glue_safe('
-                                  document.addEventListener("mousemove", function(e) {{
-                                   if (e.ctrlKey) {{
-                                    let ids_all = [];
-                                    let ids_correct = [];
-                                    let current = e.target;
-                                    ids_all.push(current.id);
-                                    while (current.parentNode) {{
-                                     ids_all.push(current.parentNode.id);
-                                     current = current.parentNode;
-                                    }};
-                                    for (const id_one of ids_all) {{
-                                     if (id_one != null && id_one !== "" && !id_one.startsWith("{id}-")) {{
-                                      ids_correct.push(id_one);
+                                   $(function() {{
+                                    let ids_shiny = [];
+                                    Shiny.addCustomMessageHandler("reactlog_ids", function(ids_from_r) {{
+                                     if (Array.isArray(ids_from_r)) {{
+                                      for (id_one of ids_from_r) {{
+                                      if (id_one != null) {{
+                                       ids_shiny.push(id_one);
+                                      }};
                                      }};
-                                    }};
-                                    if (ids_correct.length > 0) {{
-                                     Shiny.setInputValue("{chosen_id}", ids_correct);
-                                     document.body.classList.add("shinybreakpoint-cursor-progress");
-                                     setTimeout(function() {{
-                                      document.body.classList.remove("shinybreakpoint-cursor-progress");
-                                     }}, 200);
-                                    }};
+                                     }} else {{
+                                      if (ids_from_r != null) {{
+                                       ids_shiny.push(ids_from_r);
+                                      }};
+                                     }};
+                                    }});
+                                    document.addEventListener("mousemove", function(e) {{
+                                     if (e.ctrlKey) {{
+                                      let ids_all = [];
+                                      let ids_correct = [];
+                                      let current = e.target;
+                                      ids_all.push(current.id);
+                                      while (current.parentNode) {{
+                                       ids_all.push(current.parentNode.id);
+                                       current = current.parentNode;
+                                      }};
+                                      for (const id_one of ids_all) {{
+                                       if (id_one != null && id_one !== "" && !id_one.startsWith("{id}-") && ids_shiny.includes(id_one)) {{
+                                        ids_correct.push(id_one);
+                                       }};
+                                      }};
+                                      if (ids_correct.length > 0) {{
+                                       Shiny.setInputValue("{chosen_id}", ids_correct);
+                                       document.body.classList.add("shinybreakpoint-cursor-progress");
+                                       setTimeout(function() {{
+                                        document.body.classList.remove("shinybreakpoint-cursor-progress");
+                                       }}, 200);
+                                      }};
+                                     }};
+                                    }});
                                    }};
-                                  }})
                                   ')
 
   singleton(tags$head(tags$script(HTML(js_chosen_id))))

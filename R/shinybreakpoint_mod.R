@@ -104,7 +104,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
   check_requirements_shinybreakpointServer(keyEvent, id, varName)
   insertUI("head", "beforeEnd", shinybreakpointUI(id), immediate = TRUE)
-  insertUI("head", "beforeEnd", track_last_input(id), immediate = TRUE)
   insertUI("head", "beforeEnd", get_element_id(id), immediate = TRUE)
   insertUI("head", "beforeEnd", singleton(shinyjs::useShinyjs()), immediate = TRUE)
   insertUI("head", "beforeEnd", insert_css(), immediate = TRUE)

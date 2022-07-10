@@ -1,13 +1,20 @@
-#' Get Id of Chosen Element And Its Parents
+#' Get Id of Chosen Element And Its Parents And
+#' Track Last Changed Input
 #'
 #' @param id from `shinybreakpointServer`. Can be chosen by user.
 #'
 #' @return
-#' HTML script tag with JavaScript code - returns id of chosen
-#' element (input or output). Can returns multiple ids, because
+#' HTML script tag with JavaScript code - returns id of elements:
+#'
+#' - chosen input or output: can return multiple ids, because
 #' id of current element is taken as well as parent elements.
 #' Id is returned only if can be find in reactlog and is not
 #' from 'shinybreakpoint' namespace.
+#'
+#' - last changed input: single value returned and only
+#' if can be find in reactlog and is not from 'shinybreakpoint'
+#' namespace.
+#'
 #' @details
 #' User can (by ctrl + mouse move) save Id of chosen
 #' input or output and then this Id will be used to find
@@ -18,9 +25,11 @@
 #' @noRd
 get_element_id <- function(id) {
   ns <- NS(id)
+  last_input <- ns("last_input")
   chosen_id <- ns("chosen_id")
-  js_chosen_id <- glue::glue_safe('
+  js_id <- glue::glue_safe('
                                    $(function() {{
+
                                     let ids_shiny = [];
                                     Shiny.addCustomMessageHandler("reactlog_ids", function(ids_from_r) {{
                                      if (Array.isArray(ids_from_r)) {{
@@ -35,6 +44,13 @@ get_element_id <- function(id) {
                                       }};
                                      }};
                                     }});
+
+                                    document.addEventListener("shiny:inputchanged", function(e) {{
+                                     if (!e.name.startsWith("{id}-") && ids_shiny.includes(e.name)) {{
+                                      Shiny.setInputValue("{last_input}", e.name);
+                                     }};
+                                    }});
+
                                     document.addEventListener("mousemove", function(e) {{
                                      if (e.ctrlKey) {{
                                       let ids_all = [];
@@ -59,8 +75,9 @@ get_element_id <- function(id) {
                                       }};
                                      }};
                                     }});
+
                                    }};
                                   ')
 
-  singleton(tags$head(tags$script(HTML(js_chosen_id))))
+  singleton(tags$head(tags$script(HTML(js_id))))
 }

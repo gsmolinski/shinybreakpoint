@@ -19,14 +19,27 @@ get_element_id <- function(id) {
   js_chosen_id <- glue::glue_safe('
                                   document.addEventListener("mousemove", function(e) {{
                                    if (e.ctrlKey) {{
-                                    if (!e.target.id.startsWith("{id}-")) {{
-                                     Shiny.setInputValue("{chosen_id}", e.target.id);
+                                    let ids_all = [];
+                                    let ids_correct = [];
+                                    let current = e.target;
+                                    ids_all.push(current.id);
+                                    while (current.parentNode) {{
+                                     ids_all.push(current.parentNode.id);
+                                     current = current.parentNode;
+                                    }};
+                                    for (const id_one of ids_all) {{
+                                     if (id_one != null && id_one !== "" && !id_one.startsWith("{id}-")) {{
+                                      ids_correct.push(id_one);
+                                     }};
+                                    }};
+                                    if (ids_correct.length > 0) {{
+                                     Shiny.setInputValue("{chosen_id}", ids_correct);
                                      document.body.classList.add("shinybreakpoint-cursor-progress");
                                      setTimeout(function() {{
                                       document.body.classList.remove("shinybreakpoint-cursor-progress");
                                      }}, 200);
-                                    }}
-                                   }}
+                                    }};
+                                   }};
                                   }})
                                   ')
 

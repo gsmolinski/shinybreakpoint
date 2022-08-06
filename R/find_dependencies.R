@@ -24,14 +24,28 @@
 #' @noRd
 find_dependencies <- function(id, filenames_parse_data, labelled_observers, reactlog_data) {
   ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
+  reactlog_dependency_df <- dplyr::bind_rows(lapply(reactlog_data, get_dependencies_from_reactlog))
 
-  id_type <- ids_data$type[ids_data$react_id == id]
+  if (nrow(reactlog_dependency_df) > 0) {
+    id_is_input <- ids_data$is_input[ids_data$label == id]
+    # we want to be able to exclude inputs if 'output' id was chosen. We can assume that input can't depends on something else, but only something else depends on input,
+    # so we can think that all inputs are in 'depends_on_react_id' column, that's why this join below looks like that. And then (in `construct_dependency_graph`) we can
+    # remove all connections to input. This way we would find only objects (reactives) on which output (if chosen id in output) depends on
+    reactlog_dependency_df <- dplyr::left_join(reactlog_dependency_df, ids_data[c("react_id", "is_input")], by = c("depends_on_react_id" = "react_id"))
+    dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
+
+    ids_data <- dplyr::left_join(ids_data, dependency_graph, by = "react_id")
+  } else {
+    ids_data <- ids_data %>%
+      dplyr::mutate(graph = dplyr::row_number()) # no connections, i.e. mimic no connected graphs
+  }
+
   ids_data <- ids_data %>%
     filter(!is.na(.data$file))
 
-  reactlog_dependency_df <- dplyr::bind_rows(lapply(reactlog_data, get_dependencies_from_reactlog))
-  dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_type)
+  if (nrow(ids_data) > 0) {
 
+  }
 
 }
 
@@ -51,19 +65,17 @@ find_dependencies <- function(id, filenames_parse_data, labelled_observers, reac
 #' - label: id used in app (as input or output) or label for observer or name for reactive
 #' - filename: basename of file (not a full path!)
 #' - location: for reactive or output it is one line in which this reactive or output can be find
-#' - type: if the label is an input, output or something else (then NA)
+#' - is_input: if the label is an input, because if output id was chosen, then we will remove inputs before costructing graph
 #' - line1: for labelled observers this is started line for this observer
 #' - line2: for labelld observers this is end line for this observer
-#' Even if no elements in the App, this fun still should return data.frame with 1 row: Theme Counter
+#' Even if no elements in the App, this fun still should return data.frame with 1 row: Theme Counter as label.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
 prepare_ids_data <- function(reactlog_data, labelled_observers) {
   ids_data <- dplyr::bind_rows(lapply(reactlog_data, extract_ids_data_to_df))
   ids_data <- ids_data %>%
-    dplyr::mutate(type = dplyr::case_when(grepl("^input\\$", .data$label, perl = TRUE) ~ "input",
-                                          grepl("^output\\$", .data$label, perl = TRUE) ~ "output",
-                                          TRUE ~ NA_character_),
+    dplyr::mutate(is_input = grepl("^input\\$", .data$label, perl = TRUE),
                   label = gsub("^input\\$|^output\\$", "", .data$label, perl = TRUE))
   if (!is.null(labelled_observers)) {
     ids_data <- dplyr::left_join(ids_data, labelled_observers, by = "label")
@@ -117,7 +129,7 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #' to the same group (graph).
 #'
 #' @param reactlog_dependency_df data.frame returned by `get_dependencies_from_reactlog`.
-#' @param id_type "output" or "input".
+#' @param id_is_input is id an input?
 #'
 #' @return
 #' data.frame with two columns:
@@ -134,11 +146,14 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-construct_dependency_graph <- function(reactlog_dependency_df, id_type) {
-  if (id_type == "output") {
+construct_dependency_graph <- function(reactlog_dependency_df, id_is_input) {
+  if (!id_is_input) {
     reactlog_dependency_df <- reactlog_dependency_df %>%
-      dplyr::filter(.data$type != "input" | is.na(.data$type))
+      dplyr::filter(!.data$is_input)
   }
+
+  reactlog_dependency_df <- reactlog_dependency_df %>%
+    select(-.data$is_input)
 
   graph_as_data_frame <- igraph::graph_from_data_frame(reactlog_dependency_df) %>%
     igraph::components() %>%

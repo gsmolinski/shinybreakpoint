@@ -14,7 +14,7 @@ shinybreakpointServer(
 \item{keyEvent}{key to run modal dialog with the functionality
 to set breakpoint. \code{"F4"} by default.}
 
-\item{id}{namespace used for all inputs in this module.
+\item{id}{namespace used for all inputs and outputs in this module.
 \code{"shinybreakpoint"} by default. Change if in the app some
 other module is used which already has \code{"shinybreakpoint"}
 namespace.}

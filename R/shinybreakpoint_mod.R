@@ -28,7 +28,7 @@ shinybreakpointUI <- function(id) {
 #'
 #' @param keyEvent key to run modal dialog with the functionality
 #' to set breakpoint. `"F4"` by default.
-#' @param id namespace used for all inputs in this module.
+#' @param id namespace used for all inputs and outputs in this module.
 #' `"shinybreakpoint"` by default. Change if in the app some
 #' other module is used which already has `"shinybreakpoint"`
 #' namespace.

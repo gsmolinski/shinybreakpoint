@@ -223,7 +223,7 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
 #' - first line
 #' - last line
 #' - label
-#' - full path to file
+#' - file (only basename for path, because in [reactlog] is only basename for reactives and outputs)
 #' Or NULL if nothing found
 #' @details
 #' All rules for reactive context apply here as well -
@@ -256,7 +256,8 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
       dplyr::filter(!is.na(.data$label)) %>%
       dplyr::rename(id = .data$parent) %>%
       dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
-      dplyr::select(.data$line1, .data$line2, .data$label, .data$filename_full_path)
+      dplyr::mutate(file = basename(.data$filename_full_path)) %>%
+      dplyr::select(.data$line1, .data$line2, .data$label, .data$file)
 
     if (nrow(expr_lines_label_filename) > 0) {
       expr_lines_label_filename

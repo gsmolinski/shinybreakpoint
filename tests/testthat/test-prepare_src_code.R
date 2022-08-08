@@ -54,10 +54,9 @@ test_that("'get_labelled_observers' returns NULL if labels
 
 test_that("'get_labelled_observers' returns correct results if labelled observers", {
   filenames_parse_data <- data.frame(filename_full_path = "test")
-  expected <- data.frame(line1 = c(2, 6),
-                         line2 = c(4, 8),
+  expected <- data.frame(location_observer = c(2, 6),
                          label = c("label1", "label2"),
-                         filename_full_path = "test")
+                         filen = "test")
   expect_equal(get_labelled_observers(parse_data_labelled_observers, filenames_parse_data), expected, ignore_attr = TRUE)
 })
 

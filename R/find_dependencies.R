@@ -3,49 +3,80 @@
 #' Provides functionality to show the user reactive context (reactives, observers,
 #' outputs) based on chosen id - reactive context which depends on some id.
 #'
-#' @param id name of the input or output id
-#' @param filenames_parse_data data.frame with filenames and parse data for each
-#' @param labelled_observers data.frame with labelled observers - start line, end line, label, filename or NULL.
-#' @param reactlog_data data returned by [reactlog]
+#' @param id name of the input or output id.
+#' @param filenames_parse_data data.frame with filenames and parse data for each file
+#' @param reactlog_dependency_df data.frame with info extracted from [reactog] - which reactId depends on which reactId
+#' @param ids_data data.frame with info from [reactlog] - react_id, labels, lines etc. (see `prepare_ids_data` and `prepare_dependency_df_and_ids_data` funs)
 #'
 #' @return
+#' List; for each id (elements of list):
 #' data.frame with columns:
 #' - filename
 #' - lines
-#' - reactive context (reactive, observe or output)
-#' which belongs as a dependencies to the `id`.
+#' - reactive context (reactive, observe or output) source code
+#' which belongs as a dependencies to the `id` or
+#' NULL if no dependencies found for id.
 #' @details
 #' User can choose input or output id in the app (the idea is to be able to choose
 #' something which is visible) and then, based on this id, this function will find
 #' all dependencies, so user can see all relevant parts of code for some input or
 #' output.
+#' It is necessary to remember, that at the one time user can choose more than
+#' one id and these ids can be of type input and output (i.e. different type each id).
+#' Thus we need to apply this function for each id and we can't construct dependency
+#' graph upfront - we need to construct it for each id from the beginning, because of
+#' this different types possible.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-find_dependencies <- function(id, filenames_parse_data, labelled_observers, reactlog_data) {
-  ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
-  reactlog_dependency_df <- dplyr::bind_rows(lapply(reactlog_data, get_dependencies_from_reactlog))
-
+find_dependencies <- function(id, filenames_parse_data, reactlog_dependency_df, ids_data) {
   if (nrow(reactlog_dependency_df) > 0) {
     id_is_input <- ids_data$is_input[ids_data$label == id]
+    dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
+    ids_data <- dplyr::left_join(ids_data, dependency_graph, by = "react_id")
+  }
+
+  graph_group <- ids_data$graph[ids_data$label == id]
+  ids_data <- ids_data %>%
+    dplyr::filter(.data$graph == graph_group) %>%
+    dplyr::filter(!is.na(.data$filename))
+
+  if (nrow(ids_data) > 0) {
+
+  } else {
+    NULL
+  }
+}
+
+#' Prepare Data From [reactlog] Just Before Searching For Dependencies For Chosen Id
+#'
+#' @param reactlog_data list returned by [reactlog]
+#' @param labelled_observers data.frame returned by `prepare_src_code` with labelled observers
+#'
+#' @return
+#' list with two data.frames:
+#' - ids_data - see `prepare_ids_data`
+#' - reactlog_dependency_df - see `preapre_reactlog_dependency_df`
+#' However, if reactlog_dependency_df has no rows, i.e. in the App no dependencies were
+#' found, then we still want to mimic situation where there is no dependencies, so we
+#' add column `graph` in this situation indicating that each id belongs to separate group
+#' (graph). That way we can assume that `ids_data` always has column `graph`.
+#' @noRd
+prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers) {
+  ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
+  reactlog_dependency_df <- preapre_reactlog_dependency_df(reactlog_data)
+  if (nrow(reactlog_dependency_df) > 0) {
     # we want to be able to exclude inputs if 'output' id was chosen. We can assume that input can't depends on something else, but only something else depends on input,
     # so we can think that all inputs are in 'depends_on_react_id' column, that's why this join below looks like that. And then (in `construct_dependency_graph`) we can
     # remove all connections to input. This way we would find only objects (reactives) on which output (if chosen id in output) depends on
     reactlog_dependency_df <- dplyr::left_join(reactlog_dependency_df, ids_data[c("react_id", "is_input")], by = c("depends_on_react_id" = "react_id"))
-    dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
-
-    ids_data <- dplyr::left_join(ids_data, dependency_graph, by = "react_id")
   } else {
     ids_data <- ids_data %>%
       dplyr::mutate(graph = dplyr::row_number()) # no connections, i.e. mimic no connected graphs
   }
 
-  ids_data <- ids_data %>%
-    filter(!is.na(.data$file))
-
-  if (nrow(ids_data) > 0) {
-
-  }
+  list(ids_data = ids_data,
+       reactlog_dependency_df = reactlog_dependency_df)
 
 }
 
@@ -62,12 +93,12 @@ find_dependencies <- function(id, filenames_parse_data, labelled_observers, reac
 #' @return
 #' data.frame with columns:
 #' - react_id: react id from [reactlog], i.e. id specific for [reactlog]
-#' - label: id used in app (as input or output) or label for observer or name for reactive
+#' - label_full: id used in app (as input or output) or label for observer or name for reactive. If
+#' input or output - then with `input$` or `output$` at the beginning (that's why it is full label)
 #' - filename: basename of file (not a full path!)
-#' - location: for reactive or output it is one line in which this reactive or output can be find
+#' - location: it is one line in which reactive context (output, reactive, observer) can be find
 #' - is_input: if the label is an input, because if output id was chosen, then we will remove inputs before costructing graph
-#' - line1: for labelled observers this is started line for this observer
-#' - line2: for labelld observers this is end line for this observer
+#' - label: label without `input$` or `output$` at the beginning - needed as this is how id is retrieved by JS function
 #' Even if no elements in the App, this fun still should return data.frame with 1 row: Theme Counter as label.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
@@ -75,13 +106,14 @@ find_dependencies <- function(id, filenames_parse_data, labelled_observers, reac
 prepare_ids_data <- function(reactlog_data, labelled_observers) {
   ids_data <- dplyr::bind_rows(lapply(reactlog_data, extract_ids_data_to_df))
   ids_data <- ids_data %>%
-    dplyr::mutate(is_input = grepl("^input\\$", .data$label, perl = TRUE),
-                  label = gsub("^input\\$|^output\\$", "", .data$label, perl = TRUE))
+    dplyr::mutate(is_input = grepl("^input\\$", .data$label_full, perl = TRUE),
+                  label = gsub("^input\\$|^output\\$", "", .data$label_full, perl = TRUE))
   if (!is.null(labelled_observers)) {
     ids_data <- dplyr::left_join(ids_data, labelled_observers, by = "label")
     ids_data <- ids_data %>%
-      mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename)) %>%
-      dplyr::select(-.data$file)
+      mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename),
+             location = ifelse(is.na(.data$location), .data$location_observer, .data$location)) %>%
+      dplyr::select(-c(.data$file, .data$location_observer))
   }
 
   ids_data
@@ -99,10 +131,22 @@ prepare_ids_data <- function(reactlog_data, labelled_observers) {
 extract_ids_data_to_df <- function(reactlog_data) {
   if (reactlog_data$action == "define") {
     data.frame(react_id = reactlog_data$reactId,
-               label = reactlog_data$label,
+               label_full = reactlog_data$label,
                filename = attr(reactlog_data$label, "srcfile"),
                location = attr(reactlog_data$label, "srcref")[[1]])
   }
+}
+
+#' Extract Info From [reactlog] About Which ReactId Depends On Which ReacId
+#'
+#' @param reactlog_data list returned by [reactlog]
+#'
+#' @return
+#' data.frame. For each reactId only the direct dependency is showed.
+#' So it is necessary to build a whole graph later, which is done by `construct_dependency_graph`.
+#' @noRd
+preapre_reactlog_dependency_df <- function(reactlog_data) {
+  dplyr::bind_rows(lapply(reactlog_data, get_dependencies_from_reactlog))
 }
 
 #' Extract ReactId And ReactId It Depends On And Put It To Data Frame
@@ -140,7 +184,7 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #' components, because we could find reactive which depends on the same
 #' input, but is not connected with specific output at all, e.g. two
 #' outputs which depends on the same input$text, but have nothing common
-#' more than that. To avoid this, we can just remove inputs from data.frame
+#' other than that. To avoid this, we can just remove inputs from data.frame
 #' if the chosen id is of type output - this is safe, because we won't display
 #' any parts of code with "inputs" for the user to set breakpoint.
 #' @importFrom magrittr %>%
@@ -162,4 +206,20 @@ construct_dependency_graph <- function(reactlog_dependency_df, id_is_input) {
 
   names(graph_as_data_frame) <- c("graph", "react_id")
   graph_as_data_frame
+}
+
+#' Get Source Code For Dependencies
+#'
+#' @param id id chosen by user from the App
+#' @param ids_data data from [reactlog] in the form of df linked with `labelled_observers`, i.e. srcref and srcfile included
+#' @param filenames_parse_data data.frame with filenames and parse data for each file
+#'
+#' @return
+#' data.frame with columns:
+#' - filename
+#' - lines
+#' - reactive context (reactive, observe or output) source code
+#' @noRd
+get_src_code_for_dependencies <- function(dependency, ids_data, filenames_parse_data) {
+
 }

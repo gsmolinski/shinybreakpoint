@@ -8,7 +8,7 @@
 #' @return named list with:
 #' (1) 'filenames_parse_data': data.frame with cols:
 #' filename_full_path, filename, parse_data, env_label
-#' (2) 'envirs': names list with environments (names corresponding to filename full path) or NULL if no objects with filename found.
+#' (2) 'envirs': named list with environments (names corresponding to filename full path) or NULL if no objects with filename found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd

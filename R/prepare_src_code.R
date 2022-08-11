@@ -88,7 +88,8 @@ find_direct_parent_id_with_reactive <- function(one_parse_data) {
     reactives_in_named_funs <- vapply(one_parse_data$line1, function(e) any(mapply(dplyr::between,
                                                                                left = named_funs_lines$line1,
                                                                                right = named_funs_lines$line2,
-                                                                               MoreArgs = list(x = e))),
+                                                                               MoreArgs = list(x = e),
+                                                                               USE.NAMES = FALSE)),
                                       FUN.VALUE = logical(1))
     one_parse_data[reactives_in_named_funs, ]
   } else {
@@ -248,7 +249,7 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
       dplyr::select(.data$parent, .data$filename_full_path)
 
     labels_or_na <- mapply(extract_label, parent_id = expr_id_filename$parent, filename_full_path = expr_id_filename$filename_full_path,
-                           MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE)
+                           MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE, USE.NAMES = FALSE)
 
     expr_lines_label_filename <- expr_id_filename %>%
       dplyr::mutate(label = gsub('"', "", unlist(labels_or_na, use.names = FALSE), fixed = TRUE)) %>% # remove double quotes

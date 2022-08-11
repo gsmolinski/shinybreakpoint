@@ -9,7 +9,10 @@
 #' - chosen input or output: can return multiple ids, because
 #' id of current element is taken as well as parent elements.
 #' Id is returned only if can be find in reactlog and is not
-#' from 'shinybreakpoint' namespace.
+#' from 'shinybreakpoint' namespace. Also, for safe, duplicated
+#' ids are removed. There should be no duplicates in a properly
+#' developed Shiny app, but just in case potential duplicates are
+#' removed.
 #'
 #' - last changed input: single value returned and only
 #' if can be find in reactlog and is not from 'shinybreakpoint'
@@ -67,7 +70,8 @@ get_element_id <- function(id) {
                                        }};
                                       }};
                                       if (ids_correct.length > 0) {{
-                                       Shiny.setInputValue("{chosen_id}", ids_correct);
+                                       let unique_ids_correct = [...new Set(ids_correct)];
+                                       Shiny.setInputValue("{chosen_id}", unique_ids_correct);
                                        document.body.classList.add("shinybreakpoint-cursor-progress");
                                        setTimeout(function() {{
                                         document.body.classList.remove("shinybreakpoint-cursor-progress");

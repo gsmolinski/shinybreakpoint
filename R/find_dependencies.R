@@ -30,6 +30,11 @@
 #' @importFrom rlang .data
 #' @noRd
 find_dependencies <- function(id, filenames_parse_data, reactlog_dependency_df, ids_data) {
+  # TODO: move this outside, to the shinybreakpoint_mod inside validate() before find_dependencies will be used
+  if (any(duplicated(ids_data$label))) {
+    stop(paste0("These Ids or labels are duplicated: ", paste0(unique(ids_data$label[duplicated(ids_data$label)]), collapse = ", "), ". Use only unique Ids and labels."))
+  }
+
   if (nrow(reactlog_dependency_df) > 0) {
     id_is_input <- ids_data$is_input[ids_data$label == id]
     dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)

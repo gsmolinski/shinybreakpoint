@@ -86,7 +86,7 @@ test_that("'retrieve_src_code' returns data.frame with lines and src code", {
   expected <- structure(list(line = c(2L, 3L, 4L, NA, 9L, 10L, 11L, NA, 17L,
                                       18L, 19L, NA, 34L, 35L, 36L, NA, 37L, 38L, 39L, 40L, 41L, NA,
                                       43L, 44L, 45L, 46L, 47L, 48L, 49L, 50L, 51L, NA, 52L, 53L, 54L,
-                                      NA, 55L, 56L, 57L, 58L, 59L, 60L), src_code = c("shiny::observe({",
+                                      NA, 55L, 56L, 57L, 58L, 59L, 60L, NA), src_code = c("shiny::observe({",
                                                                                       "    \"x\"", "  })", NA, "observe({", "      \"o\"", "    })",
                                                                                       NA, "observe({", "      \"!\"", "    })", NA, "test3 <- reactive({",
                                                                                       "    \"a\"", "  })", NA, "observe({", "    assign(\"parse_data\", getParseData(environment(server)$server, includeText = NA),",
@@ -95,7 +95,7 @@ test_that("'retrieve_src_code' returns data.frame with lines and src code", {
                                                                                       "    })", "    observe({", "      \"d\"", "    })", "", "  })",
                                                                                       NA, "reactive({", "    \"e\"", "  }) -> test4", NA, "eventReactive(input$test1, {",
                                                                                       "    output$test2 <- renderPrint({", "      test4()", "      \"Do not nest reactives.\"",
-                                                                                      "    })", "  })")), class = "data.frame", row.names = c(NA, -42L
+                                                                                      "    })", "  })", NA)), class = "data.frame", row.names = c(NA, -43L
                                                                                       ))
 
   only_reactives <- find_direct_parent_id_with_reactive(parse_data_srcref)

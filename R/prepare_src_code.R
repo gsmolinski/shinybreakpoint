@@ -314,12 +314,11 @@ extract_label <- function(parent_id, filename_full_path, parse_data_all) {
 #' @noRd
 retrieve_src_code <- function(one_parse_data) {
   lines <- seq_vec(one_parse_data$line1, one_parse_data$line2)
-  lines[-length(lines)] <- lapply(lines[-length(lines)], append, values = NA_integer_)
+  lines <- lapply(lines, append, values = NA_integer_)
   lines <- unlist(lines, use.names = FALSE)
   parse_data <- utils::getParseText(one_parse_data, one_parse_data$id)
   parse_data <- strsplit(parse_data, split = "\n", fixed = TRUE)
-  parse_data[-length(parse_data)] <- lapply(parse_data[-length(parse_data)], append,
-                                            values = NA_character_)
+  parse_data <- lapply(parse_data, append, values = NA_character_)
   parse_data <- unlist(parse_data, use.names = FALSE)
 
   line_src_code <- data.frame(line = lines,

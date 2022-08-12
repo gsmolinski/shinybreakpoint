@@ -49,7 +49,7 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 
   if (nrow(ids_data) > 0) {
     binded_filenames_parse_data <- binded_filenames_parse_data %>%
-      dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(line), default = 1L))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
+      dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(line), default = TRUE))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
 
     dependencies_src_code <- dplyr::left_join(binded_filenames_parse_data, ids_data[c("filename", "location", "graph")],
                                               by = c("filename" = "filename", "line" = "location"))

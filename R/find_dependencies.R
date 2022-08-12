@@ -31,11 +31,6 @@
 #' @importFrom rlang .data
 #' @noRd
 find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependency_df, ids_data) {
-  # TODO: move this outside, to the shinybreakpoint_mod inside validate() before `find_dependencies` will be used
-  if (any(duplicated(ids_data$label))) {
-    stop(paste0("These Ids or labels are duplicated: ", paste0(unique(ids_data$label[duplicated(ids_data$label)]), collapse = ", "), ". Use only unique Ids and labels."))
-  }
-
   if (nrow(reactlog_dependency_df) > 0) {
     id_is_input <- ids_data$is_input[ids_data$label == id]
     dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
@@ -48,9 +43,6 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
     dplyr::filter(!is.na(.data$filename))
 
   if (nrow(ids_data) > 0) {
-    binded_filenames_parse_data <- binded_filenames_parse_data %>%
-      dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(line), default = TRUE))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
-
     dependencies_src_code <- dplyr::left_join(binded_filenames_parse_data, ids_data[c("filename", "location", "graph")],
                                               by = c("filename" = "filename", "line" = "location"))
     reactives_to_keep <- unique(dependencies_src_code$each_reactive[!is.na(dependencies_src_code$graph)])
@@ -224,15 +216,17 @@ construct_dependency_graph <- function(reactlog_dependency_df, id_is_input) {
   graph_as_data_frame
 }
 
-#' Bind parse_data Into One data.frame
+#' Bind parse_data Into One data.frame And Divide Each Reactive Context Into Separate Groups
 #'
 #' @param filenames_parse_data returned by `prepare_src_code`
 #'
 #' @return
 #' All parse data (previously stored in list for separate files) are now
 #' binded into one data.frame to hopefully speed up retrieving dependencies.
+#' Additionally, we are making groups for each reactive block to later
+#' retrieve blocks which depends on Id.
 #' @noRd
-bind_filenames_parse_data <- function(filenames_parse_data) {
+prepare_filenames_parse_data <- function(filenames_parse_data) {
   filenames_parse_data$parse_data <- mapply(add_filenames,
                                             filenames_parse_data$filename,
                                             filenames_parse_data$filename_full_path,
@@ -240,12 +234,16 @@ bind_filenames_parse_data <- function(filenames_parse_data) {
                                             SIMPLIFY = FALSE,
                                             USE.NAMES = FALSE)
   binded_filenames_parse_data <- dplyr::bind_rows(filenames_parse_data$parse_data)
+
+  binded_filenames_parse_data <- binded_filenames_parse_data %>%
+    dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(line), default = TRUE))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
+
   binded_filenames_parse_data
 }
 
 #' Add Basename and Full Path to Each parse_data data.frame
 #'
-#' Helper function for `bind_filenames_parse_data`
+#' Helper function for `prepare_filenames_parse_data`
 #'
 #' @param filename base name of file
 #' @param filename_full_path full path to file

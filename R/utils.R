@@ -93,6 +93,28 @@ get_observers_regex <- function() {
   "^observe$|^observeEvent$"
 }
 
+#' Check If Any Ids Are Duplicated In Data Retrieved From [reactlog]
+#'
+#' @param ids_data collection of ids and other data from [reactlog], returned by `prepare_dependency_df_and_ids_data`
+#'
+#' @return
+#' implicit NULL if no duplicated ids or error if at least
+#' one id (label!) is duplicated as well as list with duplicated ids (labels!) in error message
+#' @details
+#' We need to be sure that Ids (i.e. labels from [reactlog]) are unique, because later we would have
+#' problems with retrieving dependencies for chosen Id. Problem is that although in Shiny Ids should
+#' be unique, we have rather labels than ids, i.e. labels from observers as well as names of reactives
+#' are also in the same vector as Ids. That's why it is quite probably that Ids (labels) may be duplicated
+#' if App wasn't developed keeping in mind that Ids and reactives and observers needs to have unique names.
+#' @noRd
+check_duplicated_ids <- function(ids_data) {
+  if (any(duplicated(ids_data$label))) {
+    stop(paste0("These Ids or labels are duplicated: ",
+                paste0(unique(ids_data$label[duplicated(ids_data$label)]), collapse = ", "),
+                ". Use only unique Ids and labels."), call. = FALSE)
+  }
+}
+
 #' Insert CSS dependency.
 #'
 #' @return

@@ -135,13 +135,14 @@ prepare_ids_data <- function(reactlog_data, labelled_observers) {
 #'
 #' @return
 #' data.frame
+#' @importFrom rlang %||%
 #' @noRd
 extract_ids_data_to_df <- function(reactlog_data) {
   if (reactlog_data$action == "define") {
     data.frame(react_id = reactlog_data$reactId,
                label_full = reactlog_data$label,
-               filename = attr(reactlog_data$label, "srcfile"),
-               location = attr(reactlog_data$label, "srcref")[[1]])
+               filename = attr(reactlog_data$label, "srcfile") %||% NA,
+               location = attr(reactlog_data$label, "srcref")[[1]] %||% NA)
   }
 }
 
@@ -153,7 +154,7 @@ extract_ids_data_to_df <- function(reactlog_data) {
 #' data.frame. For each reactId only the direct dependency is showed.
 #' So it is necessary to build a whole graph later, which is done by `construct_dependency_graph`.
 #' @noRd
-preapre_reactlog_dependency_df <- function(reactlog_data) {
+prepare_reactlog_dependency_df <- function(reactlog_data) {
   dplyr::bind_rows(lapply(reactlog_data, get_dependencies_from_reactlog))
 }
 
@@ -230,7 +231,7 @@ prepare_filenames_parse_data <- function(filenames_parse_data) {
   filenames_parse_data$parse_data <- mapply(add_filenames,
                                             filenames_parse_data$filename,
                                             filenames_parse_data$filename_full_path,
-                                            MoreArgs = list(filenames_parse_data = filenames_parse_data),
+                                            filenames_parse_data$parse_data,
                                             SIMPLIFY = FALSE,
                                             USE.NAMES = FALSE)
   binded_filenames_parse_data <- dplyr::bind_rows(filenames_parse_data$parse_data)
@@ -247,14 +248,14 @@ prepare_filenames_parse_data <- function(filenames_parse_data) {
 #'
 #' @param filename base name of file
 #' @param filename_full_path full path to file
-#' @param filenames_parse_data returned by `prepare_src_code`
+#' @param parse_data data.frame with parse data for each file
 #'
 #' @return
 #' Modified filenames_parse_data (originally returned by `prepare_src_code`);
 #' new columns are added - with basename and with full path to file
 #' @noRd
-add_filenames <- function(filename, filename_full_path, filenames_parse_data) {
-  filenames_parse_data$parse_data$filename <- filename
-  filenames_parse_data$parse_data$filename_full_path <- filename_full_path
-  filenames_parse_data
+add_filenames <- function(filename, filename_full_path, parse_data) {
+  parse_data$filename <- filename
+  parse_data$filename_full_path <- filename_full_path
+  parse_data
 }

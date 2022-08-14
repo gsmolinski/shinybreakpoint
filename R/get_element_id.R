@@ -79,7 +79,6 @@ get_element_id <- function(id) {
                                       }};
                                      }};
                                     }});
-
                                    }};
                                   ')
 

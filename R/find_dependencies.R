@@ -6,6 +6,7 @@
 #' @param id name of the input or output id.
 #' @param binded_filenames_parse_data data.frame with binded parse_data (with new columns: filename and filename_full_path); object returned by `bind_filenames_parse_data`
 #' @param reactlog_dependency_df data.frame with info extracted from [reactog] - which reactId depends on which reactId
+#' @param all_react_ids all react_ids to be used by `construct_dependency_graph`
 #' @param ids_data data.frame with info from [reactlog] - react_id, labels, lines etc. (see `prepare_ids_data` and `prepare_dependency_df_and_ids_data` funs)
 #'
 #' @return
@@ -30,7 +31,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependency_df, ids_data) {
+find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependency_df, all_react_ids, ids_data) {
   if (nrow(reactlog_dependency_df) > 0) {
     id_is_input <- ids_data$is_input[ids_data$label == id]
     dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
@@ -69,22 +70,28 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 #' found, then we still want to mimic situation where there is no dependencies, so we
 #' add column `graph` in this situation indicating that each id belongs to separate group
 #' (graph). That way we can assume that `ids_data` always has column `graph`.
+#' And one vector:
+#' - NULL if no data in reactlog_dependency_df
+#' - Or all unique react_ids which then will be used by `construct_dependency_graph`
 #' @noRd
 prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers) {
   ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
   reactlog_dependency_df <- preapre_reactlog_dependency_df(reactlog_data)
+  all_react_ids <- NULL
   if (nrow(reactlog_dependency_df) > 0) {
     # we want to be able to exclude inputs if 'output' id was chosen. We can assume that input can't depends on something else, but only something else depends on input,
     # so we can think that all inputs are in 'depends_on_react_id' column, that's why this join below looks like that. And then (in `construct_dependency_graph`) we can
     # remove all connections to input. This way we would find only objects (reactives) on which output (if chosen id in output) depends on
     reactlog_dependency_df <- dplyr::left_join(reactlog_dependency_df, ids_data[c("react_id", "is_input")], by = c("depends_on_react_id" = "react_id"))
+    all_react_ids <- all_react_ids <- unique(c(reactlog_dependency_df$react_id, reactlog_dependency_df$depends_on_react_id))
   } else {
     ids_data <- ids_data %>%
       dplyr::mutate(graph = dplyr::row_number()) # no connections, i.e. mimic no connected graphs
   }
 
   list(ids_data = ids_data,
-       reactlog_dependency_df = reactlog_dependency_df)
+       reactlog_dependency_df = reactlog_dependency_df,
+       all_react_ids = all_react_ids)
 
 }
 
@@ -183,6 +190,7 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #'
 #' @param reactlog_dependency_df data.frame returned by `get_dependencies_from_reactlog`.
 #' @param id_is_input is id an input?
+#' @param all_react_ids all reacts_ids which can be found in [reactlog] for 'dependency' action
 #'
 #' @return
 #' data.frame with two columns:
@@ -196,24 +204,38 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #' other than that. To avoid this, we can just remove inputs from data.frame
 #' if the chosen id is of type output - this is safe, because we won't display
 #' any parts of code with "inputs" for the user to set breakpoint.
+#' However, at the end we want to add missng react_ids, so we can have full data
+#' before joining with ids_data. this is especially needed if we have chosen
+#' output, so we are removing inputs, but this output depends only on this
+#' one input, so is removed entirely from graph and later we would have a problem
+#' to find it in ids_data and later as well - after joining ids_data with parse_data.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-construct_dependency_graph <- function(reactlog_dependency_df, id_is_input) {
+construct_dependency_graph <- function(reactlog_dependency_df, id_is_input, all_react_ids) {
   if (!id_is_input) {
     reactlog_dependency_df <- reactlog_dependency_df %>%
       dplyr::filter(!.data$is_input)
   }
 
   reactlog_dependency_df <- reactlog_dependency_df %>%
-    select(-.data$is_input)
+    dplyr::select(-.data$is_input)
 
   graph_as_data_frame <- igraph::graph_from_data_frame(reactlog_dependency_df) %>%
     igraph::components() %>%
     igraph::membership() %>%
     utils::stack()
-
   names(graph_as_data_frame) <- c("graph", "react_id")
+  graph_as_data_frame$react_id <- as.character(graph_as_data_frame$react_id)
+
+  if (length(graph_as_data_frame$react_id) < length(all_react_ids)) {
+    start_from <- max(graph_as_data_frame$graph) + 1
+    missing_react_ids <- all_react_ids[!all_react_ids %in% graph_as_data_frame$react_id]
+    graph_as_data_frame <- dplyr::bind_rows(graph_as_data_frame,
+                                            data.frame(graph = seq.int(start_from, length(missing_react_ids) + start_from - 1),
+                                                       react_id = missing_react_ids))
+  }
+
   graph_as_data_frame
 }
 

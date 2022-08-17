@@ -84,7 +84,7 @@ shinybreakpointUI <- function(id) {
 #' appServer <- function(input, output, session) {
 #'   observe({
 #'     input$num
-#'   })
+#'   }, label = "observe_print_num_input")
 #' }
 #'
 #' shinyApp(

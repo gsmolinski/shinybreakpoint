@@ -48,8 +48,8 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
                                               by = c("filename" = "filename", "line" = "location"))
     reactives_to_keep <- unique(dependencies_src_code$each_reactive[!is.na(dependencies_src_code$graph)])
     dependencies_src_code <- dependencies_src_code %>%
-      dplyr::filter(each_reactive %in% reactives_to_keep) %>%
-      dplyr::select(filename_full_path, filename, line, src_code)
+      dplyr::filter(.data$each_reactive %in% reactives_to_keep) %>%
+      dplyr::select(.data$filename_full_path, .data$filename, .data$line, .data$src_code)
 
     dependencies_src_code
   } else {
@@ -76,7 +76,7 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 #' @noRd
 prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers) {
   ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
-  reactlog_dependency_df <- preapre_reactlog_dependency_df(reactlog_data)
+  reactlog_dependency_df <- prepare_reactlog_dependency_df(reactlog_data)
   all_react_ids <- NULL
   if (nrow(reactlog_dependency_df) > 0) {
     # we want to be able to exclude inputs if 'output' id was chosen. We can assume that input can't depends on something else, but only something else depends on input,
@@ -259,7 +259,7 @@ prepare_filenames_parse_data <- function(filenames_parse_data) {
   binded_filenames_parse_data <- dplyr::bind_rows(filenames_parse_data$parse_data)
 
   binded_filenames_parse_data <- binded_filenames_parse_data %>%
-    dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(line), default = TRUE))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
+    dplyr::mutate(each_reactive = cumsum(dplyr::lag(is.na(.data$line), default = TRUE))) # each lines for reactive (block divided by NA) in separate group, bottom NA belongs to reactive
 
   binded_filenames_parse_data
 }

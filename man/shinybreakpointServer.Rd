@@ -75,7 +75,7 @@ options(shiny.reactlog = TRUE) # TODO: remove
 appServer <- function(input, output, session) {
   observe({
     input$num
-  })
+  }, label = "observe_print_num_input")
 }
 
 shinyApp(

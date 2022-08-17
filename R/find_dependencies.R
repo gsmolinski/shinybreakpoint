@@ -126,8 +126,8 @@ prepare_ids_data <- function(reactlog_data, labelled_observers) {
   if (!is.null(labelled_observers)) {
     ids_data <- dplyr::left_join(ids_data, labelled_observers, by = "label")
     ids_data <- ids_data %>%
-      mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename),
-             location = ifelse(is.na(.data$location), .data$location_observer, .data$location)) %>%
+      dplyr::mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename),
+                    location = ifelse(is.na(.data$location), .data$location_observer, .data$location)) %>%
       dplyr::select(-c(.data$file, .data$location_observer))
   }
 

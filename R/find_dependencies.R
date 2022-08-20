@@ -16,8 +16,10 @@
 #' - filename
 #' - line
 #' - src_code: reactive context (reactive, observe or output) source code
-#' which belongs as a dependencies to the `id` or
-#' NULL if no dependencies found for id.
+#' which belongs as a dependencies to the `id`. Rows are ordered according
+#' to the [reactlog] graph - at the top are outputs / observers, at the bottom
+#' (not visible in the source code) inputs and reactives in the middle.
+#' Or NULL if no dependencies found for id.
 #' @details
 #' User can choose input or output id in the app (the idea is to be able to choose
 #' something which is visible) and then, based on this id, this function will find
@@ -34,7 +36,9 @@
 find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependency_df, all_react_ids, ids_data) {
   if (nrow(reactlog_dependency_df) > 0) {
     id_is_input <- ids_data$is_input[ids_data$label == id]
-    dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input)
+    dependency_graph <- construct_dependency_graph(reactlog_dependency_df, id_is_input, all_react_ids)
+    dependency_graph <- dependency_graph %>%
+      dplyr::mutate(reactives_order = dplyr::row_number())
     ids_data <- dplyr::left_join(ids_data, dependency_graph, by = "react_id")
   }
 
@@ -44,11 +48,19 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
     dplyr::filter(!is.na(.data$filename))
 
   if (nrow(ids_data) > 0) {
-    dependencies_src_code <- dplyr::left_join(binded_filenames_parse_data, ids_data[c("filename", "location", "graph")],
+    dependencies_src_code <- dplyr::left_join(binded_filenames_parse_data, ids_data[c("filename", "location", "graph", "reactives_order")],
                                               by = c("filename" = "filename", "line" = "location"))
     reactives_to_keep <- unique(dependencies_src_code$each_reactive[!is.na(dependencies_src_code$graph)])
     dependencies_src_code <- dependencies_src_code %>%
-      dplyr::filter(.data$each_reactive %in% reactives_to_keep) %>%
+      dplyr::filter(.data$each_reactive %in% reactives_to_keep)
+
+    reactives_order_without_na <- dependencies_src_code %>%
+      dplyr::filter(!is.na(.data$reactives_order)) %>%
+      dplyr::select(.data$filename, .data$each_reactive, complete_reactives_order = .data$reactives_order)
+
+    dependencies_src_code <- dplyr::left_join(dependencies_src_code, reactives_order_without_na, by = c("filename", "each_reactive"))
+    dependencies_src_code <- dependencies_src_code %>%
+      dplyr::arrange(.data$complete_reactives_order) %>%
       dplyr::select(.data$filename_full_path, .data$filename, .data$line, .data$src_code)
 
     dependencies_src_code
@@ -69,10 +81,16 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 #' However, if reactlog_dependency_df has no rows, i.e. in the App no dependencies were
 #' found, then we still want to mimic situation where there is no dependencies, so we
 #' add column `graph` in this situation indicating that each id belongs to separate group
-#' (graph). That way we can assume that `ids_data` always has column `graph`.
+#' (graph). That way we can assume that `ids_data` always has column `graph`. Normally
+#' column `graph` would be added by `find_dependencies`, but if there is no connected
+#' reactives and taking into account that `find_dependencies` will be used for all ids, we can
+#' make less computations by adding upfront `graph` column if there is no connected reactives.
+#' Similarly, column `reactives_order` is added. See `find_dependencies` fun for explanation,
+#' why this column is needed (section 'return').
 #' And one vector:
 #' - NULL if no data in reactlog_dependency_df
 #' - Or all unique react_ids which then will be used by `construct_dependency_graph`
+#' @importFrom magrittr %>%
 #' @noRd
 prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers) {
   ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
@@ -83,10 +101,11 @@ prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers
     # so we can think that all inputs are in 'depends_on_react_id' column, that's why this join below looks like that. And then (in `construct_dependency_graph`) we can
     # remove all connections to input. This way we would find only objects (reactives) on which output (if chosen id in output) depends on
     reactlog_dependency_df <- dplyr::left_join(reactlog_dependency_df, ids_data[c("react_id", "is_input")], by = c("depends_on_react_id" = "react_id"))
-    all_react_ids <- all_react_ids <- unique(c(reactlog_dependency_df$react_id, reactlog_dependency_df$depends_on_react_id))
+    all_react_ids <- unique(c(reactlog_dependency_df$react_id, reactlog_dependency_df$depends_on_react_id))
   } else {
     ids_data <- ids_data %>%
-      dplyr::mutate(graph = dplyr::row_number()) # no connections, i.e. mimic no connected graphs
+      dplyr::mutate(graph = dplyr::row_number(), # no connections, i.e. mimic no connected graphs
+                    reactives_order = dplyr::row_number())
   }
 
   list(ids_data = ids_data,

@@ -79,7 +79,7 @@ get_element_id <- function(id) {
                                       }};
                                      }};
                                     }});
-                                   }};
+                                   }});
                                   ')
 
   singleton(tags$head(tags$script(HTML(js_id))))

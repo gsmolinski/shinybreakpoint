@@ -147,23 +147,17 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                ids_data = dependency_df_ids_data_all_ids$ids_data), input$chosen_id)
       })
 
-      observe({
-        if (length(input$last_input_chosen_id) == 2) {
-          shinyWidgets::updateRadioGroupButtons(session, "last_input_chosen_id", selected = NULL)
-        }
-      }, priority = 3)
-
       get_app_mode_src_code <- reactive({
-        if (isTruthy(input$last_input_chosen_id) && input$last_input_chosen_id == "last_input") {
-          list(mode = "last_input",
-               data = find_dependencies_last_input())
-        } else if (isTruthy(input$last_input_chosen_id) && input$last_input_chosen_id == "chosen_id") {
-          list(mode = "chosen_id",
-               data = find_dependencies_chosen_id())
-        } else {
+        if (is.null(input$app_mode) ||  input$app_mode == "files") {
           list(mode = "files",
                data = stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
                                       filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        } else if (input$app_mode == "last_input") {
+          list(mode = "last_input",
+               data = find_dependencies_last_input())
+        } else if (input$app_mode == "chosen_id") {
+          list(mode = "chosen_id",
+               data = find_dependencies_chosen_id())
         }
       })
 
@@ -171,16 +165,18 @@ shinybreakpointServer <- function(keyEvent = "F4",
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, get_app_mode_src_code()))
 
-        req(get_app_mode_src_code()$mode == "files")
-        req(nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data))
-        if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
-          shinyWidgets::updateRadioGroupButtons(session, "element",
-                                                selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
-        } else {
-          updateSelectizeInput(session, "element",
-                               selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        if (get_app_mode_src_code()$mode == "files") {
+          if (nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data)) {
+            if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
+              shinyWidgets::updateRadioGroupButtons(session, "element",
+                                                    selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+            } else {
+              updateSelectizeInput(session, "element",
+                                   selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+            }
+          }
         }
-      }, priority = 2)
+      })
 
       output$src_code <- reactable::renderReactable({
         req(input$element)
@@ -262,7 +258,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
           shinyjs::addCssClass(class = "shinybreakpoint-not-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
         }
-      }, priority = 1)
+      })
 
       observe({
         req(breakpoint_can_be_set())
@@ -355,19 +351,19 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
     UI <- tagList(
       fluidRow(
         column(3, class = "col-xl-2",
-               fluidRow(
+               #fluidRow(
                  column(4,
                         tags$div(class = "shinybreakpoint-div-activate",
                                  actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
                         ),
                  column(4, offset = 4,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
-                                 shinyWidgets::checkboxGroupButtons(session$ns("last_input_chosen_id"),
-                                                                    choices = c(`<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id")) %>%
+                                 shinyWidgets::radioGroupButtons(session$ns("app_mode"),
+                                                                    choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id")) %>%
                                    tagAppendAttributes(class = "shinybreakpoint-checkboxGroupButtons-last_input_chosen_id"))
-                        )
-               ),
-               HTML(rep("<br/>", 2)),
+                        ),
+               #),
+               #HTML(rep("<br/>", 2)),
                tags$div(class = "shinybreakpoint-div-elements",
                         elements
                ),

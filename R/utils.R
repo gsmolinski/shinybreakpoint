@@ -95,11 +95,13 @@ get_observers_regex <- function() {
 
 #' Check If Any Ids Are Duplicated In Data Retrieved From [reactlog]
 #'
+#' Used in shiny::validate() as a custom error message.
+#'
 #' @param ids_data collection of ids and other data from [reactlog], returned by `prepare_dependency_df_and_ids_data`
 #'
 #' @return
-#' implicit NULL if no duplicated ids or error if at least
-#' one id (label!) is duplicated as well as list with duplicated ids (labels!) in error message
+#' NULL if no duplicated ids or string if at least
+#' one id (label!) is duplicated as well as list with duplicated ids (labels!).
 #' @details
 #' We need to be sure that Ids (i.e. labels from [reactlog]) are unique, because later we would have
 #' problems with retrieving dependencies for chosen Id. Problem is that although in Shiny Ids should
@@ -109,9 +111,11 @@ get_observers_regex <- function() {
 #' @noRd
 check_duplicated_ids <- function(ids_data) {
   if (any(duplicated(ids_data$label))) {
-    stop(paste0("These Ids or labels are duplicated: ",
+    paste0("These Ids or labels are duplicated: ",
                 paste0(unique(ids_data$label[duplicated(ids_data$label)]), collapse = ", "),
-                ". Use only unique Ids and labels."), call. = FALSE)
+                ". Use only unique Ids and labels.")
+  } else {
+    NULL
   }
 }
 

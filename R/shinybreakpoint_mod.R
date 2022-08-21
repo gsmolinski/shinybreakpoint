@@ -110,6 +110,14 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
   caller_envir <- rlang::caller_env()
   filenames_src_code_envirs <- prepare_src_code(caller_envir)
+  reactlog_data <- tryCatch(reactlog(), error = function() NULL)
+  try(reactlogReset(), silent = TRUE)
+  if (length(reactlog_data) > 0) {
+    labelled_observers <- filenames_src_code_envirs$labelled_observers
+    binded_filenames_parse_data <- prepare_filenames_parse_data(filenames_src_code_envirs$filenames_parse_data)
+    dependency_df_ids_data_all_ids <- prepare_dependency_df_and_ids_data(reactlog_data, labelled_observers)
+    getDefaultReactiveDomain()$sendCustomMessage("shinybreakpoint_reactlog_ids", dependency_df_ids_data_all_ids$ids_data$label)
+  }
 
   moduleServer(
     id,
@@ -129,6 +137,41 @@ shinybreakpointServer <- function(keyEvent = "F4",
         }
       }) %>%
         bindEvent(input$key_pressed)
+
+      find_dependencies_last_input <- reactive({
+        req(input$last_input)
+        req(length(reactlog_data) > 0)
+        validate(check_duplicated_ids(dependency_df_ids_data_all_ids$ids_data))
+
+        stats::setNames(lapply(input$last_input, find_dependencies,
+                               binded_filenames_parse_data = binded_filenames_parse_data,
+                               reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
+                               all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
+                               ids_data = dependency_df_ids_data_all_ids$ids_data), input$last_input)
+      })
+
+      find_dependencies_chosen_id <- reactive({
+        req(input$chosen_id)
+        req(length(reactlog_data) > 0)
+        validate(check_duplicated_ids(dependency_df_ids_data_all_ids$ids_data))
+
+        stats::setNames(lapply(input$chosen_id, find_dependencies,
+                               binded_filenames_parse_data = binded_filenames_parse_data,
+                               reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
+                               all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
+                               ids_data = dependency_df_ids_data_all_ids$ids_data), input$chosen_id)
+      })
+
+      get_tables_with_src_code <- reactive({
+        if (isTruthy(input$show_last_input)) {
+          find_dependencies_last_input()
+        } else if (isTruthy(input$show_chosen_id)) {
+          find_dependencies_chosen_id()
+        } else {
+          stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
+                          filenames_src_code_envirs$filenames_parse_data$filename)
+        }
+      })
 
       which_file <- reactive({
         req(input$file)
@@ -256,7 +299,7 @@ modal_dialog <- function(session, filenames_src_code) {
 #' as well as envir label and src code (but not used here).
 #'
 #' @return
-#' UI in modal dialog - only a message if no apriopriate file found or
+#' UI in modal dialog - only a message if no appropriate file found or
 #' button, list of files and table with source code.
 #' @noRd
 create_UI <- function(session, filenames_src_code) {

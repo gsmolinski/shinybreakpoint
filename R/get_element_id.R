@@ -34,7 +34,7 @@ get_element_id <- function(id) {
                                    $(function() {{
 
                                     let ids_shiny = [];
-                                    Shiny.addCustomMessageHandler("reactlog_ids", function(ids_from_r) {{
+                                    Shiny.addCustomMessageHandler("shinybreakpoint_reactlog_ids", function(ids_from_r) {{
                                      if (Array.isArray(ids_from_r)) {{
                                       for (id_one of ids_from_r) {{
                                       if (id_one != null) {{

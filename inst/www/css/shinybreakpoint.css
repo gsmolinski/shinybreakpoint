@@ -336,3 +336,7 @@
 body.shinybreakpoint-cursor-progress * {
   cursor: progress;
 }
+
+.shinybreakpoint-div-last_input_chosen_id .btn {
+  margin-top: 10%;
+}

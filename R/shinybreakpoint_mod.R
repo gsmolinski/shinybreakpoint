@@ -351,30 +351,37 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
     UI <- tagList(
       fluidRow(
         column(3, class = "col-xl-2",
-               #fluidRow(
-                 column(4,
+               fluidRow(
+                 column(3,
                         tags$div(class = "shinybreakpoint-div-activate",
                                  actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
                         ),
-                 column(4, offset = 4,
+                 column(1, offset = 2,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
                                  shinyWidgets::radioGroupButtons(session$ns("app_mode"),
-                                                                    choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id")) %>%
-                                   tagAppendAttributes(class = "shinybreakpoint-checkboxGroupButtons-last_input_chosen_id"))
-                        ),
-               #),
-               #HTML(rep("<br/>", 2)),
-               tags$div(class = "shinybreakpoint-div-elements",
-                        elements
+                                                                 choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id"),
+                                                                 size = "sm")
+                                 )
+                        )
                ),
-               tags$div(id = "br-shinybreakpoint-name"),
-               tags$div(id = "shinybreakpoint-name-div",
-                        tags$p("shinybreakpoint", id = "shinybreakpoint-name")
+               fluidRow(
+                 column(12,
+                        tags$br(),
+                        tags$div(class = "shinybreakpoint-div-elements",
+                                 elements)
+                        )
+               ),
+               fluidRow(
+                 column(12,
+                        tags$div(id = "br-shinybreakpoint-name"),
+                        tags$div(id = "shinybreakpoint-name-div",
+                                 tags$p("shinybreakpoint", id = "shinybreakpoint-name"))
+                        )
                )
-        ),
+               ),
         column(9, class = "col-xl-10",
                reactable::reactableOutput(session$ns("src_code"))
-        )
+               )
       )
     )
   }

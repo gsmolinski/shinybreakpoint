@@ -112,7 +112,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
   filenames_src_code_envirs <- prepare_src_code(caller_envir)
   reactlog_data <- tryCatch(reactlog(), error = function() NULL)
   try(reactlogReset(), silent = TRUE)
-  if (length(reactlog_data) > 0) {
+  if (length(reactlog_data) > 0 && nrow(filenames_src_code_envirs$filenames_parse_data) > 0) {
     labelled_observers <- filenames_src_code_envirs$labelled_observers
     binded_filenames_parse_data <- prepare_filenames_parse_data(filenames_src_code_envirs$filenames_parse_data)
     dependency_df_ids_data_all_ids <- prepare_dependency_df_and_ids_data(reactlog_data, labelled_observers)
@@ -122,21 +122,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
   moduleServer(
     id,
     function(input, output, session) {
-
-      observe({
-        req(input$key_pressed == keyEvent)
-        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data))
-
-        req(!is.null(filenames_src_code_envirs$filenames_parse_data) && nrow(filenames_src_code_envirs$filenames_parse_data) > 0)
-        if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
-          shinyWidgets::updateRadioGroupButtons(session, "file",
-                                                selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
-        } else {
-          updateSelectizeInput(session, "file",
-                               selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
-        }
-      }) %>%
-        bindEvent(input$key_pressed)
 
       find_dependencies_last_input <- reactive({
         req(input$last_input)
@@ -162,26 +147,45 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                ids_data = dependency_df_ids_data_all_ids$ids_data), input$chosen_id)
       })
 
-      get_tables_with_src_code <- reactive({
-        if (isTruthy(input$show_last_input)) {
-          find_dependencies_last_input()
-        } else if (isTruthy(input$show_chosen_id)) {
-          find_dependencies_chosen_id()
+      observe({
+        if (length(input$last_input_chosen_id) == 2) {
+          shinyWidgets::updateRadioGroupButtons(session, "last_input_chosen_id", selected = NULL)
+        }
+      }, priority = 3)
+
+      get_app_mode_src_code <- reactive({
+        if (isTruthy(input$last_input_chosen_id) && input$last_input_chosen_id == "last_input") {
+          list(mode = "last_input",
+               data = find_dependencies_last_input())
+        } else if (isTruthy(input$last_input_chosen_id) && input$last_input_chosen_id == "chosen_id") {
+          list(mode = "chosen_id",
+               data = find_dependencies_chosen_id())
         } else {
-          stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
-                          filenames_src_code_envirs$filenames_parse_data$filename)
+          list(mode = "files",
+               data = stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
+                                      filenames_src_code_envirs$filenames_parse_data$filename_full_path))
         }
       })
 
-      which_file <- reactive({
-        req(input$file)
-        which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == input$file)
-      })
+      observe({
+        req(input$key_pressed == keyEvent)
+        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, get_app_mode_src_code()))
+
+        req(get_app_mode_src_code()$mode == "files")
+        req(nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data))
+        if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
+          shinyWidgets::updateRadioGroupButtons(session, "element",
+                                                selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        } else {
+          updateSelectizeInput(session, "element",
+                               selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+        }
+      }, priority = 2)
 
       output$src_code <- reactable::renderReactable({
-        req(which_file())
-        src_data <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
-        reactable::reactable(src_data,
+        req(input$element)
+        src_data <- get_app_mode_src_code()$data[[input$element]]
+        reactable::reactable(src_data[c("line", "src_code")],
                              columns = list(line = reactable::colDef(align = "center",
                                                                      vAlign = "center",
                                                                      width = 60,
@@ -191,7 +195,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                                                          style = list(whiteSpace = "pre-wrap", color = "#2f4f4f"),
                                                                          cell = reactable::JS(colorize_code())
                                             )),
-                             columnGroups = list(reactable::colGroup(name = filenames_src_code_envirs$filenames_parse_data$filename[[which_file()]],
+                             columnGroups = list(reactable::colGroup(name = basename(input$element),
                                                                      columns = c("line", "src_code"))),
                              rowClass = function(index) if (is.na(src_data[index, "src_code"])) "shinybreakpoint-na-row",
                              selection = "single",
@@ -208,21 +212,38 @@ shinybreakpointServer <- function(keyEvent = "F4",
                              ))
       })
 
-      selected_line <- reactive({
-        req(which_file())
+      selected_row <- reactive({
+        req(input$element)
         shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
                                 selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
-        src_code <- filenames_src_code_envirs$filenames_parse_data$parse_data[[which_file()]]
-        row <- reactable::getReactableState("src_code", "selected")
-        # if row is NULL, then returns numeric(0), which is not truthy
-        src_code$line[row]
+        reactable::getReactableState("src_code", "selected")
+      })
+
+      selected_file <- reactive({
+        req(selected_row())
+        if (get_app_mode_src_code()$mode == "files") {
+          input$element
+        } else {
+          src_code <- get_app_mode_src_code()$data[[input$element]]
+          src_code$filename_full_path[selected_row()]
+        }
+      })
+
+      selected_line <- reactive({
+        req(selected_row())
+        src_code <- get_app_mode_src_code()$data[[input$element]]
+        src_code$line[selected_row()]
+      })
+
+      selected_envir <- reactive({
+        req(selected_file())
+        envir_label <- filenames_src_code_envirs$filenames_parse_data$env_label[[filenames_src_code_envirs$filenames_parse_data$filename_full_path == selected_file()]]
+        filenames_src_code_envirs$envirs[[envir_label]]
       })
 
       object <- reactive({
-        req(selected_line())
-        file <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[which_file()]]
-        envir <- filenames_src_code_envirs$envirs[[which_file()]]
-        find_object(file, selected_line(), envir)
+        req(selected_envir())
+        find_object(selected_file(), selected_line(), selected_envir())
       })
 
       breakpoint_can_be_set <- reactive({
@@ -241,18 +262,16 @@ shinybreakpointServer <- function(keyEvent = "F4",
           shinyjs::addCssClass(class = "shinybreakpoint-not-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
         }
-      })
+      }, priority = 1)
 
       observe({
         req(breakpoint_can_be_set())
-        file <- filenames_src_code_envirs$filenames_parse_data$filename_full_path[[which_file()]]
-        exact_line <- determine_line(file, selected_line(), object()$envir, object()$at)
+        exact_line <- determine_line(selected_file(), selected_line(), object()$envir, object()$at)
         put_browser(object(), varName)
-        set_attrs(file, exact_line, object()$name, object()$envir, object()$at, caller_envir)
+        set_attrs(selected_file(), exact_line, object()$name, object()$envir, object()$at, caller_envir)
         getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
         bindEvent(input$activate)
-
     }
   )
 }
@@ -261,6 +280,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
 #'
 #' @param session used in 'create_UI'.
 #' @param filenames_src_code used in 'create_UI'.
+#' @param mode_src_code returned by reactive `get_app_mode_src_code`.
+#' The aim is to display source code for files or for IDs.
 #'
 #' @return
 #' Modal dialog.
@@ -273,13 +294,13 @@ shinybreakpointServer <- function(keyEvent = "F4",
 #' as a default Bootstrap 4 or higher version.
 #' @import shiny
 #' @noRd
-modal_dialog <- function(session, filenames_src_code) {
+modal_dialog <- function(session, filenames_src_code, mode_src_code) {
   tags$div(class = "shinybreakpoint-modal",
     modalDialog(
       footer = NULL,
       size = "xl",
       easyClose = TRUE,
-      create_UI(session, filenames_src_code),
+      create_UI(session, filenames_src_code, mode_src_code),
       tags$script(HTML('
       if (jQuery.fn.tooltip.Constructor.VERSION.startsWith("3.")) {{
         if (document.getElementById("shiny-modal").children[0].classList.contains("modal-xl")) {{
@@ -297,40 +318,58 @@ modal_dialog <- function(session, filenames_src_code) {
 #' @param session passed from 'moduleServer'.
 #' @param filenames_src_code data.frame with full paths to files and basenames
 #' as well as envir label and src code (but not used here).
+#' @param mode_src_code returned by reactive `get_app_mode_src_code`.
+#' The aim is to display source code for files or for IDs.
 #'
 #' @return
 #' UI in modal dialog - only a message if no appropriate file found or
-#' button, list of files and table with source code.
+#' button, list of files / IDs and table with source code.
 #' @noRd
-create_UI <- function(session, filenames_src_code) {
+create_UI <- function(session, filenames_src_code, mode_src_code) {
   if (is.null(filenames_src_code) || nrow(filenames_src_code) == 0) {
     UI <- tags$div(class = "no-file",
                    tags$div(class = "circle-div",
                             tags$div(class = "circle")),
                    tags$p("There is nothing to see here"))
   } else {
-    if (length(filenames_src_code$filename) < 9) {
-      files <- shinyWidgets::radioGroupButtons(session$ns("file"), label = "",
-                                               choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                                         filenames_src_code$filename),
-                                               direction = "vertical") %>%
+
+    if (mode_src_code$mode == "files") {
+      choices <- stats::setNames(names(mode_src_code$data),
+                                 basename(names(mode_src_code$data)))
+    } else {
+      choices <- names(mode_src_code$data)
+    }
+
+    if (length(mode_src_code$data) < 9) {
+      elements <- shinyWidgets::radioGroupButtons(session$ns("element"), label = "",
+                                                  choices = choices,
+                                                  direction = "vertical") %>%
         tagAppendAttributes(class = "shinybreakpoint-radioGroupButtons")
     } else {
-      files <- selectizeInput(session$ns("file"), label = "",
-                              choices = stats::setNames(filenames_src_code$filename_full_path,
-                                                        filenames_src_code$filename), width = "100%") %>%
+      elements <- selectizeInput(session$ns("element"), label = "",
+                                 choices = choices,
+                                 width = "100%") %>%
         tagAppendAttributes(class = "shinybreakpoint-selectInput")
     }
 
     UI <- tagList(
       fluidRow(
         column(3, class = "col-xl-2",
-               tags$div(class = "shinybreakpoint-div-activate",
-                        actionButton(session$ns("activate"), label = "Activate", class = "shinybreakpoint-activate-btn")
+               fluidRow(
+                 column(4,
+                        tags$div(class = "shinybreakpoint-div-activate",
+                                 actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
+                        ),
+                 column(4, offset = 4,
+                        tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
+                                 shinyWidgets::checkboxGroupButtons(session$ns("last_input_chosen_id"),
+                                                                    choices = c(`<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id")) %>%
+                                   tagAppendAttributes(class = "shinybreakpoint-checkboxGroupButtons-last_input_chosen_id"))
+                        )
                ),
                HTML(rep("<br/>", 2)),
-               tags$div(class = "shinybreakpoint-div-files",
-                        files
+               tags$div(class = "shinybreakpoint-div-elements",
+                        elements
                ),
                tags$div(id = "br-shinybreakpoint-name"),
                tags$div(id = "shinybreakpoint-name-div",

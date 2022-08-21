@@ -10,7 +10,6 @@
 #' @param ids_data data.frame with info from [reactlog] - react_id, labels, lines etc. (see `prepare_ids_data` and `prepare_dependency_df_and_ids_data` funs)
 #'
 #' @return
-#' List; for each id (elements of list):
 #' data.frame with columns:
 #' - filename_full_path
 #' - filename

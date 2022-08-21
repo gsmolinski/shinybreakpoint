@@ -42,7 +42,7 @@
   outline-color: #e2e2e2;
 }
 
-.shinybreakpoint-div-files {
+.shinybreakpoint-div-elements {
   height: 60vh;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   padding: 10px;
@@ -55,7 +55,7 @@
   outline-color: #e2e2e2;
 }
 
-.shinybreakpoint-div-files .selectize-input {
+.shinybreakpoint-div-elements .selectize-input {
   background-color: #f2eeeb !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   border-width: 0;
@@ -69,7 +69,7 @@
   color: #635147;
 }
 
-.shinybreakpoint-div-files .selectize-dropdown {
+.shinybreakpoint-div-elements .selectize-dropdown {
   background-color: #f2eeeb !important;
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   border-width: 0;
@@ -82,15 +82,15 @@
   text-align: center;
 }
 
-.shinybreakpoint-div-files .selectize-dropdown .option {
+.shinybreakpoint-div-elements .selectize-dropdown .option {
   color: #635147;
 }
 
-.shinybreakpoint-div-files .selectize-input:hover {
+.shinybreakpoint-div-elements .selectize-input:hover {
   background-color: #DFD6D2 !important;
 }
 
-.shinybreakpoint-div-files .selectize-input.focus {
+.shinybreakpoint-div-elements .selectize-input.focus {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);;
 }
 
@@ -117,19 +117,19 @@
   cursor: pointer;
 }
 
-.shinybreakpoint-div-files {
+.shinybreakpoint-div-elements {
   letter-spacing: 1px;
 }
 
 .shinybreakpoint-selectInput,
-.shinybreakpoint-div-files .radio-group-buttons {
+.shinybreakpoint-div-elements .radio-group-buttons {
   background-color: #f2eeeb;
   padding-right: 10px;
   padding-left: 10px;
   padding-top: 15px;
 }
 
-.shinybreakpoint-div-files .btn-group-vertical {
+.shinybreakpoint-div-elements .btn-group-vertical {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   padding: 0.01px;
   border-width: 0;
@@ -141,25 +141,25 @@
   outline-color: #e2e2e2;
 }
 
-.shinybreakpoint-div-files .btn:hover,
-.shinybreakpoint-div-files .btn-check:active,
-.shinybreakpoint-div-files .active,
-.shinybreakpoint-div-files .btn-check:checked+.btn-outline-primary {
+.shinybreakpoint-div-elements .btn:hover,
+.shinybreakpoint-div-elements .btn-check:active,
+.shinybreakpoint-div-elements .active,
+.shinybreakpoint-div-elements .btn-check:checked+.btn-outline-primary {
   background-color: #DFD6D2 !important;
   color: #635147;
   border-color: #e2e2e2;
 }
 
-.shinybreakpoint-div-files .btn-check:checked+.btn-outline-primary {
+.shinybreakpoint-div-elements .btn-check:checked+.btn-outline-primary {
   box-shadow: inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);
 }
 
-.shinybreakpoint-div-files .btn {
+.shinybreakpoint-div-elements .btn {
   background-color: #f2eeeb;
   color: #635147;
 }
 
-.shinybreakpoint-div-files .btn-outline-primary {
+.shinybreakpoint-div-elements .btn-outline-primary {
   border-color: #e2e2e2;
 }
 
@@ -178,7 +178,7 @@
   text-overflow: ellipsis;
 }
 
-.shinybreakpoint-div-files br {
+.shinybreakpoint-div-elements br {
   display: none;
 }
 

@@ -176,7 +176,8 @@ shinybreakpointServer <- function(keyEvent = "F4",
             }
           }
         }
-      })
+      }) %>%
+        bindEvent(input$key_pressed)
 
       output$src_code <- reactable::renderReactable({
         req(input$element)
@@ -201,7 +202,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                              compact = TRUE,
                              borderless = TRUE,
                              highlight = TRUE,
-                             height = "84vh",
+                             height = "86vh",
                              theme = reactable::reactableTheme(
                                backgroundColor = "#f2eeeb", highlightColor = "#DFD6D2",
                                rowSelectedStyle = list(backgroundColor = "#DFD6D2", boxShadow = "inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);")
@@ -356,10 +357,11 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
                         tags$div(class = "shinybreakpoint-div-activate",
                                  actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
                         ),
-                 column(1, offset = 3,
+                 column(1,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
                                  shinyWidgets::radioGroupButtons(session$ns("app_mode"),
                                                                  choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id"),
+                                                                 selected = "files",
                                                                  size = "sm")
                                  )
                         )

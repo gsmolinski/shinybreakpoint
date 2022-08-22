@@ -352,11 +352,11 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
       fluidRow(
         column(3, class = "col-xl-2",
                fluidRow(
-                 column(3,
+                 column(4,
                         tags$div(class = "shinybreakpoint-div-activate",
                                  actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
                         ),
-                 column(1, offset = 2,
+                 column(1, offset = 3,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
                                  shinyWidgets::radioGroupButtons(session$ns("app_mode"),
                                                                  choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id"),

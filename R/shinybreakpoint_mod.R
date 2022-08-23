@@ -123,43 +123,44 @@ shinybreakpointServer <- function(keyEvent = "F4",
     id,
     function(input, output, session) {
 
-      find_dependencies_last_input <- reactive({
-        req(input$last_input)
-        req(length(reactlog_data) > 0)
-        validate(check_duplicated_ids(dependency_df_ids_data_all_ids$ids_data))
-
-        stats::setNames(lapply(input$last_input, find_dependencies,
-                               binded_filenames_parse_data = binded_filenames_parse_data,
-                               reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
-                               all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
-                               ids_data = dependency_df_ids_data_all_ids$ids_data), input$last_input)
+      get_files <- reactive({
+        stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
+                        filenames_src_code_envirs$filenames_parse_data$filename_full_path)
       })
 
-      find_dependencies_chosen_id <- reactive({
-        req(input$chosen_id)
-        req(length(reactlog_data) > 0)
-        validate(check_duplicated_ids(dependency_df_ids_data_all_ids$ids_data))
+      get_dependencies_last_input <- reactive({
+        validate_id(input$last_input, reactlog_data, dependency_df_ids_data_all_ids$ids_data)
+        get_dependencies_set_names(input$last_input,
+                                   find_dependencies,
+                                   binded_filenames_parse_data = binded_filenames_parse_data,
+                                   reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
+                                   all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
+                                   ids_data = dependency_df_ids_data_all_ids$ids_data)
+      })
 
-        stats::setNames(lapply(input$chosen_id, find_dependencies,
-                               binded_filenames_parse_data = binded_filenames_parse_data,
-                               reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
-                               all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
-                               ids_data = dependency_df_ids_data_all_ids$ids_data), input$chosen_id)
+      get_dependencies_chosen_id <- reactive({
+        validate_id(input$chosen_id, reactlog_data, dependency_df_ids_data_all_ids$ids_data)
+        get_dependencies_set_names(input$chosen_id,
+                                   find_dependencies,
+                                   binded_filenames_parse_data = binded_filenames_parse_data,
+                                   reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
+                                   all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
+                                   ids_data = dependency_df_ids_data_all_ids$ids_data)
       })
 
       get_app_mode_src_code <- reactive({
-        if (is.null(input$app_mode) ||  input$app_mode == "files") {
+        if (input$app_mode == "files") {
           list(mode = "files",
-               data = stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
-                                      filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+               data = get_files())
         } else if (input$app_mode == "last_input") {
           list(mode = "last_input",
-               data = find_dependencies_last_input())
+               data = get_dependencies_last_input())
         } else if (input$app_mode == "chosen_id") {
           list(mode = "chosen_id",
-               data = find_dependencies_chosen_id())
+               data = get_dependencies_chosen_id())
         }
-      })
+      }) %>%
+        bindEvent(input$app_mode)
 
       observe({
         req(input$key_pressed == keyEvent)
@@ -168,11 +169,9 @@ shinybreakpointServer <- function(keyEvent = "F4",
         if (get_app_mode_src_code()$mode == "files") {
           if (nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data)) {
             if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
-              shinyWidgets::updateRadioGroupButtons(session, "element",
-                                                    selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+              update_filenames(shinyWidgets::updateRadioGroupButtons, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
             } else {
-              updateSelectizeInput(session, "element",
-                                   selected = get_src_editor_file(filenames_src_code_envirs$filenames_parse_data$filename_full_path))
+              update_filenames(updateSelectizeInput, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
             }
           }
         }
@@ -271,6 +270,44 @@ shinybreakpointServer <- function(keyEvent = "F4",
         bindEvent(input$activate)
     }
   )
+}
+
+#' Check If Input Is Present And If Labels In ids_data Are Not Duplicated
+#'
+#' @param input_id input$last_input or input$chosen_id - input with id to search dependencies
+#' @param reactlog_data returned by [reactlog]
+#' @param ids_data prepared from [reactlog] - here we need labels column from ids_data to check
+#' if there are some duplicates
+#'
+#' @return
+#' Error (from req()) or string from validate() which is the same as error.
+#' NULL if no error.
+#' @noRd
+validate_id <- function(input_id, reactlog_data, ids_data) {
+  req(input_id & length(reactlog_data) > 0)
+  validate(check_duplicated_ids(ids_data))
+}
+
+#' Get Dependencies For Id(s) And Put It To The Named List
+#'
+#' @param input_id input$last_input or input$chosen_id: input with id to find dependencies for
+#' @param fun_to_find_dependencies fun used in lapply, it is `find_dependencies` to find dependencies for id
+#' @param binded_filenames_parse_data all src_code, but binded to one file (one data.frame)
+#' @param reactlog_dependency_df relations between reactIds from [reactlog]
+#' @param all_react_ids all react_ids used internally by `construct_dependency_graph` to not miss any reactId
+#' @param ids_data src_ref, labels etc. from [reactlog] to find specific reactId in filenames_parse_data (in source code)
+#'
+#' @return
+#' named list - names according to the ids. Inside each element of list - source code (data.frame) with dependencies
+#' for the id (name).
+#' @noRd
+get_dependencies_set_names <- function(input_id, fun_to_find_dependencies, binded_filenames_parse_data, reactlog_dependency_df, all_react_ids, ids_data) {
+  stats::setNames(lapply(input_id, fun_to_find_dependencies,
+                         binded_filenames_parse_data = binded_filenames_parse_data,
+                         reactlog_dependency_df = reactlog_dependency_df,
+                         all_react_ids = all_react_ids,
+                         ids_data = ids_data),
+                  input_id)
 }
 
 #' Create Modal Dialog
@@ -388,6 +425,22 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
     )
   }
   UI
+}
+
+#' Use update* Function to Update HTML Input
+#'
+#' @param update_fun name of the update* function
+#' @param session session object from server module
+#' @param id_html id to which element we want to update
+#' @param filename_full_path all column (as vector) filename_full_path from filenames_parse_data
+#'
+#' @return
+#' Used for side effect - update HTML input
+#' @import shiny
+#' @noRd
+update_filenames <- function(update_fun, session, id_html, filename_full_path) {
+  update_fun(session, id_html,
+             selected = get_src_editor_file(filename_full_path))
 }
 
 #' Get Full Path to File Opened in Source Editor in RStudio

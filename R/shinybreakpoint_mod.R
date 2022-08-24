@@ -149,38 +149,43 @@ shinybreakpointServer <- function(keyEvent = "F4",
       })
 
       get_app_mode_src_code <- reactive({
-        if (input$app_mode == "files") {
-          list(mode = "files",
-               data = get_files())
-        } else if (input$app_mode == "last_input") {
-          list(mode = "last_input",
-               data = get_dependencies_last_input())
-        } else if (input$app_mode == "chosen_id") {
-          list(mode = "chosen_id",
-               data = get_dependencies_chosen_id())
-        }
+        switch(input$app_mode,
+               files = list(mode = "files",
+                            src_code = get_files()),
+               last_input = list(mode = "last_input",
+                                 src_code = get_dependencies_last_input()),
+               chosen_id = list(mode = "chosen_id",
+                                src_code = get_dependencies_chosen_id()))
       }) %>%
         bindEvent(input$app_mode)
 
       observe({
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, get_app_mode_src_code()))
-
-        if (get_app_mode_src_code()$mode == "files") {
-          if (nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data)) {
-            if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
-              update_filenames(shinyWidgets::updateRadioGroupButtons, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
-            } else {
-              update_filenames(updateSelectizeInput, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
-            }
-          }
-        }
       }) %>%
         bindEvent(input$key_pressed)
 
+      observe({
+
+      }) %>%
+        bindEvent(get_app_mode_src_code())
+
+      observe({
+        req(input$key_pressed == keyEvent)
+        req(get_app_mode_src_code()$mode == "files")
+        req(nrow(filenames_src_code_envirs$filenames_parse_data) > 0 && !is.null(filenames_src_code_envirs$filenames_parse_data))
+
+        if ((length(filenames_src_code_envirs$filenames_parse_data$filename_full_path) < 9)) {
+          update_filenames_with_rstudio_editor(shinyWidgets::updateRadioGroupButtons, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
+        } else {
+          update_filenames_with_rstudio_editor(updateSelectizeInput, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
+        }
+      }) %>%
+        bindEvent(input$key_pressed, get_app_mode_src_code())
+
       output$src_code <- reactable::renderReactable({
         req(input$element)
-        src_data <- get_app_mode_src_code()$data[[input$element]]
+        src_data <- get_app_mode_src_code()$src_code[[input$element]]
         reactable::reactable(src_data[c("line", "src_code")],
                              columns = list(line = reactable::colDef(align = "center",
                                                                      vAlign = "center",
@@ -368,13 +373,13 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
   } else {
 
     if (mode_src_code$mode == "files") {
-      choices <- stats::setNames(names(mode_src_code$data),
-                                 basename(names(mode_src_code$data)))
+      choices <- stats::setNames(names(mode_src_code$src_code),
+                                 basename(names(mode_src_code$src_code)))
     } else {
-      choices <- names(mode_src_code$data)
+      choices <- names(mode_src_code$src_code)
     }
 
-    if (length(mode_src_code$data) < 9) {
+    if (length(mode_src_code$src_code) < 9) {
       elements <- shinyWidgets::radioGroupButtons(session$ns("element"), label = "",
                                                   choices = choices,
                                                   direction = "vertical") %>%
@@ -427,7 +432,22 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
   UI
 }
 
-#' Use update* Function to Update HTML Input
+#' Use update* Function to Update HTML Input With Names from Named List Returned by `get_app_mode_src_code`
+#'
+#' @param update_fun name of the update* function
+#' @param session session object from server module
+#' @param id_html id to which element we want to update
+#' @param app_mode_src_code source code (list element 'src_code') returned by reactive `get_app_mode_src_code`
+#'
+#' @return
+#' Used for side effect - update HTML input
+#' @import shiny
+#' @noRd
+update_elements <- function(update_fun, session, id_html, app_mode_src_code) {
+
+}
+
+#' Use update* Function to Update HTML Input Using Value From RStudio Editor
 #'
 #' @param update_fun name of the update* function
 #' @param session session object from server module
@@ -438,7 +458,7 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
 #' Used for side effect - update HTML input
 #' @import shiny
 #' @noRd
-update_filenames <- function(update_fun, session, id_html, filename_full_path) {
+update_filenames_with_rstudio_editor <- function(update_fun, session, id_html, filename_full_path) {
   update_fun(session, id_html,
              selected = get_src_editor_file(filename_full_path))
 }

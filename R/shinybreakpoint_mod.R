@@ -161,12 +161,19 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
       observe({
         req(input$key_pressed == keyEvent)
-        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, get_app_mode_src_code()))
+        showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, input$chosen_id))
       }) %>%
         bindEvent(input$key_pressed)
 
       observe({
-
+        req(get_app_mode_src_code()$mode != "files") # no need to update if files
+        if (length(get_app_mode_src_code()$src_code) < 9) {
+          update_elements(updateSelectizeInput, session, "element",
+                          app_mode_src_code = get_app_mode_src_code()$src_code)
+        } else {
+          update_elements(shinyWidgets::radioGroupButtons, session, "element",
+                          app_mode_src_code = get_app_mode_src_code()$src_code)
+        }
       }) %>%
         bindEvent(get_app_mode_src_code())
 
@@ -225,14 +232,14 @@ shinybreakpointServer <- function(keyEvent = "F4",
         if (get_app_mode_src_code()$mode == "files") {
           input$element
         } else {
-          src_code <- get_app_mode_src_code()$data[[input$element]]
+          src_code <- get_app_mode_src_code()$src_code[[input$element]]
           src_code$filename_full_path[selected_row()]
         }
       })
 
       selected_line <- reactive({
         req(selected_row())
-        src_code <- get_app_mode_src_code()$data[[input$element]]
+        src_code <- get_app_mode_src_code()$src_code[[input$element]]
         src_code$line[selected_row()]
       })
 
@@ -319,8 +326,7 @@ get_dependencies_set_names <- function(input_id, fun_to_find_dependencies, binde
 #'
 #' @param session used in 'create_UI'.
 #' @param filenames_src_code used in 'create_UI'.
-#' @param mode_src_code returned by reactive `get_app_mode_src_code`.
-#' The aim is to display source code for files or for IDs.
+#' @param chosen_id vector of Ids stored input$chosen_id
 #'
 #' @return
 #' Modal dialog.
@@ -333,13 +339,13 @@ get_dependencies_set_names <- function(input_id, fun_to_find_dependencies, binde
 #' as a default Bootstrap 4 or higher version.
 #' @import shiny
 #' @noRd
-modal_dialog <- function(session, filenames_src_code, mode_src_code) {
+modal_dialog <- function(session, filenames_src_code, chosen_id) {
   tags$div(class = "shinybreakpoint-modal",
     modalDialog(
       footer = NULL,
       size = "xl",
       easyClose = TRUE,
-      create_UI(session, filenames_src_code, mode_src_code),
+      create_UI(session, filenames_src_code, chosen_id),
       tags$script(HTML('
       if (jQuery.fn.tooltip.Constructor.VERSION.startsWith("3.")) {{
         if (document.getElementById("shiny-modal").children[0].classList.contains("modal-xl")) {{
@@ -357,14 +363,19 @@ modal_dialog <- function(session, filenames_src_code, mode_src_code) {
 #' @param session passed from 'moduleServer'.
 #' @param filenames_src_code data.frame with full paths to files and basenames
 #' as well as envir label and src code (but not used here).
-#' @param mode_src_code returned by reactive `get_app_mode_src_code`.
-#' The aim is to display source code for files or for IDs.
+#' @param chosen_id vector of Ids stored input$chosen_id
 #'
 #' @return
 #' UI in modal dialog - only a message if no appropriate file found or
 #' button, list of files / IDs and table with source code.
+#' We need to know if selectizeInput should be displayed or radioGroupButtons.
+#' If the number of elements (filenames or ids) will be too long, then we need
+#' selectizeInput. This will be the same input HTML tag for all elements, i.e.
+#' no matter if files or ids. However, the alternative would be probably to use
+#' renderUI, but this is slower that static HTML input which if later updated
+#' using update* functions.
 #' @noRd
-create_UI <- function(session, filenames_src_code, mode_src_code) {
+create_UI <- function(session, filenames_src_code, chosen_id) {
   if (is.null(filenames_src_code) || nrow(filenames_src_code) == 0) {
     UI <- tags$div(class = "no-file",
                    tags$div(class = "circle-div",
@@ -372,14 +383,10 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
                    tags$p("There is nothing to see here"))
   } else {
 
-    if (mode_src_code$mode == "files") {
-      choices <- stats::setNames(names(mode_src_code$src_code),
-                                 basename(names(mode_src_code$src_code)))
-    } else {
-      choices <- names(mode_src_code$src_code)
-    }
+    choices <- sort(stats::setNames(filenames_src_code$filename_full_path,
+                               filenames_src_code$filename))
 
-    if (length(mode_src_code$src_code) < 9) {
+    if (length(choices) < 9 && length(chosen_id) < 9) {
       elements <- shinyWidgets::radioGroupButtons(session$ns("element"), label = "",
                                                   choices = choices,
                                                   direction = "vertical") %>%
@@ -444,7 +451,8 @@ create_UI <- function(session, filenames_src_code, mode_src_code) {
 #' @import shiny
 #' @noRd
 update_elements <- function(update_fun, session, id_html, app_mode_src_code) {
-
+  update_fun(session, id_html,
+             choices = sort(names(app_mode_src_code$src_code)))
 }
 
 #' Use update* Function to Update HTML Input Using Value From RStudio Editor

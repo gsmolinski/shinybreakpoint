@@ -162,17 +162,25 @@ shinybreakpointServer <- function(keyEvent = "F4",
       observe({
         req(input$key_pressed == keyEvent)
         showModal(modal_dialog(session, filenames_src_code_envirs$filenames_parse_data, input$chosen_id))
+
+        disabled_choices <- NULL
+        if (!isTruthy(input$last_input)) {
+          disabled_choices <- append(disabled_choices, "last_input")
+        }
+        if (!isTruthy(input$chosen_id)) {
+          disabled_choices <- append(disabled_choices, "chosen_id")
+        }
+        shinyWidgets::updateRadioGroupButtons(session, "app_mode", disabledChoices = disabled_choices)
       }) %>%
         bindEvent(input$key_pressed)
 
       observe({
-        req(get_app_mode_src_code()$mode != "files") # no need to update if files
         if (length(get_app_mode_src_code()$src_code) < 9) {
-          update_elements(updateSelectizeInput, session, "element",
-                          app_mode_src_code = get_app_mode_src_code()$src_code)
+          update_elements(shinyWidgets::updateRadioGroupButtons, session, "element",
+                          app_mode_src_code = get_app_mode_src_code())
         } else {
-          update_elements(shinyWidgets::radioGroupButtons, session, "element",
-                          app_mode_src_code = get_app_mode_src_code()$src_code)
+          update_elements(updateSelectInput, session, "element",
+                          app_mode_src_code = get_app_mode_src_code())
         }
       }) %>%
         bindEvent(get_app_mode_src_code())
@@ -190,10 +198,14 @@ shinybreakpointServer <- function(keyEvent = "F4",
       }) %>%
         bindEvent(input$key_pressed, get_app_mode_src_code())
 
-      output$src_code <- reactable::renderReactable({
+      src_code_for_element <- reactive({
         req(input$element)
-        src_data <- get_app_mode_src_code()$src_code[[input$element]]
-        reactable::reactable(src_data[c("line", "src_code")],
+        get_app_mode_src_code()$src_code[[input$element]]
+      })
+
+      output$src_code <- reactable::renderReactable({
+        req(src_code_for_element())
+        reactable::reactable(src_code_for_element()[c("line", "src_code")],
                              columns = list(line = reactable::colDef(align = "center",
                                                                      vAlign = "center",
                                                                      width = 60,
@@ -205,7 +217,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                             )),
                              columnGroups = list(reactable::colGroup(name = basename(input$element),
                                                                      columns = c("line", "src_code"))),
-                             rowClass = function(index) if (is.na(src_data[index, "src_code"])) "shinybreakpoint-na-row",
+                             rowClass = function(index) if (is.na(src_code_for_element()[index, "src_code"])) "shinybreakpoint-na-row",
                              selection = "single",
                              onClick = "select",
                              sortable = FALSE,
@@ -221,10 +233,10 @@ shinybreakpointServer <- function(keyEvent = "F4",
       })
 
       selected_row <- reactive({
-        req(input$element)
+        req(src_code_for_element())
         shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
                                 selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
-        reactable::getReactableState("src_code", "selected")
+        row <- reactable::getReactableState("src_code", "selected")
       })
 
       selected_file <- reactive({
@@ -232,21 +244,18 @@ shinybreakpointServer <- function(keyEvent = "F4",
         if (get_app_mode_src_code()$mode == "files") {
           input$element
         } else {
-          src_code <- get_app_mode_src_code()$src_code[[input$element]]
-          src_code$filename_full_path[selected_row()]
+          src_code_for_element()$filename_full_path[selected_row()]
         }
       })
 
       selected_line <- reactive({
         req(selected_row())
-        src_code <- get_app_mode_src_code()$src_code[[input$element]]
-        src_code$line[selected_row()]
+        src_code_for_element()$line[selected_row()]
       })
 
       selected_envir <- reactive({
         req(selected_file())
-        envir_label <- filenames_src_code_envirs$filenames_parse_data$env_label[[filenames_src_code_envirs$filenames_parse_data$filename_full_path == selected_file()]]
-        filenames_src_code_envirs$envirs[[envir_label]]
+        filenames_src_code_envirs$envirs[[selected_file()]]
       })
 
       object <- reactive({
@@ -296,7 +305,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
 #' NULL if no error.
 #' @noRd
 validate_id <- function(input_id, reactlog_data, ids_data) {
-  req(input_id & length(reactlog_data) > 0)
+  req(isTruthy(input_id) & length(reactlog_data) > 0)
   validate(check_duplicated_ids(ids_data))
 }
 
@@ -409,7 +418,7 @@ create_UI <- function(session, filenames_src_code, chosen_id) {
                  column(1,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
                                  shinyWidgets::radioGroupButtons(session$ns("app_mode"),
-                                                                 choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files",  `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id"),
+                                                                 choices = c(`<i class="fa-solid fa-file-lines"></i>` = "files", `<i class="fa-solid fa-backward"></i>` = "last_input", `<i class="fa-solid fa-hand-pointer"></i>` = "chosen_id"),
                                                                  selected = "files",
                                                                  size = "sm")
                                  )
@@ -451,8 +460,11 @@ create_UI <- function(session, filenames_src_code, chosen_id) {
 #' @import shiny
 #' @noRd
 update_elements <- function(update_fun, session, id_html, app_mode_src_code) {
+  choices <- sort(stats::setNames(names(app_mode_src_code$src_code),
+                                  basename(names(app_mode_src_code$src_code))))
   update_fun(session, id_html,
-             choices = sort(names(app_mode_src_code$src_code)))
+             choices = choices,
+             selected = choices[[1]])
 }
 
 #' Use update* Function to Update HTML Input Using Value From RStudio Editor

@@ -236,7 +236,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         req(src_code_for_element())
         shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
                                 selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
-        row <- reactable::getReactableState("src_code", "selected")
+        reactable::getReactableState("src_code", "selected")
       })
 
       selected_file <- reactive({
@@ -259,7 +259,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
       })
 
       object <- reactive({
-        req(selected_envir())
+        req(selected_line(), selected_envir())
         find_object(selected_file(), selected_line(), selected_envir())
       })
 

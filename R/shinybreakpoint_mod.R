@@ -199,7 +199,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
         bindEvent(input$key_pressed, get_app_mode_src_code())
 
       src_code_for_element <- reactive({
-        req(input$element)
         get_app_mode_src_code()$src_code[[input$element]]
       })
 
@@ -233,7 +232,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
       })
 
       selected_row <- reactive({
-        req(src_code_for_element())
         shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
                                 selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         reactable::getReactableState("src_code", "selected")

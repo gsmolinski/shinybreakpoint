@@ -380,5 +380,5 @@
 }
 
 body.shinybreakpoint-cursor-progress * {
-  cursor: progress;
+  cursor: progress !important;
 }

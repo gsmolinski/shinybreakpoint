@@ -48,13 +48,13 @@ get_element_id <- function(id) {
                                      }};
                                     }});
 
-                                    document.addEventListener("shiny:inputchanged", function(e) {{
+                                    $(document).on("shiny:inputchanged", function(e) {{
                                      if (!e.name.startsWith("{id}-") && ids_shiny.includes(e.name)) {{
                                       Shiny.setInputValue("{last_input}", e.name);
                                      }};
                                     }});
 
-                                    document.addEventListener("mousemove", function(e) {{
+                                    $(document).on("mousemove", function(e) {{
                                      if (e.ctrlKey) {{
                                       let ids_all = [];
                                       let ids_correct = [];

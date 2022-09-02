@@ -246,14 +246,19 @@ shinybreakpointServer <- function(keyEvent = "F4",
         }
       })
 
+      which_file <- reactive({
+        req(selected_file())
+        which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == selected_file())
+      })
+
       selected_line <- reactive({
         req(selected_row())
         src_code_for_element()$line[selected_row()]
       })
 
       selected_envir <- reactive({
-        req(selected_file())
-        filenames_src_code_envirs$envirs[[selected_file()]]
+        req(which_file())
+        filenames_src_code_envirs$envirs[[which_file()]]
       })
 
       object <- reactive({

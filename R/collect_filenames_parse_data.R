@@ -8,7 +8,7 @@
 #' @return named list with:
 #' (1) 'filenames_parse_data': data.frame with cols:
 #' filename_full_path, filename, parse_data, env_label
-#' (2) 'envirs': named list with environments (names corresponding to filename full path) or NULL if no objects with filename found.
+#' (2) 'envirs': list with environments (order corresponds to filename_full_path order) or NULL if no objects with filename found.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
@@ -28,7 +28,6 @@ collect_filenames_parse_data <- function(caller_env) {
 
     names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
     envirs <- envirs[filenames_parse_data$env_label] # now envirs have the same order as files in data.frame
-    names(envirs) <- filenames_parse_data$filename_full_path #  rather safe, because in Shiny we shouldn't see reactive sourced to different envir
 
     list(filenames_parse_data = filenames_parse_data,
          envirs = envirs)

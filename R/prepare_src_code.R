@@ -8,8 +8,8 @@
 #' 'filenames_parse_data': data.frame with full path to file, file name and parse data,
 #' but only if file contained at least one reactive function and this function wasn't live in
 #' Global Environment (because we have removed Global Environment previously from search path).
-#' 'labelled_observers': data.frame returned by `get_labelled_observers`. This is needed to filter
-#' dependencies based on chosen Id, because for observers there is no source reference in reactlog.
+#' 'labelled_reactive_objects': data.frame returned by `get_labelled_reactive_objects`. This is needed to filter
+#' dependencies based on chosen Id, because in some circumstances there is no source reference in reactlog for reactive objects.
 #' 'envirs': list of environments returned by `collect_filenames_parse_data`
 #' @noRd
 prepare_src_code <- function(caller_env) {
@@ -30,10 +30,10 @@ prepare_src_code <- function(caller_env) {
 
     filenames_parse_data$parse_data <- lapply(filenames_parse_data$parse_data, retrieve_src_code)
 
-    labelled_observers <- get_labelled_observers(parse_data_all, filenames_parse_data)
+    labelled_reactive_objects <- get_labelled_reactive_objects(parse_data_all, filenames_parse_data)
 
     list(filenames_parse_data = filenames_parse_data,
-         labelled_observers = labelled_observers,
+         labelled_reactive_objects = labelled_reactive_objects,
          envirs = envirs)
   }
 }
@@ -208,9 +208,9 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
   }
 }
 
-#' Find And Get Only Labelled Observers
+#' Find And Get Only Labelled Reactive Objects
 #'
-#' Needed for reactlog to find dependencies (observers)
+#' Needed for reactlog to find dependencies
 #'
 #' @param parse_data_all data.frame with parse data from all
 #' files as well as a column with full path to file, but only
@@ -219,26 +219,26 @@ is_nested_reactive <- function(indice, line2, shifted_line2) {
 #' reactives.
 #'
 #' @return
-#' data.frame with only labelled observers and only if
+#' data.frame with only labelled reactive objects and only if
 #' string was used for label, not variable; columns:
-#' - location_observer: one line from observer; it will be first line if observer is not nested
+#' - location_object: one line from reactive object
 #' - label
 #' - file (only basename for path, because in [reactlog] is only basename for reactives and outputs)
 #' Or NULL if nothing found
 #' @details
 #' All rules for reactive context apply here as well -
-#' so only reactive context (observers) nested in named function.
-#' It returns only observers labelled using only string (not e.g. variable),
+#' so only reactive context (reactive objects) nested in named function.
+#' It returns only reactive objects labelled using only string (not e.g. variable),
 #' because reactlog can resolve variable or function, but we can't by reading
 #' just a source code.
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
+get_labelled_reactive_objects <- function(parse_data_all, filenames_parse_data) {
   parent_id_filename <- parse_data_all %>%
     dplyr::filter(.data$filename_full_path %in% filenames_parse_data$filename_full_path &
                     .data$token == "SYMBOL_FUNCTION_CALL") %>%
-    dplyr::filter(grepl(get_observers_regex(),
+    dplyr::filter(grepl(get_labelled_objects_regex(),
                         .data$text, perl = TRUE)) %>%
     dplyr::select(id = .data$parent, .data$filename_full_path)
 
@@ -257,7 +257,7 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
       dplyr::rename(id = .data$parent) %>%
       dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
       dplyr::mutate(file = basename(.data$filename_full_path)) %>%
-      dplyr::select(location_observer = .data$line1, .data$label, .data$file)
+      dplyr::select(location_object = .data$line1, .data$label, .data$file)
 
     if (nrow(expr_lines_label_filename) > 0) {
       expr_lines_label_filename
@@ -269,16 +269,16 @@ get_labelled_observers <- function(parse_data_all, filenames_parse_data) {
   }
 }
 
-#' Helper for `get_labelled_observers`
+#' Helper for `get_labelled_reactive_objects`
 #'
-#' Search if observer is labelled by only string
+#' Search if reactive object is labelled by only string
 #'
-#' @param parent_id id for observer
-#' @param filename_full_path filename where observer exists
-#' @param parse_data_all all parse data, not only observers, from all files
+#' @param parent_id id for reactive object
+#' @param filename_full_path filename where reactive object exists
+#' @param parse_data_all all parse data from all files
 #'
 #' @return
-#' label text if string for observer or NA
+#' label text if string for reactive object or NA
 #' @noRd
 extract_label <- function(parent_id, filename_full_path, parse_data_all) {
   indice_label <- which(parse_data_all$parent == parent_id &

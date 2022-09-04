@@ -113,9 +113,9 @@ shinybreakpointServer <- function(keyEvent = "F4",
   reactlog_data <- tryCatch(reactlog(), error = function() NULL)
   try(reactlogReset(), silent = TRUE)
   if (length(reactlog_data) > 0 && nrow(filenames_src_code_envirs$filenames_parse_data) > 0) {
-    labelled_observers <- filenames_src_code_envirs$labelled_observers
+    labelled_reactive_objects <- filenames_src_code_envirs$labelled_reactive_objects
     binded_filenames_parse_data <- prepare_filenames_parse_data(filenames_src_code_envirs$filenames_parse_data)
-    dependency_df_ids_data_all_ids <- prepare_dependency_df_and_ids_data(reactlog_data, labelled_observers)
+    dependency_df_ids_data_all_ids <- prepare_dependency_df_and_ids_data(reactlog_data, labelled_reactive_objects)
     getDefaultReactiveDomain()$sendCustomMessage("shinybreakpoint_reactlog_ids", dependency_df_ids_data_all_ids$ids_data$label)
   }
 

@@ -382,3 +382,7 @@
 body.shinybreakpoint-cursor-progress * {
   cursor: progress !important;
 }
+
+.shinybreakpoint-modal .disabled {
+  cursor: not-allowed;
+}

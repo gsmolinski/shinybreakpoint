@@ -81,16 +81,31 @@ get_reactive_context_regex <- function() {
   "^reactive$|^eventReactive$|^observe$|^observeEvent$|^render"
 }
 
-#' Get Regular Expression to Indicate Observers
+#' Get Regular Expression to Indicate Functions Which Can Have Label Parameter
 #'
 #' @return character length 1.
 #' @details
 #' Needed to find dependencies based on input or output Id.
-#' In reactlog there is no source reference for observers, so
+#' In reactlog there is no source reference for observers,
+#' objects inside `bindEvent` or labelled reactives not binded to name, so
 #' we need to find them based on parse data and labels.
 #' @noRd
-get_observers_regex <- function() {
-  "^observe$|^observeEvent$"
+get_labelled_objects_regex <- function() {
+  "^observe$|^observeEvent$|^reactive$|^eventReactive$|^bindEvent$"
+}
+
+#' Return Second Object If First One is %empty%
+#'
+#' %empty% means: NULL or empty string ("")
+#'
+#' @param lhs left hand object
+#' @param rhs right hand object
+#'
+#' @return
+#' One of the argument depending on type / value of lhs
+#' @noRd
+`%empty%` <- function(lhs, rhs) {
+  if (is.null(lhs) || lhs == "") rhs else lhs
 }
 
 #' Check If Any Ids Are Duplicated In Data Retrieved From [reactlog]

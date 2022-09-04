@@ -71,7 +71,7 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 #' Prepare Data From [reactlog] Just Before Searching For Dependencies For Chosen Id
 #'
 #' @param reactlog_data list returned by [reactlog]
-#' @param labelled_observers data.frame returned by `prepare_src_code` with labelled observers
+#' @param labelled_reactive_objects data.frame returned by `prepare_src_code` with labelled reactive objects
 #'
 #' @return
 #' list with two data.frames:
@@ -91,8 +91,8 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 #' - Or all unique react_ids which then will be used by `construct_dependency_graph`
 #' @importFrom magrittr %>%
 #' @noRd
-prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers) {
-  ids_data <- prepare_ids_data(reactlog_data, labelled_observers)
+prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_reactive_objects) {
+  ids_data <- prepare_ids_data(reactlog_data, labelled_reactive_objects)
   reactlog_dependency_df <- prepare_reactlog_dependency_df(reactlog_data)
   all_react_ids <- NULL
   if (nrow(reactlog_dependency_df) > 0) {
@@ -121,7 +121,7 @@ prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers
 #' (output or input)
 #'
 #' @param reactlog_data data returned by [reactlog].
-#' @param labelled_observers data.frame with labelled observers - start line, end line, label, filename or NULL.
+#' @param labelled_reactive_objects data.frame with labelled reactive object - start line, end line, label, filename or NULL.
 #'
 #' @return
 #' data.frame with columns:
@@ -136,17 +136,17 @@ prepare_dependency_df_and_ids_data <- function(reactlog_data, labelled_observers
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @noRd
-prepare_ids_data <- function(reactlog_data, labelled_observers) {
+prepare_ids_data <- function(reactlog_data, labelled_reactive_objects) {
   ids_data <- dplyr::bind_rows(lapply(reactlog_data, extract_ids_data_to_df))
   ids_data <- ids_data %>%
     dplyr::mutate(is_input = grepl("^input\\$", .data$label_full, perl = TRUE),
                   label = gsub("^input\\$|^output\\$", "", .data$label_full, perl = TRUE))
-  if (!is.null(labelled_observers)) {
-    ids_data <- dplyr::left_join(ids_data, labelled_observers, by = "label")
+  if (!is.null(labelled_reactive_objects)) {
+    ids_data <- dplyr::left_join(ids_data, labelled_reactive_objects, by = "label")
     ids_data <- ids_data %>%
       dplyr::mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename),
-                    location = ifelse(is.na(.data$location), .data$location_observer, .data$location)) %>%
-      dplyr::select(-c(.data$file, .data$location_observer))
+                    location = ifelse(is.na(.data$location), .data$location_object, .data$location)) %>%
+      dplyr::select(-c(.data$file, .data$location_object))
   }
 
   ids_data
@@ -160,14 +160,13 @@ prepare_ids_data <- function(reactlog_data, labelled_observers) {
 #'
 #' @return
 #' data.frame
-#' @importFrom rlang %||%
 #' @noRd
 extract_ids_data_to_df <- function(reactlog_data) {
   if (reactlog_data$action == "define") {
     data.frame(react_id = reactlog_data$reactId,
                label_full = reactlog_data$label,
-               filename = attr(reactlog_data$label, "srcfile") %||% NA,
-               location = attr(reactlog_data$label, "srcref")[[1]] %||% NA)
+               filename = attr(reactlog_data$label, "srcfile") %empty% NA,
+               location = attr(reactlog_data$label, "srcref")[[1]] %empty% NA)
   }
 }
 

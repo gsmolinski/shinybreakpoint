@@ -126,7 +126,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
       get_files <- reactive({
         stats::setNames(filenames_src_code_envirs$filenames_parse_data$parse_data,
                         filenames_src_code_envirs$filenames_parse_data$filename_full_path)
-      })
+      }, label = "shinybreakpoint-get_files")
 
       get_dependencies_last_input <- reactive({
         validate_id(input$last_input, reactlog_data, dependency_df_ids_data_all_ids$ids_data)
@@ -135,7 +135,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                    binded_filenames_parse_data = binded_filenames_parse_data,
                                    reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
                                    ids_data = dependency_df_ids_data_all_ids$ids_data)
-      })
+      }, label = "shinybreakpoint-get_dependencies_last_input")
 
       get_dependencies_chosen_id <- reactive({
         validate_id(input$chosen_id, reactlog_data, dependency_df_ids_data_all_ids$ids_data)
@@ -144,7 +144,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                    binded_filenames_parse_data = binded_filenames_parse_data,
                                    reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
                                    ids_data = dependency_df_ids_data_all_ids$ids_data)
-      })
+      }, label = "shinybreakpoint-get_dependencies_chosen_id")
 
       get_app_mode_src_code <- reactive({
         switch(input$app_mode,
@@ -155,7 +155,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                chosen_id = list(mode = "chosen_id",
                                 src_code = get_dependencies_chosen_id()))
       }) %>%
-        bindEvent(input$app_mode)
+        bindEvent(input$app_mode, label = "shinybreakpoint-get_app_mode_src_code")
 
       observe({
         req(input$key_pressed == keyEvent)
@@ -170,7 +170,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         }
         shinyWidgets::updateRadioGroupButtons(session, "app_mode", disabledChoices = disabled_choices)
       }) %>%
-        bindEvent(input$key_pressed)
+        bindEvent(input$key_pressed, label = "shinybreakpoint-update_app_mode_choices")
 
       observe({
         if (length(get_app_mode_src_code()$src_code) < 9) {
@@ -181,7 +181,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
                           app_mode_src_code = get_app_mode_src_code())
         }
       }) %>%
-        bindEvent(get_app_mode_src_code())
+        bindEvent(get_app_mode_src_code(), label = "shinybreakpoint-update_elements")
 
       observe({
         req(input$key_pressed == keyEvent)
@@ -194,11 +194,11 @@ shinybreakpointServer <- function(keyEvent = "F4",
           update_filenames_with_rstudio_editor(updateSelectizeInput, session, "element", filenames_src_code_envirs$filenames_parse_data$filename_full_path)
         }
       }) %>%
-        bindEvent(input$key_pressed, get_app_mode_src_code())
+        bindEvent(input$key_pressed, get_app_mode_src_code(), label = "shinybreakpoint-update_files_based_on_rstudio_opened_file")
 
       src_code_for_element <- reactive({
         get_app_mode_src_code()$src_code[[input$element]]
-      })
+      }, label = "shinybreakpoint-src_code_for_element")
 
       output$src_code <- reactable::renderReactable({
         req(src_code_for_element())
@@ -233,7 +233,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         shinyjs::removeCssClass(class = "shinybreakpoint-activate-btn-ready",
                                 selector = ".shinybreakpoint-modal .shinybreakpoint-activate-btn")
         reactable::getReactableState("src_code", "selected")
-      })
+      }, label = "shinybreakpoint-selected_row")
 
       selected_file <- reactive({
         req(selected_row())
@@ -242,32 +242,32 @@ shinybreakpointServer <- function(keyEvent = "F4",
         } else {
           src_code_for_element()$filename_full_path[selected_row()]
         }
-      })
+      }, label = "shinybreakpoint-selected_file")
 
       which_file <- reactive({
         req(selected_file())
         which(filenames_src_code_envirs$filenames_parse_data$filename_full_path == selected_file())
-      })
+      }, label = "shinybreakpoint-which_file")
 
       selected_line <- reactive({
         req(selected_row())
         src_code_for_element()$line[selected_row()]
-      })
+      }, label = "shinybreakpoint-selected_line")
 
       selected_envir <- reactive({
         req(which_file())
         filenames_src_code_envirs$envirs[[which_file()]]
-      })
+      }, label = "shinybreakpoint-selected_envir")
 
       object <- reactive({
         req(selected_line(), selected_envir())
         find_object(selected_file(), selected_line(), selected_envir())
-      })
+      }, label = "shinybreakpoint-object")
 
       breakpoint_can_be_set <- reactive({
         req(object())
         does_breakpoint_can_be_set(object())
-      })
+      }, label = "shinybreakpoint-breakpoint_can_be_set")
 
       observe({
         req(object())
@@ -280,7 +280,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
           shinyjs::addCssClass(class = "shinybreakpoint-not-set",
                                selector = ".shinybreakpoint-modal .rt-tr-selected")
         }
-      })
+      }, label = "shinybreakpoint-show_green_light")
 
       observe({
         req(breakpoint_can_be_set())
@@ -289,7 +289,7 @@ shinybreakpointServer <- function(keyEvent = "F4",
         set_attrs(selected_file(), exact_line, object()$name, object()$envir, object()$at, caller_envir)
         getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
-        bindEvent(input$activate)
+        bindEvent(input$activate, label = "shinybreakpoint-put_browser")
     }
   )
 }

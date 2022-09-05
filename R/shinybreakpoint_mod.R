@@ -134,7 +134,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                    find_dependencies,
                                    binded_filenames_parse_data = binded_filenames_parse_data,
                                    reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
-                                   all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
                                    ids_data = dependency_df_ids_data_all_ids$ids_data)
       })
 
@@ -144,7 +143,6 @@ shinybreakpointServer <- function(keyEvent = "F4",
                                    find_dependencies,
                                    binded_filenames_parse_data = binded_filenames_parse_data,
                                    reactlog_dependency_df = dependency_df_ids_data_all_ids$reactlog_dependency_df,
-                                   all_react_ids = dependency_df_ids_data_all_ids$all_react_ids,
                                    ids_data = dependency_df_ids_data_all_ids$ids_data)
       })
 
@@ -318,18 +316,16 @@ validate_id <- function(input_id, reactlog_data, ids_data) {
 #' @param fun_to_find_dependencies fun used in lapply, it is `find_dependencies` to find dependencies for id
 #' @param binded_filenames_parse_data all src_code, but binded to one file (one data.frame)
 #' @param reactlog_dependency_df relations between reactIds from [reactlog]
-#' @param all_react_ids all react_ids used internally by `construct_dependency_graph` to not miss any reactId
 #' @param ids_data src_ref, labels etc. from [reactlog] to find specific reactId in filenames_parse_data (in source code)
 #'
 #' @return
 #' named list - names according to the ids. Inside each element of list - source code (data.frame) with dependencies
 #' for the id (name).
 #' @noRd
-get_dependencies_set_names <- function(input_id, fun_to_find_dependencies, binded_filenames_parse_data, reactlog_dependency_df, all_react_ids, ids_data) {
+get_dependencies_set_names <- function(input_id, fun_to_find_dependencies, binded_filenames_parse_data, reactlog_dependency_df, ids_data) {
   stats::setNames(lapply(input_id, fun_to_find_dependencies,
                          binded_filenames_parse_data = binded_filenames_parse_data,
                          reactlog_dependency_df = reactlog_dependency_df,
-                         all_react_ids = all_react_ids,
                          ids_data = ids_data),
                   input_id)
 }

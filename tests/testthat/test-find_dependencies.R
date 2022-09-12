@@ -125,6 +125,13 @@ test_that("'construct_dependency_graph' returns correct result
                              expected_obj_not_input)
           })
 
+test_that("'construct_dependency_graph' returns react_id_name if react_id_name
+          can't be find in reactlog_dependency_df", {
+            reactlog_dependency_df <- prepare_reactlog_dependency_df(reactlog_data)
+            expect_identical(construct_dependency_graph(reactlog_dependency_df, FALSE, "r10"),
+                             "r10")
+          })
+
 test_that("prepare_filenames_parse_data adds correct cols, binds parse_data
           and makes groups for reactive blocks", {
   data_example <- list(

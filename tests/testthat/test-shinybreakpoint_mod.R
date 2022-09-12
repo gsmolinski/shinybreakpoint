@@ -71,8 +71,8 @@ test_that("'get_dependencies_set_names' returns named list", {
   expect_named(result, "text_output")
 })
 
-server <- function(id) {
-  shinybreakpointServer(id = "shinybreakpoint")
+server <- function(id = "shinybreakpoint") {
+  shinybreakpointServer(id = id)
 }
 
 test_that("'get_files' returns named list", {

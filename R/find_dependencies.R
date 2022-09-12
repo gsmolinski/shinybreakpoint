@@ -205,16 +205,20 @@ get_dependencies_from_reactlog <- function(reactlog_data) {
 #' @importFrom rlang .data
 #' @noRd
 construct_dependency_graph <- function(reactlog_dependency_df, id_is_input, react_id_name) {
-  mode <- "out"
-  if (id_is_input) {
-    mode <- "all"
+  if (any(react_id_name == c(reactlog_dependency_df$react_id, reactlog_dependency_df$depends_on_react_id))) {
+    mode <- "out"
+    if (id_is_input) {
+      mode <- "all"
+    }
+
+    dependencies <- igraph::graph_from_data_frame(reactlog_dependency_df) %>%
+      igraph::subcomponent(v = react_id_name, mode = mode) %>%
+      names()
+
+    dependencies
+  } else {
+    react_id_name
   }
-
-  dependencies <- igraph::graph_from_data_frame(reactlog_dependency_df) %>%
-    igraph::subcomponent(v = react_id_name, mode = mode) %>%
-    names()
-
-  dependencies
 }
 
 #' Bind parse_data Into One data.frame And Divide Each Reactive Context Into Separate Groups

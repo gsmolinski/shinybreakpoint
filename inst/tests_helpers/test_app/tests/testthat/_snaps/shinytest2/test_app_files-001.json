@@ -1,0 +1,107 @@
+{
+  "output": {
+    "shinybreakpoint-src_code": {
+      "x": {
+        "tag": {
+          "name": "Reactable",
+          "attribs": {
+            "data": {
+              "line": [
+                14,
+                15,
+                16,
+                "NA"
+              ],
+              "src_code": [
+                "observe({",
+                "    input$txt",
+                "  }, label = \"labelled observer depends on txt\")",
+                null
+              ]
+            },
+            "columns": [
+              {
+                "accessor": ".selection",
+                "name": "",
+                "type": "NULL",
+                "resizable": false,
+                "width": 45,
+                "selectable": true
+              },
+              {
+                "accessor": "line",
+                "name": "",
+                "type": "numeric",
+                "width": 60,
+                "align": "center",
+                "vAlign": "center",
+                "style": {
+                  "color": "#8b8589"
+                }
+              },
+              {
+                "accessor": "src_code",
+                "name": "",
+                "type": "character",
+                "cell": "function (cellInfo) {\n    if (cellInfo.value == null || /[\"'].*[<>].*[\"']/.test(cellInfo.value)) {\n        return cellInfo.value;\n    } else {\n        var code = cellInfo.value;\n        code = code.replace(/([\"](.*?)[\"])/g, \"<span class = \\\"string_code\\\">$1<\/span>\");\n        code = code.replace(/(['](.*?)['])/g, \"<span class = 'string_code'>$1<\/span>\");\n        code = code.replace(/(\\.*[\\w.]+|`.+`)(?=\\()/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(%.+%)/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(\\w+:{3}|\\w+:{2})/g, \"<span class = 'namespace_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:TRUE|FALSE|T|F|NA|NA_character_|NA_integer_|NA_complex_|NA_real_|NULL))\\b/g, \"<span class = 'specials_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:if|else|repeat|while|for|in|next|break))\\b/g, \"<span class = 'keyword_code'>$1<\/span>\");\n        code = code.replace(/\\b([-+]?(0x[\\dA-Fa-f]+|\\d*\\.?\\d+([Ee]-?\\d+)?i?|Inf|NaN))\\b/g, \"<span class = 'number_code'>$1<\/span>\");\n        code = code.replaceAll(\"#\", \"<span class = 'comment_code'>#<\/span>\");\n        code = code.replaceAll(\"(\", \"<span class = 'bracket_code'>(<\/span>\");\n        code = code.replaceAll(\")\", \"<span class = 'bracket_code'>)<\/span>\");\n        code = code.replaceAll(\"{\", \"<span class = 'brace_code'>{<\/span>\");\n        code = code.replaceAll(\"}\", \"<span class = 'brace_code'>}<\/span>\");\n        code = code.replaceAll(\"[\", \"<span class = 'select_code'>[<\/span>\");\n        code = code.replaceAll(\"]\", \"<span class = 'select_code'>]<\/span>\");\n        code = code.replaceAll(\"$\", \"<span class = 'select_code'>$<\/span>\");\n        return React.createElement(\"span\", {\n            dangerouslySetInnerHTML: { __html: code }\n        });\n    }\n}",
+                "style": {
+                  "whiteSpace": "pre-wrap",
+                  "color": "#2f4f4f"
+                }
+              }
+            ],
+            "columnGroups": [
+              {
+                "name": "app.R",
+                "columns": [
+                  "line",
+                  "src_code"
+                ]
+              }
+            ],
+            "sortable": false,
+            "pagination": false,
+            "defaultPageSize": 10,
+            "paginationType": "numbers",
+            "showPageInfo": true,
+            "minRows": 1,
+            "selection": "single",
+            "onClick": "select",
+            "highlight": true,
+            "borderless": true,
+            "compact": true,
+            "rowClassName": [
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row"
+            ],
+            "height": "86vh",
+            "theme": {
+              "backgroundColor": "#f2eeeb",
+              "highlightColor": "#DFD6D2",
+              "rowSelectedStyle": {
+                "backgroundColor": "#DFD6D2",
+                "boxShadow": "inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);"
+              }
+            },
+            "dataKey": "8f7815848fafc80c3628feef0499ebbc"
+          },
+          "children": [
+
+          ]
+        },
+        "class": "reactR_markup"
+      },
+      "evals": [
+        "tag.attribs.columns.2.cell"
+      ],
+      "jsHooks": [
+
+      ],
+      "deps": [
+
+      ]
+    }
+  }
+}

@@ -22,8 +22,16 @@ mod1Server <- function(id) {
       }) %>%
         bindEvent(input$show_text)
 
-      output$num_output <- renderPrint({
+      write_number <- reactive({
         2121
+      })
+
+      show_number <- reactive({
+        write_number()
+      }, label = "labelled reactive show_number")
+
+      output$num_output <- renderPrint({
+        show_number()
       })
     }
   )

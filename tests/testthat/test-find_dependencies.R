@@ -116,12 +116,12 @@ test_that("'construct_dependency_graph' returns correct result
             reactlog_dependency_df$is_input <- c(FALSE, TRUE, FALSE, TRUE, TRUE, TRUE)
             all_react_ids <- unique(c(reactlog_dependency_df$react_id, reactlog_dependency_df$depends_on_react_id))
 
-            expected_obj_input <- c("r6", "r4", "r1$text", "r10")
-            expect_identical(construct_dependency_graph(reactlog_dependency_df, TRUE, all_react_ids),
+            expected_obj_input <- c("r1$text", "r4", "r10", "r6")
+            expect_identical(construct_dependency_graph(reactlog_dependency_df, TRUE, "r1$text"),
                              expected_obj_input)
 
             expected_obj_not_input <- c("r6", "r4", "r1$text")
-            expect_identical(construct_dependency_graph(reactlog_dependency_df, FALSE, all_react_ids),
+            expect_identical(construct_dependency_graph(reactlog_dependency_df, FALSE, "r6"),
                              expected_obj_not_input)
           })
 

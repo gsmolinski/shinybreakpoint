@@ -1,0 +1,161 @@
+{
+  "output": {
+    "shinybreakpoint-src_code": {
+      "x": {
+        "tag": {
+          "name": "Reactable",
+          "attribs": {
+            "data": {
+              "line": [
+                15,
+                16,
+                17,
+                18,
+                "NA",
+                20,
+                21,
+                22,
+                23,
+                "NA",
+                25,
+                26,
+                27,
+                "NA",
+                29,
+                30,
+                31,
+                "NA",
+                33,
+                34,
+                35,
+                "NA"
+              ],
+              "src_code": [
+                "output$txt_output_1 <- renderPrint({",
+                "        \"Text output 1\"",
+                "      }) %>%",
+                "        bindEvent(input$show_text, label = \"mod1-txt_output_1\")",
+                null,
+                "output$txt_output_2 <- renderPrint({",
+                "        \"Text output 2\"",
+                "      }) %>%",
+                "        bindEvent(input$show_text)",
+                null,
+                "write_number <- reactive({",
+                "        2121",
+                "      })",
+                null,
+                "show_number <- reactive({",
+                "        write_number()",
+                "      }, label = \"labelled reactive show_number\")",
+                null,
+                "output$num_output <- renderPrint({",
+                "        show_number()",
+                "      })",
+                null
+              ]
+            },
+            "columns": [
+              {
+                "accessor": ".selection",
+                "name": "",
+                "type": "NULL",
+                "resizable": false,
+                "width": 45,
+                "selectable": true
+              },
+              {
+                "accessor": "line",
+                "name": "",
+                "type": "numeric",
+                "width": 60,
+                "align": "center",
+                "vAlign": "center",
+                "style": {
+                  "color": "#8b8589"
+                }
+              },
+              {
+                "accessor": "src_code",
+                "name": "",
+                "type": "character",
+                "cell": "function (cellInfo) {\n    if (cellInfo.value == null || /[\"'].*[<>].*[\"']/.test(cellInfo.value)) {\n        return cellInfo.value;\n    } else {\n        var code = cellInfo.value;\n        code = code.replace(/([\"](.*?)[\"])/g, \"<span class = \\\"string_code\\\">$1<\/span>\");\n        code = code.replace(/(['](.*?)['])/g, \"<span class = 'string_code'>$1<\/span>\");\n        code = code.replace(/(\\.*[\\w.]+|`.+`)(?=\\()/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(%.+%)/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(\\w+:{3}|\\w+:{2})/g, \"<span class = 'namespace_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:TRUE|FALSE|T|F|NA|NA_character_|NA_integer_|NA_complex_|NA_real_|NULL))\\b/g, \"<span class = 'specials_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:if|else|repeat|while|for|in|next|break))\\b/g, \"<span class = 'keyword_code'>$1<\/span>\");\n        code = code.replace(/\\b([-+]?(0x[\\dA-Fa-f]+|\\d*\\.?\\d+([Ee]-?\\d+)?i?|Inf|NaN))\\b/g, \"<span class = 'number_code'>$1<\/span>\");\n        code = code.replaceAll(\"#\", \"<span class = 'comment_code'>#<\/span>\");\n        code = code.replaceAll(\"(\", \"<span class = 'bracket_code'>(<\/span>\");\n        code = code.replaceAll(\")\", \"<span class = 'bracket_code'>)<\/span>\");\n        code = code.replaceAll(\"{\", \"<span class = 'brace_code'>{<\/span>\");\n        code = code.replaceAll(\"}\", \"<span class = 'brace_code'>}<\/span>\");\n        code = code.replaceAll(\"[\", \"<span class = 'select_code'>[<\/span>\");\n        code = code.replaceAll(\"]\", \"<span class = 'select_code'>]<\/span>\");\n        code = code.replaceAll(\"$\", \"<span class = 'select_code'>$<\/span>\");\n        return React.createElement(\"span\", {\n            dangerouslySetInnerHTML: { __html: code }\n        });\n    }\n}",
+                "style": {
+                  "whiteSpace": "pre-wrap",
+                  "color": "#2f4f4f"
+                }
+              }
+            ],
+            "columnGroups": [
+              {
+                "name": "module_1.R",
+                "columns": [
+                  "line",
+                  "src_code"
+                ]
+              }
+            ],
+            "sortable": false,
+            "pagination": false,
+            "defaultPageSize": 10,
+            "paginationType": "numbers",
+            "showPageInfo": true,
+            "minRows": 1,
+            "selection": "single",
+            "onClick": "select",
+            "highlight": true,
+            "borderless": true,
+            "compact": true,
+            "rowClassName": [
+              null,
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row",
+              null,
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row",
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row",
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row",
+              null,
+              null,
+              null,
+              "shinybreakpoint-na-row"
+            ],
+            "height": "86vh",
+            "theme": {
+              "backgroundColor": "#f2eeeb",
+              "highlightColor": "#DFD6D2",
+              "rowSelectedStyle": {
+                "backgroundColor": "#DFD6D2",
+                "boxShadow": "inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);"
+              }
+            },
+            "dataKey": "ce160cd0646c1001ddc85d7c678edf6d"
+          },
+          "children": [
+
+          ]
+        },
+        "class": "reactR_markup"
+      },
+      "evals": [
+        "tag.attribs.columns.2.cell"
+      ],
+      "jsHooks": [
+
+      ],
+      "deps": [
+
+      ]
+    }
+  }
+}

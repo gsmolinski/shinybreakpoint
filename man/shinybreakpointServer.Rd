@@ -36,7 +36,9 @@ setting breakpoint. Must be used in the \code{server} part of
 Shiny app or in the function which is then used in the
 \code{server} part of app.
 }
-\details{
+\section{App structure}{
+
+
 One of the core concepts which founds this module is the
 necessity to re-run the objects present in the \code{server}
 part of app. This is possible only when these objects
@@ -45,22 +47,48 @@ which is then used in \code{server}. This naturally harmonizes
 with the modules, but it needs the separate function for
 objects which would be used directly in the \code{server}.
 
-\code{shinybreakpoint} module was developed having Bootstrap 5
+\code{shinybreakpointServer} module was developed having Bootstrap 5
 in mind, that's why it is recommended to use \code{\link[bslib:bs_theme]{bslib::bs_theme()}}
 to set up Bootstrap 5. Otherwise the UI experience will be
 worse.
 
 Possibility to filter reactive context depending on specific
-\code{input} or \code{output} needs \link[shiny:reactlog]{shiny::reactlog} enabled,
+\code{input} or \code{output} needs \code{\link[shiny:reactlog]{shiny::reactlog()}} enabled,
 which is done by \code{options(shiny.reactlog = TRUE)}. This line
 of code needs to be removed before app will be sent to production
 (which is of course true also for
-\code{shinybreakpoint::shinybreakpointServer()}).
+\code{shinybreakpoint::shinybreakpointServer()} line).
 
-See example for the idea of how to include all of this
+See example section below for the idea of how to include all of this
 requirements in the app. This can also be done by
 \code{\link[=snippet]{snippet()}} for new apps.
 }
+
+\section{Filtering by Id}{
+
+
+As long as \code{\link[shiny:reactlog]{shiny::reactlog()}} is enabled, it is possible to filter
+displayed source code based on \code{input} or \code{output} Id, i.e. only
+the relevant source code (\code{reactive}s, \code{observe}s and \verb{render*} functions)
+will be shown. Two modes are available:
+\itemize{
+\item Last changed input - last changed input is tracked automatically, i.e.
+nothing special needs to be done.
+\item Chosen Id - by holding \code{Ctrl} on PC or \code{Cmd} on Mac and hovering mouse
+over \code{input} or \code{output}, Id for this element will be saved (which will
+be indicated by displaying cursor of type 'progress' for a moment).
+}
+
+To successfully see all relevant source code for Id, it is necessary
+to ensure that code inside \code{reactive}s, \code{observe}s and \verb{render*} functions
+is in curly (\code{{}}) brackets and that \code{observe}s as well as \code{\link[shiny:bindEvent]{shiny::bindEvent()}}
+(if used) have label, i.e. \emph{string} is passed \emph{directly} to the \code{label}
+parameter. Label needs to be unique across all labels \emph{and} Ids. Additionally,
+if \code{\link[shiny:bindEvent]{shiny::bindEvent()}} is used on \verb{render*} function, label must be \emph{the same as}
+the \code{output} Id. Because in this last case Id is masked by \code{\link[shiny:bindEvent]{shiny::bindEvent()}},
+there is no afraid that label and Id won't be unique.
+}
+
 \examples{
 # To run example, copy-paste to file, save
 # the file and run the app. Then press "F4"

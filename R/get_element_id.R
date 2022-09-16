@@ -55,7 +55,7 @@ get_element_id <- function(id) {
                                     }});
 
                                     $(document).on("mousemove", function(e) {{
-                                     if (e.ctrlKey) {{
+                                     if (e.ctrlKey || e.metaKey) {{
                                       let ids_all = [];
                                       let ids_correct = [];
                                       let current = e.target;

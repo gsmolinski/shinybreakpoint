@@ -42,7 +42,9 @@ shinybreakpointUI <- function(id) {
 #' Used for side effect - adds modal dialog to the Shiny app
 #' with the options to set breakpoint. Modal dialog is shown
 #' when the key specified in `keyEvent` is pressed.
-#' @details
+#'
+#' @section App structure:
+#'
 #' One of the core concepts which founds this module is the
 #' necessity to re-run the objects present in the `server`
 #' part of app. This is possible only when these objects
@@ -51,21 +53,43 @@ shinybreakpointUI <- function(id) {
 #' with the modules, but it needs the separate function for
 #' objects which would be used directly in the `server`.
 #'
-#' `shinybreakpoint` module was developed having Bootstrap 5
+#' `shinybreakpointServer` module was developed having Bootstrap 5
 #' in mind, that's why it is recommended to use [bslib::bs_theme()]
 #' to set up Bootstrap 5. Otherwise the UI experience will be
 #' worse.
 #'
 #' Possibility to filter reactive context depending on specific
-#' `input` or `output` needs [shiny::reactlog] enabled,
+#' `input` or `output` needs [shiny::reactlog()] enabled,
 #' which is done by `options(shiny.reactlog = TRUE)`. This line
 #' of code needs to be removed before app will be sent to production
 #' (which is of course true also for
-#' `shinybreakpoint::shinybreakpointServer()`).
+#' `shinybreakpoint::shinybreakpointServer()` line).
 #'
-#' See example for the idea of how to include all of this
+#' See example section below for the idea of how to include all of this
 #' requirements in the app. This can also be done by
 #' [shinybreakpoint::snippet()] for new apps.
+#'
+#' @section Filtering by Id:
+#'
+#' As long as [shiny::reactlog()] is enabled, it is possible to filter
+#' displayed source code based on `input` or `output` Id, i.e. only
+#' the relevant source code (`reactive`s, `observe`s and `render*` functions)
+#' will be shown. Two modes are available:
+#'
+#' * Last changed input - last changed input is tracked automatically, i.e.
+#' nothing special needs to be done.
+#' * Chosen Id - by holding `Ctrl` on PC or `Cmd` on Mac and hovering mouse
+#' over `input` or `output`, Id for this element will be saved (which will
+#' be indicated by displaying cursor of type 'progress' for a moment).
+#'
+#' To successfully see all relevant source code for Id, it is necessary
+#' to ensure that code inside `reactive`s, `observe`s and `render*` functions
+#' is in curly (`{}`) brackets and that `observe`s as well as [shiny::bindEvent()]
+#' (if used) have label, i.e. *string* is passed *directly* to the `label`
+#' parameter. Label needs to be unique across all labels *and* Ids. Additionally,
+#' if [shiny::bindEvent()] is used on `render*` function, label must be *the same as*
+#' the `output` Id. Because in this last case Id is masked by [shiny::bindEvent()],
+#' there is no afraid that label and Id won't be unique.
 #'
 #' @export
 #' @import shiny

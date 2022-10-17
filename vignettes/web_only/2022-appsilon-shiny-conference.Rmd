@@ -7,7 +7,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This talk focus on the core idea behind the package from the technical point of view and covers most of the things mentioned in the document <i>"What about trace()?". Idea behind the package</i>. However, the GUI and lack of source reference (what can be seen in the video) are outdated.
+This talk focus on the core idea behind the `{shinybreakpoint}` from the technical point of view and covers most of the things mentioned in the document <i>"What about trace()?". Idea behind the package</i>. However, the GUI and lack of source reference (what can be seen in the video) are outdated.
 
 <center>
  <iframe width="642" height="361" src="https://www.youtube.com/embed/nDxYgBgeEQ4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

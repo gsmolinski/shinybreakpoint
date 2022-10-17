@@ -7,12 +7,13 @@ articles:
 - title: Usage
   navbar: ~
   contents:
-  - code
+  - app-structure
+  - filtering-by-id
   - debugging
 
 - title: Idea
   contents:
-  - background
+  - what-about-trace
 
 - title: Talks
   contents:

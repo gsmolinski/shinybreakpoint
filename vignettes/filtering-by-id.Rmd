@@ -14,4 +14,20 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Motivation
+
+First (`0.0.1`) version of `shinybreakpoint` treated code as a *words* segregated into R files, but only in some specific situations source code can be read in the same way as a book - e.g. any function definition makes it necessary to jump from one line to another to find the body of function. Reactive programming makes it even necessary to jump all the time between blocks of reactive context (which may exist in different files) - relevant code often is far away from where we are, between the code blocks connected to the outputs we do not looking for. This is of course the more problematic the less we know (or remember) code structure of the app.
+
+The problem with the complicated app structure (complicated app itself *and* fact that it was developed using reactive programming) found the answer in `{reactlog}` package, where is possible to see the graph with connected `input`s, `output`s and other reactive elements (`reactive`s, `observe`s) and where is possible to retrieve this information. `shinybreakpoint` base on this to provide possibility to display source code (but only reactive context) which is relevant for (connected to) given `Id`, where `Id` is an `input` or `output` Id.
+
+## Filtering
+
+To the right of `red filled circle` button the set of three small buttons is displayed and only the first one is active all the time - this is a button responsible to display source code in a standard way (as a files). Other two are active if some `Id` was chosen to use it for filtering.
+
+### Last changed input
+
+The second button can be use immediately after some `input` in the app has been changed^[`shiny:inputchanged` event is used for this. Reference: [JavaScript Events in Shiny](https://shiny.rstudio.com/articles/js-events.html)] *and* this `input` is connected to any reactive context. `input` can change due to user action, but the change can also be a result of some code running in the `server` part (like usage of some `update*` function in `observe`). This mode can search (and it does this automatically) relevant source code - what may be already obvious - only for `input` Id.
+
+### Chosen Id
+
 

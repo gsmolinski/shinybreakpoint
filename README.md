@@ -18,7 +18,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 ### Description
 
-`shinybreakpoint` is a Shiny module which one can add to the Shiny
+`shinybreakpoint` is a `{shiny}` module which one can add to the Shiny
 application. Is an answer to the problem with setting (editor)
 breakpoint in the modules stored in separate files - currently it is not
 possible to do this in RStudio IDE. With `shinybreakpoint` breakpoint

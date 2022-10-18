@@ -10,19 +10,22 @@
     <loc>https://gsmolinski.github.io/shinybreakpoint/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://gsmolinski.github.io/shinybreakpoint/articles/background.html</loc>
-  </url>
-  <url>
-    <loc>https://gsmolinski.github.io/shinybreakpoint/articles/code.html</loc>
+    <loc>https://gsmolinski.github.io/shinybreakpoint/articles/app-structure.html</loc>
   </url>
   <url>
     <loc>https://gsmolinski.github.io/shinybreakpoint/articles/debugging.html</loc>
+  </url>
+  <url>
+    <loc>https://gsmolinski.github.io/shinybreakpoint/articles/filtering-by-id.html</loc>
   </url>
   <url>
     <loc>https://gsmolinski.github.io/shinybreakpoint/articles/index.html</loc>
   </url>
   <url>
     <loc>https://gsmolinski.github.io/shinybreakpoint/articles/web_only/2022-appsilon-shiny-conference.html</loc>
+  </url>
+  <url>
+    <loc>https://gsmolinski.github.io/shinybreakpoint/articles/what-about-trace.html</loc>
   </url>
   <url>
     <loc>https://gsmolinski.github.io/shinybreakpoint/authors.html</loc>

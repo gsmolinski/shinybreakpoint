@@ -8,8 +8,8 @@
 <meta name="description" content="shinybreakpoint">
 <title>Debugging • shinybreakpoint</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Debugging">
 <meta property="og:description" content="shinybreakpoint">
@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">shinybreakpoint</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,8 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/code.html">Code</a>
+    <a class="dropdown-item" href="../articles/app-structure.html">App Structure</a>
+    <a class="dropdown-item" href="../articles/filtering-by-id.html">Filtering by Id</a>
     <a class="dropdown-item" href="../articles/debugging.html">Debugging</a>
     <div class="dropdown-divider"></div>
     <a class="dropdown-item" href="../articles/index.html">More articles...</a>
@@ -82,12 +83,12 @@
 
     
     
-<p>This article is a short guide to debugging with <code>shinybreakpoint</code>, i.e. what exactly happens after the breakpoint is set and session is refreshed. If one would like to read more systematically about debugging in <code>Shiny</code>, it should be relatively easy to find many useful articles.</p>
+<p>This article is a short guide to debugging with <code>shinybreakpoint</code>, i.e. what exactly happens after the breakpoint is set and session is refreshed. If one would like to read more systematically about debugging in <code>{Shiny}</code>, it should be relatively easy to find many useful articles.</p>
 <div class="section level2">
 <h2 id="reference-to-the-file">Reference to the file<a class="anchor" aria-label="anchor" href="#reference-to-the-file"></a>
 </h2>
 <p>When the file is <code><a href="https://rdrr.io/r/base/source.html" class="external-link">source()</a></code>d or <code><a href="https://rdrr.io/r/base/parse.html" class="external-link">parse()</a></code>d, <code>srcref</code> attribute is added to the functions to indicate where the objects originated<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Murdoch, D. 2010. &lt;em&gt;Source References&lt;/em&gt;. The R Journal, pp. 16-19.&lt;/p&gt;"><sup>1</sup></a>. This attribute contains the code (for chosen object) as shown in the file, e.g. with the comments, and also path to the file. Knowing this, it is possible to show to the user location (in the file, not just in the body of function) where the computation stops.</p>
-<p>Unfortunately, after the body of function is modified, this attribute is lost. We could now distinguish between the <code>srcref</code> attribute for function itself and for the <code><a href="https://rdrr.io/r/base/body.html" class="external-link">body()</a></code> of that function and say that <code>attr(fun, "srcref")</code> is lost, but not <code>attr(body(fun), "srcref")</code>, but it won’t help us very much - we still won’t be able to point to the original file when debug mode starts. Some solutions are of course possible to show the ‘stop’ location in the file - RStudio displays the original file (where <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> is not visible), but <code>shinybreakpoint</code> constructs temporary file (in temporary location which exists as long as R session - do not confuse with <code>Shiny</code> session) where the whole added code is visible, separated by two lines of comments - first one indicates where the additional code starts and the second one reminds that this is only temporary file. Temporary file is constructed for each breakpoint. Having the separate file has downsides, of course, but on the other hand it allows to modify the (temporary) file without any fear which could accompany the user when working with original file. Debug mode is not just a mode to read a values, but the possibility to execute any code is a very convenient way to experiment with different solutions.</p>
+<p>Unfortunately, after the body of function is modified, this attribute is lost. We could now distinguish between the <code>srcref</code> attribute for function itself and for the <code><a href="https://rdrr.io/r/base/body.html" class="external-link">body()</a></code> of that function and say that <code>attr(fun, "srcref")</code> is lost, but not <code>attr(body(fun), "srcref")</code>, but it won’t help us very much - we still won’t be able to point to the original file when debug mode starts. Some solutions are of course possible to show the ‘stop’ location in the file - RStudio displays the original file (where <code><a href="https://rdrr.io/r/base/browser.html" class="external-link">browser()</a></code> is not visible), but <code>shinybreakpoint</code> constructs temporary file (in temporary location which exists as long as R session - do not confuse with Shiny session) where the whole added code is visible, separated by two lines of comments - first one indicates where the additional code starts and the second one reminds that this is only temporary file. Temporary file is constructed for each breakpoint. Having the separate file has downsides, of course, but on the other hand it allows to modify the (temporary) file without any fear which could accompany the user when working with original file. Debug mode is not just a mode to read a values, but the possibility to execute any code is a very convenient way to experiment with different solutions.</p>
 </div>
 <div class="section level2">
 <h2 id="stepping-through-the-code">Stepping through the code<a class="anchor" aria-label="anchor" href="#stepping-through-the-code"></a>
@@ -100,7 +101,7 @@
 <h2 id="displaying-values">Displaying values<a class="anchor" aria-label="anchor" href="#displaying-values"></a>
 </h2>
 <p>Generally, in R value can be displayed in two ways: by using <code>print(var)</code> or just by typing <code>var</code> in the console (where <code>var</code> is a variable). Because <code>n</code>, <code>s</code> and other shortcuts available during the debug mode are valid variable names, it can happen that indeed variables will have names the same like the shortcuts - in this situation it is needed to use <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> to display value.</p>
-<p>However, it can be also the case when the value won’t be displayed, no matter which method is used. In case of <code>Shiny</code> applications, it happens when debugging <code>renderPrint</code>, because the output is captured by the web browser. To be able to display the values, it is necessary to call <code><a href="https://rdrr.io/r/base/sink.html" class="external-link">sink()</a></code> in the debug mode and then values can be displayed. When exiting from the debug mode, session is refreshed, so there is no negative consequence of using <code><a href="https://rdrr.io/r/base/sink.html" class="external-link">sink()</a></code>.</p>
+<p>However, it can be also the case when the value won’t be displayed, no matter which method is used. In case of Shiny applications, it happens when debugging <code>renderPrint</code>, because the output is captured by the web browser. To be able to display the values, it is necessary to call <code><a href="https://rdrr.io/r/base/sink.html" class="external-link">sink()</a></code> in the debug mode and then values can be displayed. When exiting from the debug mode, session is refreshed, so there is no negative consequence of using <code><a href="https://rdrr.io/r/base/sink.html" class="external-link">sink()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="one-time-breapoint">One-time breapoint<a class="anchor" aria-label="anchor" href="#one-time-breapoint"></a>
@@ -122,7 +123,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>

@@ -20,56 +20,62 @@ Setting breakpoint is a debugging technique - when the point (line of code) is r
 
 ## Minimal App Structure
 
-We will start from the snippet^[Run `?shinybreakpoint::snippet` to see the documentation for function to write the snippet to the opened file in RStudio or check the `snippet` addin] - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
+We will start from the snippet[^1] - minimal skeleton needed to successfully run the Shiny app with the `shinybreakpoint` functionality:
 
-    library(shiny)
+[^1]: Run `?shinybreakpoint::snippet` to see the documentation for function to write the snippet to the opened file in RStudio or check the `snippet` addin
 
-    ui <- fluidPage(
-      
-    )
+```{r, eval=FALSE}
+library(shiny)
 
-    appServer <- function(input, output, session) {
-      # here will be the code which will be run in the
-      # 'server', not in the 'server' itself
-    }
+ui <- fluidPage(
+  
+)
 
-    server <- function(input, output, session) {
-      appServer(input, output, session)
-      shinybreakpoint::shinybreakpointServer()
-    }
+appServer <- function(input, output, session) {
+  # here will be the code which will be run in the
+  # 'server', not in the 'server' itself
+}
 
-    shinyApp(ui, server)
+server <- function(input, output, session) {
+  appServer(input, output, session)
+  shinybreakpoint::shinybreakpointServer()
+}
+
+shinyApp(ui, server)
+```
 
 it is very similar to the regular Shiny snippet, however with the one significant difference - the server part is duplicated.
 
 This duplication is necessary, because when the breakpoint is set using `shinybreakpoint`, the session is refreshed to enable changes in the code (these changes are the code added to the chosen line, i.a. `browser()`). Refreshment works only for objects nested in the functions which are then call in the `server` part. In other words, breakpoint won't work for objects used directly in the `server`, but these objects will be visible in the source code. As an example that works, we can consider the code below.
 
-    library(shiny)
-    library(magrittr)
+```{r, eval=FALSE}
+library(shiny)
+library(magrittr)
 
-    ui <- fluidPage(
-      numericInput("num1", "Num", 1),
-      numericInput("num2", "Num", 2),
-      actionButton("go", "Go")
-    )
+ui <- fluidPage(
+  numericInput("num1", "Num", 1),
+  numericInput("num2", "Num", 2),
+  actionButton("go", "Go")
+)
 
-    appServer <- function(input, output, session) {
-      observe({
-        input$num1
-      })
-      
-      observe({
-        input$num2
-      }) %>% 
-        bindEvent(input$go)
-    }
+appServer <- function(input, output, session) {
+  observe({
+    input$num1
+  })
+  
+  observe({
+    input$num2
+  }) %>% 
+    bindEvent(input$go)
+}
 
-    server <- function(input, output, session) {
-      appServer(input, output, session)
-      shinybreakpoint::shinybreakpointServer()
-    }
+server <- function(input, output, session) {
+  appServer(input, output, session)
+  shinybreakpoint::shinybreakpointServer()
+}
 
-    shinyApp(ui, server)
+shinyApp(ui, server)
+```
 
 The key concept is that all code on which we possibly would like to set breakpoint is separated from the `server` (`shinybreakpoint::shinybreakpointServer()` does not necessary need to be use in the `server`, it could be used in the `appServer` as well). When the app is built of modules, this separation is achieved *by definition*, but when not, then `shinybreakpoint` needs this additional step.
 
@@ -79,7 +85,7 @@ Duplicated main `server` part of the app is necessary if one would like to set b
 
 The second version of `shinybreakpoint` brought also a new functionality - filtering displayed source code by `Id` - this is `Id` of `intput` or `output` element (more about this, reader can find in the article <i>Filtering by Id</i>). Filtering is based on `{reactlog}` and to be able to use it, it is needed to set the appropriate option. The snipped below shows the recommended structure of the app - changes concerns only on the main `app` file. In this code snippet, two `TODO`s was included as a reminder to remove these calls before app is sending to production.
 
-```
+```{r, eval=FALSE}
     library(shiny)
 
     options(shiny.reactlog = TRUE) # TODO: remove
@@ -110,16 +116,26 @@ To run any of the examples above, one should save the file with the code, run th
 
 other possibilities won't work. Generally we can say that breakpoint won't be set on the *edges* of the visible code blocks.
 
-Immediately after the breakpoint is set (i.e. when the `red filled circle` button in the modal dialog is pushed), session is refreshed. That means that if the breakpoint in our example was set on the `input$num1` line, debug mode will open up immediately, but if it was set on the `input$num2`, then `Go` button needs to be pushed. That fact strictly depends on the reactive programming - debug mode opens up when the code block (where breakpoint is set) starts and the chosen line is achieved.
+Immediately after the breakpoint is set (i.e. when the `red filled circle` button (`r shiny::icon("circle", style = "color: #984747;")`) in the modal dialog is pushed), session is refreshed. That means that if the breakpoint in our example was set on the `input$num1` line, debug mode will open up immediately, but if it was set on the `input$num2`, then `Go` button needs to be pushed. That fact strictly depends on the reactive programming - debug mode opens up when the code block (where breakpoint is set) starts and the chosen line is achieved.
 
- `shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects.
+## Displaying source code
+
+`shinybreakpoint` tries to find and display only objects which belong to *reactive context* (`observe`s, `reactive`s and `render*`s), however it is not guaranteed that *all* of these objects will be find and that *only* these objects will be find. If so, one should remember that `shinybreakpoint` was designed to work with objects which belong to reactive context and thus it can lead to errors if using on other objects. It is also crucial to note that **reactive context will be displayed only if the body (of this context) is inside curly (`{}`) brackets**, i.e. `reactive({iris})` should be use instead of `reactive(iris)`. But - of course, if one would like to *set breakpoint* inside the reactive context, it has to be a space for this, i.e. in our example the code should look like below (body of function is in the separate line):
+
+```{r reactive_curly_brackets, eval = FALSE}
+r_iris <- reactive({
+  iris
+})
+```
+
+Any element of reactive context must also be inside the `server` part (in the main app or in the module). Theoretically it is possible to include reactive context (e.g. `observe()`) outside of the `server` part (and of course outside of the `UI` part) if one would like to share something between Shiny sessions, but `shinybreakpoint` currently won't display such a code.
 
 ## Additional Comments
 
 Not previously mentioned and possibly important remarks are:
 
-- debugging is not performed on the *original* file, but on the temporary copy of the file
-- breakpoint is designed to be an one-time breakpoint and it means that breakpoint do not persist and only one breakpoint can be set in one time
-- when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
-- session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
-- if one uses RStudio IDE, `shinybreakpoint` recognizes the file opened in the source editor and if this file is used in Shiny app and contains reactive blocks of code, it will be opened as default file in modal dialog. This works only in a moment when the key specified in `keyEvent` parameter is pressed
+-   debugging is not performed on the *original* file, but on the temporary copy of the file
+-   breakpoint is designed to be an one-time breakpoint and it means that breakpoint do not persist and only one breakpoint can be set in one time
+-   when the `browser()` and other code is added, the `srcref` attribute of function is lost. However, it shouldn't be a problem since this attribute is used to get information about the source of object and therefore is useful only for debugging
+-   session is reload twice - first time after the breakpoint is set and the second one when debug mode is closed using `c` or `f`. This can be inconvenient if some heavy computations are performed when the session starts
+-   if one uses RStudio IDE, `shinybreakpoint` recognizes the file opened in the source editor and if this file is used in Shiny app and contains reactive blocks of code, it will be opened as default file in modal dialog. This works only in a moment when the key specified in `keyEvent` parameter is pressed

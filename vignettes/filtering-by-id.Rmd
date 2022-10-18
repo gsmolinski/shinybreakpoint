@@ -18,16 +18,149 @@ knitr::opts_chunk$set(
 
 First (`0.0.1`) version of `shinybreakpoint` treated code as a *words* segregated into R files, but only in some specific situations source code can be read in the same way as a book - e.g. any function definition makes it necessary to jump from one line to another to find the body of function. Reactive programming makes it even necessary to jump all the time between blocks of reactive context (which may exist in different files) - relevant code often is far away from where we are, between the code blocks connected to the outputs we do not looking for. This is of course the more problematic the less we know (or remember) code structure of the app.
 
-The problem with the complicated app structure (complicated app itself *and* fact that it was developed using reactive programming) found the answer in `{reactlog}` package, where is possible to see the graph with connected `input`s, `output`s and other reactive elements (`reactive`s, `observe`s) and where is possible to retrieve this information. `shinybreakpoint` base on this to provide possibility to display source code (but only reactive context) which is relevant for (connected to) given `Id`, where `Id` is an `input` or `output` Id.
+The problem with the complicated app structure (complicated app itself *and* fact that it was developed using reactive programming) found the answer in `{reactlog}` package, where it is possible to see the graph with connected `input`s, `output`s and other reactive elements (`reactive`s, `observe`s) and where is possible to retrieve this information. `shinybreakpoint` base on this to provide possibility to display source code (but only reactive context) which is relevant for (connected to) given `Id`, where `Id` is an `input` or `output` Id.
 
 ## Filtering
 
-To the right of `red filled circle` button the set of three small buttons is displayed and only the first one is active all the time - this is a button responsible to display source code in a standard way (as a files). Other two are active if some `Id` was chosen to use it for filtering.
+To the right of `red filled circle` button (`r shiny::icon("circle", style = "color: #984747;")`), the set of three small buttons is displayed and only the first one (<i class="fa-solid fa-file-lines" style="color: #d0a492;"></i>) is active all the time - this is a button responsible to display source code in a standard way (as a files). Other two are active if some `Id` is present to use it for filtering.
 
 ### Last changed input
 
-The second button can be use immediately after some `input` in the app has been changed^[`shiny:inputchanged` event is used for this. Reference: [JavaScript Events in Shiny](https://shiny.rstudio.com/articles/js-events.html)] *and* this `input` is connected to any reactive context. `input` can change due to user action, but the change can also be a result of some code running in the `server` part (like usage of some `update*` function in `observe`). This mode can search (and it does this automatically) relevant source code - what may be already obvious - only for `input` Id.
+The second button (<i class="fa-solid fa-backward" style="color: #d0a492;"></i>) can be use immediately after some `input` in the app has been changed^[`shiny:inputchanged` event is used for this. Reference: [JavaScript Events in Shiny](https://shiny.rstudio.com/articles/js-events.html)] *and* this `input` is connected to any reactive context. `input` can change due to user action, but the change can also be a result of some code running in the `server` part (like usage of `update*` function in `observe`). This mode can search (and it does this automatically) relevant source code - what may be already obvious - only for `input` Id.
 
 ### Chosen Id
 
+Finally, third button (<i class="fa-solid fa-hand-pointer" style="color: #d0a492;"></i>) is responsible to display source code relevant for previously chosen `Id`. Choosing is performed by holding `Ctrl` on PC or `Cmd` on Mac and hovering over `input` or `output` element - in this case, similar to last changed input, `Id` will be saved if is connected to any reactive context. Visually, the indicator of this is a displayed cursor of type `progress` for a moment.
 
+This mode makes it possible to choose `input` or `output` element.
+
+## Requirements
+
+Filtering mode can't display *more* lines of source code than standard mode, but it can display *less* lines of code than in reality belongs to the `Id`. As a reminder and the first point, it should be noted that body of reactive context must be (and that's also requirement for the standard mode) inside curly (`{}`) brackets to be found by `shinybreakpoint` as well as the body should be in separate line (so there is a space to set breakpoint), e.g.
+
+```{r reactive_curly_brackets, eval = FALSE}
+r_iris <- reactive({
+  iris
+})
+```
+
+And additionaly (and also as a reminder as this was described in the article *App structure*), reactive context must be inside `server` part of the main app or `server` part of module (in theory - i.e. `shiny` allows for this - in can be outside of the `server` and `UI`, but `shinybreakpoint` won't find these code blocks).
+
+Thinking about other requirements specific just for filtering by `Id`, it must be said that along with limitations linked to `shinybreakpoint`, some of them are the consequence of using `reactlog` / `shiny::bindEvent()`. In the latter we can spot situations where source reference to object is keep and situations where is not - the second situation is of course problematic, because we don't have an easy access to the name of the file and line where the reactive context exists. Source reference (`srcref` attribute) is not keep if:
+
+* curly brackets are not used in the body of reactive context
+* `observe()` (or `observeEvent()`) is used, no matter if the code block is in curly brackets (`{}`) or not
+* `shiny::bindEvent()` is used, no matter if on `observe`, `reactive` or `render*` object^[This is an issue in `shiny`: https://github.com/rstudio/shiny/issues/3707.]
+
+Luckily, we can use `label` parameter to answer these inconveniences. `label` is a parameter which exists for `observe()` (and `observeEvent()`), `reactive()` (and `eventReactive()`) and `bindEvent()`. Now - `shinybreakpoint` reads the source code to retrieve these labels along with the information in which line and file, label was found. However, this process is successful only if:
+
+* argument passed to `label` parameter is just a string (i.e. not a variable, not a string inside function call etc.)
+* argument passed to `label` parameter is unique across *all* labels and `Id`s (i.e. think about the label as an `Id` which must be unique)
+* but, at the same time, if `bindEvent()` is used on the `render*` function, then **label must be the same as `Id`**^[It looks like in this case there is also an issue with `bindEvent()` using on `render*()` function - if argument is passed to the `label` parameter, event is not binded properly (https://github.com/rstudio/shiny/issues/3699). That's somehow ironic since it is necessary to provide `label` to use `shinybreakpoint`, but it is currently not possible to use `bindEvent()` with `label` on `render*()` object. Some workaround may be to set `ignoreInit` on `TRUE`, see `?bindEvent()` for details.].
+
+Examples:
+
+```{r examples_filtering, eval = FALSE}
+library(shiny)
+library(magrittr)
+
+server <- function(input, output, session) {
+  iris_r <- reactive({
+    iris
+  }) %>% 
+    bindEvent(label = "iris data")
+  
+  show_table <- renderTable({
+    iris_r()
+  }) %>% 
+    bindEvent(label = "show_table")
+  
+  
+  cars_r <- reactive({
+    cars
+  })
+  
+  observe({
+    invalidateLater(10000)
+    saveRDS(cars_r(), "file_saved_every_10_sec.rds")
+  }, label = "save cars dataset")
+  
+}
+```
+
+To summarize: if `observe()`, `observeEvent()` or `bindEvent()` is used (even on `reactive()`), then string must be passed *directly* to the `label` parameter and this string can't be the same as other labels or `Id`s (across the whole app!) except if `bindEvent()` is used on `render*` object, because then a string passed as an argument to `label` parameter must be the same as the output `Id`.
+
+Please keep in mind that one of the main ideas on which modules in `shiny` are build is to construct separate namespace inside the app, so one should remember about this when trying to apply above rules for `bindEvent()` used on `render*` function:
+
+```{r render_bindevent_module, eval=FALSE}
+# let's say `id` will be 'my_mod'
+irisUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    actionButton(ns("show"), "Show iris")
+    tableOutput(ns("iris"))
+  )
+}
+
+irisServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      iris <- renderTable({
+        iris
+      }) %>% 
+        bindEvent(input$show, label = "my_mod-iris")
+    }
+  )
+}
+```
+
+We can see that to the `Id` (`iris`) it was necessary to add `my_mod-`, this is because `NS()` returns a function which *will* add prefix to the `Id` and this prefix is an `id` with `-` added: `NS()` is a function factory (makes other functions); we are passing a specific argument to `NS()` and then binds this to the `ns` name, making `ns()` function - `ns()` function returns the `id` which was passed to the `NS()`, then `-` sign and then `Id` passed to the `ns()` function - everything pasted together.
+
+Full app example would be like that:
+
+```{r app_fitlering_example, eval = FALSE}
+library(shiny)
+library(magrittr)
+
+options(shiny.reactlog = TRUE) # TODO: remove
+
+ui <- fluidPage(
+  theme = bslib::bs_theme(5),
+  irisUI("my_mod") # module UI used
+)
+
+appServer <- function(input, output, session) {
+      
+}
+
+server <- function(input, output, session) {
+  appServer(input, output, session)
+  irisServer("my_mod") # module server used
+  shinybreakpoint::shinybreakpointServer() # TODO: remove
+}
+
+    shinyApp(ui, server)
+```
+
+```{r module_filtering_example, eval=FALSE}
+irisUI <- function(id) {
+  ns <- NS(id)
+  tagList(
+    actionButton(ns("show"), "Show iris")
+    tableOutput(ns("iris"))
+  )
+}
+
+irisServer <- function(id) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      iris <- renderTable({
+        iris
+      }) %>% 
+        bindEvent(input$show, label = "my_mod-iris")
+    }
+  )
+}
+```

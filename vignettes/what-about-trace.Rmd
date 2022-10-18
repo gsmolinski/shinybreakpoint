@@ -23,7 +23,7 @@ Our aim will be the modification of the body of function to insert `browser()` t
 
 **app.R**
 
-```
+```{r, eval=FALSE}
 library(shiny)
 
 ui <- fluidPage(
@@ -44,7 +44,7 @@ shinyApp(ui, server)
 
 **R/mod.R**
 
-```
+```{r, eval=FALSE}
 modUI <- function(id) {
   ns <- NS(id)
   tagList(
@@ -90,7 +90,7 @@ Now, because we were able to find the objects (and our search was very precise -
 
 We want to modify *body* of function and we will use `body()` for this. Not trying to be precise, but just useful for our purposes, we can say that `body()` returns *very* complex list (although it is not of type `list`, but `language`).
 
-```
+```{r, eval=FALSE}
 server <- function(input, output) {
   shiny::observe({
     x <- 2
@@ -115,7 +115,7 @@ body(server)[[2]][[2]][[2]][[1]]
 
 This list can be manipulated - elements can be added, removed etc. We just need some additional functions for this, like `as.list()` (so we can use `append()` to add elements to the list), `as.call()` (to turn back the list into `language` object) or `quote()` to not evaluate `browser()`:
 
-```
+```{r, eval=FALSE}
 server <- function(input, output) {
   shiny::observe({
     x <- 2
@@ -141,7 +141,7 @@ now the breakpoint is set after the first element of body (and the first element
 
 **app.R**
 
-```
+```{r, eval=FALSE}
 library(shiny)
 library(magrittr)
 
@@ -171,7 +171,7 @@ shinyApp(ui, server)
 
 **R/mod.R**
 
-```
+```{r, eval=FALSE}
 modUI <- function(id) {
   ns <- NS(id)
   tagList(
@@ -192,7 +192,7 @@ modServer <- function(id) {
 ```
 We can notice that when `Add browser` button is pushed, nothing happens. However, it is not true - `browser()` is added, but we didn't yet run the function. In other words, we have added `browser()` and have not used it yet. We can use another example to show this clearly:
 
-```
+```{r, eval=FALSE}
 fun1 <- function() {
   x <- 2
   x
@@ -213,7 +213,7 @@ We can achieve the same effect in Shiny app by refreshing the session - by hand,
 
 **app.R**
 
-```
+```{r, eval=FALSE}
 library(shiny)
 library(magrittr)
 
@@ -258,7 +258,7 @@ However, we quickly find out that after modifying the body of function, we broke
 
 **app.R**
 
-```
+```{r, eval=FALSE}
 library(shiny)
 library(magrittr)
 
@@ -287,7 +287,7 @@ shinyApp(ui, server)
 ```
 **R/mod.R**
 
-```
+```{r, eval=FALSE}
 modUI <- function(id) {
   ns <- NS(id)
   tagList(
@@ -317,7 +317,7 @@ All of our actions taken until now led us to the state of greed; we find objects
 
 The remedy for this would be to remove the `browser()` after each use, i.e. after pressing `c` or `f` (after closing) in the debug mode. But it must be done *within* the function which is debugged (because of the session reload). In other words, the function will remove its own elements. Here is an exemplification of this mechanism:
 
-```
+```{r, eval=FALSE}
 fun2 <- function() {
   2
   env <- environment(fun2) # get the environment where `fun2` is defined
@@ -343,7 +343,7 @@ We can see above how to include the code which removes itself; this code can be 
 
 **app.R**
 
-```
+```{r, eval=FALSE}
 library(shiny)
 library(magrittr)
 
@@ -370,7 +370,7 @@ shinyApp(ui, server)
 ```
 **R/mod.R**
 
-```
+```{r, eval=FALSE}
 modUI <- function(id) {
   ns <- NS(id)
   tagList(
@@ -400,7 +400,7 @@ This example looks quite complex now, so it may be useful to describe (even if r
 
 The very interesting and useful thing is that the line of code can remove the *next* line of code, but at the same time this next line of code can still be executed - we are using this to reload the session *after* the added code was removed *and* to remove the code responsible for this reload. Perhaps it will be clearer to see it, taking as an example regular function:
 
-```
+```{r, eval=FALSE}
 fun2 <- function() {
   2
   env <- environment(fun2)
@@ -435,7 +435,7 @@ There is one last thing to talk about - getting the (right) environment. In all 
 
 The code below should help us answer, why we need the environment:
 
-```
+```{r, eval=FALSE}
 a <- 4
 fun2 <- function() {
   a <- 2
@@ -458,7 +458,7 @@ If we stop thinking about this problem in terms of self-referencing, it looks si
 
 That was the answer, why we needed to refer to the environment inside the function, but why we needed this also in the `observe` at the beginning, where we set the breakpoint? On the one hand, it was indeed unnecessary - we could easily refer to the object directly, but (on the other hand) this is not safe - what if there would be a functions having the same name, but in different environments? How to refer to *this* function, not *that* function? `environment()` returns the environment for the *nearest* function and it may be not enough for our purposes.
 
-```
+```{r, eval=FALSE}
 env_inner <- ""
 env_outer <- ""
 
@@ -488,13 +488,13 @@ In our previous examples we have used `environment()`, but that was just for sim
 
 To be able to refer precise to given function, it is needed to know the environment. Relatively easy would be to connect object with environment upfront, when searching for objects across the environments using code mentioned at the beginning, i.e.  `lapply(rlang::env_parents(rlang::current_env()), names)`. We could at first use `rlang::env_parents(rlang::current_env())` to get the list of environments and then get the objects as a list, using `lapply()` and `names()`. This way we would have two lists of the same length and every element will *point* to the same environment, but the problem will occur when trying to use this environment in the code added along with `browser()`. Coming back to the Shiny app, we have used this line of code before:
 
-```
+```{r, eval=FALSE}
 body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]] <- as.call(append(as.list(body(mod_env$modServer)[[2]][[3]][[3]][[2]][[2]]), quote(env <- environment(modServer)), 2))
 ```
 
 We are constructing the `env` variable which is an environment, but how to know if this is the environment which contains `modServer` which we are looking for and not the other function of the same name, but in the different environment (like showed before)? So we know that it is possible to have the list of environments and objects (functions) which belong to the given environment, but how to use this knowledge? This solution below won't work:
 
-```
+```{r, eval=FALSE}
 fun3 <- function() {
   3
 }
@@ -510,7 +510,7 @@ We have constructed the call (which is an assignment), using the variable `env` 
 
 But the idea is not bad - we already have the object (`fun3`) and the environment (`env`), so we could just add to the body of function the code which will bind environment to the name `envir`. This way we would have the correct environment to refer to it, but as we see, instead of get something like `assign("envir", .GlobalEnv)`, we have the incorrect syntax: `assign("envir", <environment>)`. We can, however, keep the label of environment we need and search for the correct environment using this label. Label is the name of environment (if named) or address in memory - to get the label, we use `rlang::env_label()`.
 
-```
+```{r, eval=FALSE}
 fun3 <- function() {
   3
 }

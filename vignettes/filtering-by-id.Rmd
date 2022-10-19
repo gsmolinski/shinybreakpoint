@@ -123,7 +123,7 @@ Full app example would be like that:
 library(shiny)
 library(magrittr)
 
-options(shiny.reactlog = TRUE) # TODO: remove
+shinybreakpoint::set_filtering_by_id() # TODO: remove
 
 ui <- fluidPage(
   theme = bslib::bs_theme(5),
@@ -159,8 +159,16 @@ irisServer <- function(id) {
       iris <- renderTable({
         iris
       }) %>% 
-        bindEvent(input$show, label = "my_mod-iris")
+        bindEvent(input$show, label = "my_mod-iris", ignoreInit = TRUE)
     }
   )
 }
 ```
+
+## Keeping reactlog clean
+
+`shinybreakpoint::set_filtering_by_id()` enables `reactlog`, but also when the app stops, removes `reactlog` data from temporary directory. This is a negative result of manipulating functions attributes by `shinybreakpoint` - `reactlog` data can't be just recreate when the app is running, but only when the app starts, otherwise `Id` dependency won't be find correctly.
+
+This has two consequences - first one is that if one want to change something in the source code of the app, then the app has to be stopped and run again - however it shouldn't be a big inconvenience since this is also necessary to do if source code in module was modified and `shinybreakpoint` was created having modules in mind.
+
+The second consequence is that for some reason when the app is stopped *during debug mode*, i.e. `Q` was used in debug mode, then `reactlog` data won't be cleaned properly. Unfortunately, it means that to use filtering by `Id`, `Q` option in debug mode can't be use - it one would like to exit from the debug mode and app, it is only possible to return to app (by `f` or `c` in debug mode) and then stopping the app.

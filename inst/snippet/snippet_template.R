@@ -1,6 +1,6 @@
 library(shiny)
 
-options(shiny.reactlog = TRUE) # TODO: remove
+shinybreakpoint::set_filtering_by_id() # TODO: remove
 
 ui <- fluidPage(
   theme = bslib::bs_theme(5),

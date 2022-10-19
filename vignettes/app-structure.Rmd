@@ -83,12 +83,12 @@ The key concept is that all code on which we possibly would like to set breakpoi
 
 Duplicated main `server` part of the app is necessary if one would like to set brekapoint in the main `server`, but `shinybreakpoint`, being a shiny module, was developed having Bootstrap 5 in mind, which means that the expected appearance of the module will be noticeable with the `bslib::bs_theme(5)` set as theme - this code sets Bootstrap version 5 for the app.
 
-The second version of `shinybreakpoint` brought also a new functionality - filtering displayed source code by `Id` - this is `Id` of `intput` or `output` element (more about this, reader can find in the article <i>Filtering by Id</i>). Filtering is based on `{reactlog}` and to be able to use it, it is needed to set the appropriate option. The snipped below shows the recommended structure of the app - changes concerns only on the main `app` file. In this code snippet, two `TODO`s was included as a reminder to remove these calls before app is sending to production.
+The second version of `shinybreakpoint` brought also a new functionality - filtering displayed source code by `Id` - this is `Id` of `intput` or `output` element (more about this, reader can find in the article *Filtering by Id*). Filtering is based on `{reactlog}` and to be able to use it, it is needed to set the appropriate option. This is not only enabling `reactlog`, but also setting up some additional function responsible to manage temporary files, thus it is needed to use `shinybreakpoint::set_filtering_by_id()`, not just e.g. `options(shiny.reactlog = TRUE)`. The snipped below shows the recommended structure of the app - changes concerns only on the main `app` file. In this code snippet, two `TODO`s was included as a reminder to remove these calls before app is send to production.
 
 ```{r, eval=FALSE}
     library(shiny)
 
-    options(shiny.reactlog = TRUE) # TODO: remove
+    shinybreakpoint::set_filtering_by_id() # TODO: remove
 
     ui <- fluidPage(
       theme = bslib::bs_theme(5),

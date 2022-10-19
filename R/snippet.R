@@ -9,8 +9,9 @@
 #' @details
 #' `shinybreakpoint` needs server logic to be included in the function separated
 #' from the `server` part of app, was also developed having Bootstrap
-#' version 5 in mind and some functionalities needs [shiny::reactlog] enabled.
-#' This snippet takes care of that.
+#' version 5 in mind and some functionalities needs [shiny::reactlog] enabled
+#' as well as managing temporary files (`shinybreakpoint::set_filtering_by_id()`)
+#' is responsible for this. This snippet takes care of all of that.
 #'
 #' Snippet is also available as the addin, under the name `snippet`.
 #'
@@ -25,7 +26,7 @@
 #' # then this skeleton should be added to the file:
 #' library(shiny)
 #'
-#' options(shiny.reactlog = TRUE) # TODO: remove
+#' shinybreakpoint::set_filtering_by_id() # TODO: remove
 #'
 #' ui <- fluidPage(
 #'   theme = bslib::bs_theme(5),

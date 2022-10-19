@@ -54,7 +54,7 @@ worse.
 
 Possibility to filter reactive context depending on specific
 \code{input} or \code{output} needs \code{\link[shiny:reactlog]{shiny::reactlog()}} enabled,
-which is done by \code{options(shiny.reactlog = TRUE)}. This line
+which is done by \code{\link[=set_filtering_by_id]{set_filtering_by_id()}}. This line
 of code needs to be removed before app will be sent to production
 (which is of course true also for
 \code{shinybreakpoint::shinybreakpointServer()} line).
@@ -67,9 +67,13 @@ requirements in the app. This can also be done by
 \section{Filtering by Id}{
 
 
-As long as \code{\link[shiny:reactlog]{shiny::reactlog()}} is enabled, it is possible to filter
-displayed source code based on \code{input} or \code{output} Id, i.e. only
-the relevant source code (\code{reactive}s, \code{observe}s and \verb{render*} functions)
+As long as \code{\link[shiny:reactlog]{shiny::reactlog()}} is enabled (by function
+\code{\link[=set_filtering_by_id]{set_filtering_by_id()}}, because this function
+is responsible also to manage some needed files in temporary directory, i.e.
+it won't be enough to just use \code{options(shiny.reactlog = TRUE)} or similar),
+it is possible to filter displayed source code based on \code{input}
+or \code{output} Id, i.e. only the relevant source code
+(\code{reactive}s, \code{observe}s and \verb{render*} functions)
 will be shown. Two modes are available:
 \itemize{
 \item Last changed input - last changed input is tracked automatically, i.e.
@@ -87,6 +91,10 @@ parameter. Label needs to be unique across all labels \emph{and} Ids. Additional
 if \code{\link[shiny:bindEvent]{shiny::bindEvent()}} is used on \verb{render*} function, label must be \emph{the same as}
 the \code{output} Id. Because in this last case Id is masked by \code{\link[shiny:bindEvent]{shiny::bindEvent()}},
 there is no afraid that label and Id won't be unique.
+
+\strong{\code{Q} option (exit) can't be use in debug mode to properly use filtering by \code{Id}}. Please
+use \code{c} or \code{f} to close the debug mode - this will return to the app and
+then app can be stopped in usual way if needed.
 }
 
 \examples{
@@ -98,7 +106,7 @@ there is no afraid that label and Id won't be unique.
 
 library(shiny)
 
-options(shiny.reactlog = TRUE) # TODO: remove
+shinybreakpoint::set_filtering_by_id() # TODO: remove
 
 appServer <- function(input, output, session) {
   observe({

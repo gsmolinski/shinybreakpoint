@@ -1,6 +1,7 @@
 library(shinytest2)
 
-dir <- system.file(package = "shinybreakpoint", "tests_helpers/test_app")
+dir <- file.path(system.file(package = "shinybreakpoint", "tests_helpers"),
+                 "test_app")
 
 test_that("src_code for 'files' mode is displayed correctly for
           'app.R' element and 'R/module_1.R' element", {

@@ -24,7 +24,7 @@ collect_filenames_parse_data <- function(caller_env) {
       dplyr::mutate(filename_full_path = normalizePath(.data$filename_full_path, "/"),
                     filename = basename(.data$filename_full_path)) %>%
       dplyr::arrange(.data$filename) %>%
-      dplyr::relocate(.data$filename, .before = .data$parse_data)
+      dplyr::relocate("filename", .before = "parse_data")
 
     names(envirs) <- unlist(lapply(envirs, rlang::env_label), use.names = FALSE)
     envirs <- envirs[filenames_parse_data$env_label] # now envirs have the same order as files in data.frame
@@ -86,7 +86,7 @@ get_filenames_parse_data <- function(envir) {
       dplyr::filter(!is.na(.data$filename_full_path) & !duplicated(.data$filename_full_path)) %>%
       dplyr::mutate(parse_data = lapply(.data$obj_name, get_parse_data, envir = envir),
                     env_label = rlang::env_label(envir)) %>%
-      dplyr::select(-.data$obj_name)
+      dplyr::select(-"obj_name")
 
     filenames_parse_data
   } else{

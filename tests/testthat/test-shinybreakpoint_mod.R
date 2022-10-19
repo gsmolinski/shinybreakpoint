@@ -76,6 +76,7 @@ server <- function(id = "shinybreakpoint") {
 }
 
 test_that("'get_files' returns named list", {
+  skip_on_ci()
   testServer(server, {
     filenames_src_code_envirs <- prepare_src_code(g)
     expect_type(get_files(), "list")

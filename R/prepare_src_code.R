@@ -118,7 +118,7 @@ find_direct_parent_id_with_reactive <- function(one_parse_data) {
 find_lines_with_named_funs <- function(one_parse_data) {
   id_parent_token <- one_parse_data %>%
     dplyr::filter(.data$token %in% c("FUNCTION", "expr")) %>%
-    dplyr::select(.data$id, .data$parent, .data$token)
+    dplyr::select("id", "parent", "token")
 
   top_ids <- vapply(id_parent_token$parent[id_parent_token$token == "FUNCTION"],
                     find_top_expr,
@@ -134,7 +134,7 @@ find_lines_with_named_funs <- function(one_parse_data) {
 
   named_funs_lines <- one_parse_data %>%
     dplyr::filter(.data$id %in% as.integer(names(named_funs_ids))) %>%
-    dplyr::select(.data$line1, .data$line2)
+    dplyr::select("line1", "line2")
 
   named_funs_lines
 }
@@ -240,13 +240,13 @@ get_labelled_reactive_objects <- function(parse_data_all, filenames_parse_data) 
                     .data$token == "SYMBOL_FUNCTION_CALL") %>%
     dplyr::filter(grepl(get_labelled_objects_regex(),
                         .data$text, perl = TRUE)) %>%
-    dplyr::select(id = .data$parent, .data$filename_full_path)
+    dplyr::select(id = "parent", "filename_full_path")
 
   if (nrow(parent_id_filename) > 0) {
     expr_id_filename <- parent_id_filename %>%
       dplyr::left_join(parse_data_all[c("id", "parent", "filename_full_path")],
                        by = c("id", "filename_full_path")) %>%
-      dplyr::select(.data$parent, .data$filename_full_path)
+      dplyr::select("parent", "filename_full_path")
 
     labels_or_na <- mapply(extract_label, parent_id = expr_id_filename$parent, filename_full_path = expr_id_filename$filename_full_path,
                            MoreArgs = list(parse_data_all = parse_data_all), SIMPLIFY = FALSE, USE.NAMES = FALSE)
@@ -254,10 +254,10 @@ get_labelled_reactive_objects <- function(parse_data_all, filenames_parse_data) 
     expr_lines_label_filename <- expr_id_filename %>%
       dplyr::mutate(label = gsub('"', "", unlist(labels_or_na, use.names = FALSE), fixed = TRUE)) %>% # remove double quotes
       dplyr::filter(!is.na(.data$label)) %>%
-      dplyr::rename(id = .data$parent) %>%
+      dplyr::rename(id = "parent") %>%
       dplyr::left_join(parse_data_all, by = c("id", "filename_full_path")) %>%
       dplyr::mutate(file = basename(.data$filename_full_path)) %>%
-      dplyr::select(location_object = .data$line1, .data$label, .data$file)
+      dplyr::select(location_object = "line1", "label", "file")
 
     if (nrow(expr_lines_label_filename) > 0) {
       expr_lines_label_filename

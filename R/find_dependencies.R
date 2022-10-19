@@ -57,12 +57,12 @@ find_dependencies <- function(id, binded_filenames_parse_data, reactlog_dependen
 
     reactives_order_without_na <- dependencies_src_code %>%
       dplyr::filter(!is.na(.data$reactives_order)) %>%
-      dplyr::select(.data$filename, .data$each_reactive, complete_reactives_order = .data$reactives_order)
+      dplyr::select("filename", "each_reactive", complete_reactives_order = "reactives_order")
 
     dependencies_src_code <- dplyr::left_join(dependencies_src_code, reactives_order_without_na, by = c("filename", "each_reactive"))
     dependencies_src_code <- dependencies_src_code %>%
       dplyr::arrange(.data$complete_reactives_order) %>%
-      dplyr::select(.data$filename_full_path, .data$filename, .data$line, .data$src_code)
+      dplyr::select("filename_full_path", "filename", "line", "src_code")
 
     dependencies_src_code
   } else {
@@ -137,7 +137,7 @@ prepare_ids_data <- function(reactlog_data, labelled_reactive_objects) {
     ids_data <- ids_data %>%
       dplyr::mutate(filename = ifelse(is.na(.data$filename), .data$file, .data$filename),
                     location = ifelse(is.na(.data$location), .data$location_object, .data$location)) %>%
-      dplyr::select(-c(.data$file, .data$location_object))
+      dplyr::select(-c("file", "location_object"))
   }
 
   ids_data

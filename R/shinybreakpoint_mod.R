@@ -134,12 +134,20 @@ shinybreakpointServer <- function(keyEvent = "F4",
 
   caller_envir <- rlang::caller_env()
   filenames_src_code_envirs <- prepare_src_code(caller_envir)
-  reactlog_data <- tryCatch(reactlog(), error = function() NULL)
+  if (file.exists(file.path(tempdir(), "_shinybreakpoint_____reactlog.rds"))) {
+    reactlog_data <- readRDS(file.path(tempdir(), "_shinybreakpoint_____reactlog.rds"))
+  } else {
+    reactlog_data <- tryCatch(reactlog(), error = function() NULL)
+    if (!is.null(reactlog_data) && !all(unlist(lapply(reactlog_data, function(x) x$label) == "Theme Counter"))) {
+      saveRDS(reactlog_data, file.path(tempdir(), "_shinybreakpoint_____reactlog.rds"))
+    }
+  }
   try(reactlogReset(), silent = TRUE)
   if (length(reactlog_data) > 0 && nrow(filenames_src_code_envirs$filenames_parse_data) > 0) {
     labelled_reactive_objects <- filenames_src_code_envirs$labelled_reactive_objects
     binded_filenames_parse_data <- prepare_filenames_parse_data(filenames_src_code_envirs$filenames_parse_data)
     dependency_df_ids_data_all_ids <- prepare_dependency_df_and_ids_data(reactlog_data, labelled_reactive_objects)
+    #dependency_df_ids_data_all_ids <- restore_filename_loc(dependency_df_ids_data_all_ids, filenames_src_code_envirs)
     getDefaultReactiveDomain()$sendCustomMessage("shinybreakpoint_reactlog_ids", dependency_df_ids_data_all_ids$ids_data$label)
   }
 
@@ -314,6 +322,14 @@ shinybreakpointServer <- function(keyEvent = "F4",
         getDefaultReactiveDomain()$reload() # trigger the changes in the body of fun
       }) %>%
         bindEvent(input$activate, label = "shinybreakpoint-put_browser")
+
+      # onStop(function() {
+      #   path <- file.path(tempdir(), "_shinybreakpoint_____reactlog.rds")
+      #   if (file.exists(path)) {
+      #     file.remove(path)
+      #   }
+      # })
+
     }
   )
 }
@@ -524,4 +540,72 @@ get_src_editor_file <- function(filename_full_path) {
     selected <- filename_full_path[[1]]
   }
   selected
+}
+
+#' Restore Original Filename and Location Returned
+#' by [reactlog]
+#'
+#' @param dependency_df_ids_data_all_ids list with `ids_data`
+#' element we need.
+#' @param filenames_src_code_envirs files with source code.
+#'
+#' @return
+#' `dependency_df_ids_data_all_ids` with original
+#' filename and properly location (for `ids_data` element).
+#' @details
+#' Because we make temporary file for debugging and the
+#' whole original function is changed with the temp
+#' function (except `srcref` attr for body to return
+#' original filename by `getSrcFilename()`), [reactlog]
+#' returns info based on temp file, not original and then
+#' we can't find source code. We need to change the data
+#' returned by [reactlog] post hoc.
+#' @noRd
+restore_filename_loc <- function(dependency_df_ids_data_all_ids, filenames_src_code_envirs) {
+  rows_to_change <- which((!dependency_df_ids_data_all_ids$ids_data$filename %in% filenames_src_code_envirs$filenames_parse_data$filename) & grepl("^DEBUGGING_", dependency_df_ids_data_all_ids$ids_data$filename, perl = TRUE))
+  if (length(rows_to_change) > 0) {
+    ids_data_before_change <- dependency_df_ids_data_all_ids$ids_data[c("filename", "location")]
+    dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change] <- gsub("^DEBUGGING_", "", dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change])
+    dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change] <- gsub("\\.R.+", "", dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change])
+    dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change] <- paste0(dependency_df_ids_data_all_ids$ids_data$filename[rows_to_change], ".R")
+    # dependency_df_ids_data_all_ids$ids_data$location[rows_to_change] <- vapply(rows_to_change,
+    #                                                                            restore_location,
+    #                                                                            FUN.VALUE = numeric(1),
+    #                                                                            ids_data_before_change = ids_data_before_change,
+    #                                                                            filenames_changed = dependency_df_ids_data_all_ids$ids_data$filename,
+    #                                                                            original_filenames = filenames_src_code_envirs$filenames_parse_data[c("filename_full_path", "filename")])
+  }
+  dependency_df_ids_data_all_ids
+}
+
+#' Change (Restore) Location if Needed
+#'
+#' @param row row to change
+#' @param ids_data_before_change two columns from `ids_data`: filename
+#' and location, but filename before change.
+#' @param filenames_changed - already changed filenames in `ids_data`.
+#' @param original_filenames two columns containing
+#' original file filename and full path.
+#'
+#' @return
+#' Correct location (numeric length 1).
+#' @details
+#' Because `shinybreakpoint` adds some code to the
+#' temporary file (on which debugging is performed), we need
+#' to compare two files to know how many lines and to where
+#' were added, to know what to change (if any).
+#' @noRd
+restore_location <- function(row, ids_data_before_change, filenames_changed, original_filenames) {
+  original <- readLines(original_filenames$filename_full_path[[which(original_filenames$filename == filenames_changed[[row]])[[1]]]], warn = FALSE)
+  temp <- readLines(file.path(tempdir(), ids_data_before_change$filename[[row]]), warn = FALSE)
+  first_diff <- which(original != temp[seq_along(original)])[[1]]
+  length_diff <- length(temp) - length(original)
+  location <- ids_data_before_change$location[[row]]
+
+  if (first_diff <= location) {
+    location - length_diff
+  } else {
+    location
+  }
+
 }

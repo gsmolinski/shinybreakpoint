@@ -125,7 +125,7 @@ to set up Bootstrap 5. Otherwise the UI experience will be
 worse.</p>
 <p>Possibility to filter reactive context depending on specific
 <code>input</code> or <code>output</code> needs <code><a href="https://rdrr.io/pkg/shiny/man/reactlog.html" class="external-link">shiny::reactlog()</a></code> enabled,
-which is done by <code>options(shiny.reactlog = TRUE)</code>. This line
+which is done by <code><a href="set_filtering_by_id.html">set_filtering_by_id()</a></code>. This line
 of code needs to be removed before app will be sent to production
 (which is of course true also for
 <code>shinybreakpoint::shinybreakpointServer()</code> line).</p>
@@ -138,9 +138,13 @@ requirements in the app. This can also be done by
     
 
 
-<p>As long as <code><a href="https://rdrr.io/pkg/shiny/man/reactlog.html" class="external-link">shiny::reactlog()</a></code> is enabled, it is possible to filter
-displayed source code based on <code>input</code> or <code>output</code> Id, i.e. only
-the relevant source code (<code>reactive</code>s, <code>observe</code>s and <code>render*</code> functions)
+<p>As long as <code><a href="https://rdrr.io/pkg/shiny/man/reactlog.html" class="external-link">shiny::reactlog()</a></code> is enabled (by function
+<code><a href="set_filtering_by_id.html">set_filtering_by_id()</a></code>, because this function
+is responsible also to manage some needed files in temporary directory, i.e.
+it won't be enough to just use <code>options(shiny.reactlog = TRUE)</code> or similar),
+it is possible to filter displayed source code based on <code>input</code>
+or <code>output</code> Id, i.e. only the relevant source code
+(<code>reactive</code>s, <code>observe</code>s and <code>render*</code> functions)
 will be shown. Two modes are available:</p><ul><li><p>Last changed input - last changed input is tracked automatically, i.e.
 nothing special needs to be done.</p></li>
 <li><p>Chosen Id - by holding <code>Ctrl</code> on PC or <code>Cmd</code> on Mac and hovering mouse
@@ -154,6 +158,9 @@ parameter. Label needs to be unique across all labels <em>and</em> Ids. Addition
 if <code><a href="https://rdrr.io/pkg/shiny/man/bindEvent.html" class="external-link">shiny::bindEvent()</a></code> is used on <code>render*</code> function, label must be <em>the same as</em>
 the <code>output</code> Id. Because in this last case Id is masked by <code><a href="https://rdrr.io/pkg/shiny/man/bindEvent.html" class="external-link">shiny::bindEvent()</a></code>,
 there is no afraid that label and Id won't be unique.</p>
+<p><strong><code>Q</code> option (exit) can't be use in debug mode to properly use filtering by <code>Id</code></strong>. Please
+use <code>c</code> or <code>f</code> to close the debug mode - this will return to the app and
+then app can be stopped in usual way if needed.</p>
     </div>
 
     <div class="section level2">
@@ -166,7 +173,7 @@ there is no afraid that label and Id won't be unique.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.rstudio.com/" class="external-link">shiny</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>shiny.reactlog <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># TODO: remove</span></span></span>
+<span class="r-in"><span><span class="fu">shinybreakpoint</span><span class="fu">::</span><span class="fu"><a href="set_filtering_by_id.html">set_filtering_by_id</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># TODO: remove</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">appServer</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span>, <span class="va">session</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/observe.html" class="external-link">observe</a></span><span class="op">(</span><span class="op">{</span></span></span>

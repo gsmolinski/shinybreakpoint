@@ -14,6 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+**Filtering by Id is very experimental and may fail in not yet fully understandable way.**
+
 ## Motivation
 
 First (`0.0.1`) version of `shinybreakpoint` treated code as a *words* segregated into R files, but only in some specific situations source code can be read in the same way as a book - e.g. any function definition makes it necessary to jump from one line to another to find the body of function. Reactive programming makes it even necessary to jump all the time between blocks of reactive context (which may exist in different files) - relevant code often is far away from where we are, between the code blocks connected to the outputs we do not looking for. This is of course the more problematic the less we know (or remember) code structure of the app.

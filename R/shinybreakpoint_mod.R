@@ -71,6 +71,8 @@ shinybreakpointUI <- function(id) {
 #'
 #' @section Filtering by Id:
 #'
+#' **Filtering by Id is very experimental and may fail in not yet fully understandable way.**
+#'
 #' As long as [shiny::reactlog()] is enabled (by function
 #' [shinybreakpoint::set_filtering_by_id()], because this function
 #' is responsible also to manage some needed files in temporary directory, i.e.

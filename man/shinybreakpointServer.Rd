@@ -67,6 +67,8 @@ requirements in the app. This can also be done by
 \section{Filtering by Id}{
 
 
+\strong{Filtering by Id is very experimental and may fail in not yet fully understandable way.}
+
 As long as \code{\link[shiny:reactlog]{shiny::reactlog()}} is enabled (by function
 \code{\link[=set_filtering_by_id]{set_filtering_by_id()}}, because this function
 is responsible also to manage some needed files in temporary directory, i.e.

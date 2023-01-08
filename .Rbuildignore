@@ -8,3 +8,5 @@
 ^\.github$
 ^cran-comments\.md$
 _\.new\.png$
+^doc$
+^Meta$

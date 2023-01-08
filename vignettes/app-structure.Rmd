@@ -116,7 +116,7 @@ To run any of the examples above, one should save the file with the code, run th
 
 other possibilities won't work. Generally we can say that breakpoint won't be set on the *edges* of the visible code blocks.
 
-Immediately after the breakpoint is set (i.e. when the `red filled circle` button (`r shiny::icon("circle", style = "color: #984747;")`) in the modal dialog is pushed), session is refreshed. That means that if the breakpoint in our example was set on the `input$num1` line, debug mode will open up immediately, but if it was set on the `input$num2`, then `Go` button needs to be pushed. That fact strictly depends on the reactive programming - debug mode opens up when the code block (where breakpoint is set) starts and the chosen line is achieved.
+Immediately after the breakpoint is set (i.e. when the `red filled circle` button (<i class="fa-solid fa-circle" style="color: #984747;"></i>) in the modal dialog is pushed), session is refreshed. That means that if the breakpoint in our example was set on the `input$num1` line, debug mode will open up immediately, but if it was set on the `input$num2`, then `Go` button needs to be pushed. That fact strictly depends on the reactive programming - debug mode opens up when the code block (where breakpoint is set) starts and the chosen line is achieved.
 
 ## Displaying source code
 

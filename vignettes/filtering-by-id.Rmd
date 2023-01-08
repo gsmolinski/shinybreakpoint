@@ -24,7 +24,7 @@ The problem with the complicated app structure (complicated app itself *and* fac
 
 ## Filtering
 
-To the right of `red filled circle` button (`r shiny::icon("circle", style = "color: #984747;")`), the set of three small buttons is displayed and only the first one (<i class="fa-solid fa-file-lines" style="color: #d0a492;"></i>) is active all the time - this is a button responsible to display source code in a standard way (as a files). Other two are active if some `Id` is present to use it for filtering.
+To the right of `red filled circle` button (<i class="fa-solid fa-circle" style="color: #984747;"></i>), the set of three small buttons is displayed and only the first one (<i class="fa-solid fa-file-lines" style="color: #d0a492;"></i>) is active all the time - this is a button responsible to display source code in a standard way (as a files). Other two are active if some `Id` is present to use it for filtering.
 
 ### Last changed input
 

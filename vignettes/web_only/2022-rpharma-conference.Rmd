@@ -1,0 +1,14 @@
+---
+title: '2022 R/Pharma Conference (Expo)'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{2022 R/Pharma Conference (Expo)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This is a showcase of very experimental version of `shinybreakpoint` - with the functionality to filter source code based on chosen `Id` - presented during 2022 *R/Pharma Conference* in Expo part.
+
+<center>
+<iframe allowtransparency="true" title="Wistia video player" allowFullscreen frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" src="https://fast.wistia.net/embed/iframe/n0o3ozg1ww" width="642" height="361"></iframe>
+</center>

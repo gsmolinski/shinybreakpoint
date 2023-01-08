@@ -17,4 +17,5 @@ articles:
 
 - title: Talks
   contents:
+  - web_only/2022-rpharma-conference
   - web_only/2022-appsilon-shiny-conference

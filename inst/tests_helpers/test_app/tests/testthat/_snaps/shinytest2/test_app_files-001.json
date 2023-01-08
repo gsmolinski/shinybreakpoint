@@ -21,15 +21,15 @@
             },
             "columns": [
               {
-                "accessor": ".selection",
+                "id": ".selection",
                 "name": "",
-                "type": "NULL",
+                "type": null,
                 "resizable": false,
                 "width": 45,
                 "selectable": true
               },
               {
-                "accessor": "line",
+                "id": "line",
                 "name": "",
                 "type": "numeric",
                 "width": 60,
@@ -40,7 +40,7 @@
                 }
               },
               {
-                "accessor": "src_code",
+                "id": "src_code",
                 "name": "",
                 "type": "character",
                 "cell": "function (cellInfo) {\n    if (cellInfo.value == null || /[\"'].*[<>].*[\"']/.test(cellInfo.value)) {\n        return cellInfo.value;\n    } else {\n        var code = cellInfo.value;\n        code = code.replace(/([\"](.*?)[\"])/g, \"<span class = \\\"string_code\\\">$1<\/span>\");\n        code = code.replace(/(['](.*?)['])/g, \"<span class = 'string_code'>$1<\/span>\");\n        code = code.replace(/(\\.*[\\w.]+|`.+`)(?=\\()/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(%.+%)/g, \"<span class = 'fun_call_code'>$1<\/span>\");\n        code = code.replace(/(\\w+:{3}|\\w+:{2})/g, \"<span class = 'namespace_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:TRUE|FALSE|T|F|NA|NA_character_|NA_integer_|NA_complex_|NA_real_|NULL))\\b/g, \"<span class = 'specials_code'>$1<\/span>\");\n        code = code.replace(/\\b((?:if|else|repeat|while|for|in|next|break))\\b/g, \"<span class = 'keyword_code'>$1<\/span>\");\n        code = code.replace(/\\b([-+]?(0x[\\dA-Fa-f]+|\\d*\\.?\\d+([Ee]-?\\d+)?i?|Inf|NaN))\\b/g, \"<span class = 'number_code'>$1<\/span>\");\n        code = code.replaceAll(\"#\", \"<span class = 'comment_code'>#<\/span>\");\n        code = code.replaceAll(\"(\", \"<span class = 'bracket_code'>(<\/span>\");\n        code = code.replaceAll(\")\", \"<span class = 'bracket_code'>)<\/span>\");\n        code = code.replaceAll(\"{\", \"<span class = 'brace_code'>{<\/span>\");\n        code = code.replaceAll(\"}\", \"<span class = 'brace_code'>}<\/span>\");\n        code = code.replaceAll(\"[\", \"<span class = 'select_code'>[<\/span>\");\n        code = code.replaceAll(\"]\", \"<span class = 'select_code'>]<\/span>\");\n        code = code.replaceAll(\"$\", \"<span class = 'select_code'>$<\/span>\");\n        return React.createElement(\"span\", {\n            dangerouslySetInnerHTML: { __html: code }\n        });\n    }\n}",
@@ -61,10 +61,6 @@
             ],
             "sortable": false,
             "pagination": false,
-            "defaultPageSize": 10,
-            "paginationType": "numbers",
-            "showPageInfo": true,
-            "minRows": 1,
             "selection": "single",
             "onClick": "select",
             "highlight": true,
@@ -85,7 +81,8 @@
                 "boxShadow": "inset 0 3px 5px rgba(0,0,0,.125), 0 3px 5px rgba(0,0,0,.125);"
               }
             },
-            "dataKey": "8f7815848fafc80c3628feef0499ebbc"
+            "dataKey": "0b1093abf5c87c5efa1442bcc65546a8",
+            "static": false
           },
           "children": [
 

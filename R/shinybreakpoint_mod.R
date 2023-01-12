@@ -454,7 +454,7 @@ create_UI <- function(session, filenames_src_code, chosen_id) {
                fluidRow(
                  column(4,
                         tags$div(class = "shinybreakpoint-div-activate",
-                                 actionButton(session$ns("activate"), label = "", icon = icon("circle"), class = "shinybreakpoint-activate-btn"))
+                                 actionButton(session$ns("activate"), label = "", icon = icon("circle", class = "fa-solid"), class = "shinybreakpoint-activate-btn"))
                         ),
                  column(1,
                         tags$div(class = "shinybreakpoint-div-last_input_chosen_id",
